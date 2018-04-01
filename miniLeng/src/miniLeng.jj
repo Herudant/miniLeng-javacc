@@ -1,0 +1,84 @@
+/**
+ * JavaCC template file created by SF JavaCC plugin 1.5.28+ wizard for JavaCC 1.5.0+
+ */options{  static = true;}PARSER_BEGIN(miniLeng)
+public class miniLeng{  public static void main(String args []) throws ParseException  {    miniLeng parser = new miniLeng(System.in);    while (true)    {      System.out.println("Reading from standard input...");      System.out.print("Enter an expression like \"1+(2+3)*4;\" :");      try      {        switch (miniLeng.one_line())        {          case 0 :           System.out.println("OK.");          break;          case 1 :           System.out.println("Goodbye.");
+                    break;          default :           break;        }      }      catch (Exception e)      {        System.out.println("NOK.");        System.out.println(e.getMessage());        miniLeng.ReInit(System.in);      }      catch (Error e)      {        System.out.println("Oops.");        System.out.println(e.getMessage());        break;      }    }  }}PARSER_END(miniLeng)SKIP :{  " "| "\r"| "\t"| "\n"
+| "%" : COMMENT}
+< COMMENT > SKIP :
+{
+  "\n" : DEFAULT
+}
+
+TOKEN : /* OPERATORS */
+{
+  < PLUS : "+" >
+| < MINUS : "-" >
+| < MULTIPLY : "*" >
+| < DIVIDE : "/" >
+}
+
+TOKEN : /*  Reservadas */
+{
+	< tPROGRAMA : "programa" >
+| 	< tVAR : "var" >
+| 	< tAND: "and" >
+| 	< tOR: "or" >
+| 	< tNOT: "not" >
+| 	< tPRINCIPIO : "principio" >
+| 	< tFIN: "fin" >
+| 	< tSI: "si" >
+| 	< tENT: "ent" >
+| 	< tSI_NO : "si_no" >
+| 	< tFSI: "fsi" >
+| 	< tMQ: "mq" >
+| 	< tFMQ: "fmq" >
+| 	< tESCRIBIR : "escribir" >
+| 	< tLEER: "leer" >
+| 	< tMOD: ",od" >
+| 	< tDIV: "div" >
+| 	< tENTERO: "entero" >
+| 	< tBOOLEANO: "booleano" >
+| 	< tCARACTER : "caracter" >
+| 	< tTRUE: "true" >
+| 	< tFALSE: "false" >
+| 	< tENTACAR: "entacar" >
+| 	< tCARAENT: "caraemt" >
+| 	< tACCION: "accion" >
+| 	< tVAL : "val" >
+| 	< tREF: "ref" >
+| 	< tMAYOR: ">" >
+| 	< tMENOR: "<" >
+| 	< tIGUAL: "=" >
+| 	< tMAI: ">=" >
+| 	< tMEI : "<=" >
+| 	< tNI: "<>" >
+| 	< tOPAS: ":=" >
+}
+
+TOKEN :   /* Digits */
+{
+  < CONSTANT : (< DIGIT >)+ >
+| < REAL : (< DIGIT >)+ "." (< DIGIT >)+ >
+| < #DIGIT : [ "0"-"9" ] >
+}
+
+
+TOKEN : {
+ <IDENTIFIER: <LETTER> (<LETTER> | <DIGIT>)* ["A"-"Z","a"-"z","0"-"9"] >
+|  <#LETTER: ["A"-"Z","_","a"-"z"] >
+}int one_line() :{}{  sum() ";"  {    return 0;  }
+| sentencia_if()
+  {	return 2;
+  }| ";"  {    return 1;  }
+  }void sum() :{}{  term()  (    (      < PLUS >    | < MINUS >    )    term()  )*}
+
+void sentencia_if() :
+{}
+{	< tSI > element**** < tFSI >
+}
+void asignacion() :
+{ }
+{
+	
+}
+void term() :{}{  unary()  (    (      < MULTIPLY >    | < DIVIDE >    )    unary()  )*}void unary() :{}{  < MINUS > element()| element()}void element() :{}{  < CONSTANT >| "(" sum() ")"}
