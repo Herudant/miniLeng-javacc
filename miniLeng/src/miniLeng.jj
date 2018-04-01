@@ -229,7 +229,7 @@ void lista_parametros() :
 {
     ***********
 }
-
+        
 void sentencia_principio() :
 {}
 {
