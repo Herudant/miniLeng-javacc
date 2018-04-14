@@ -125,8 +125,8 @@ TOKEN :   /* Digits */
 TOKEN : {
  < tIDENTIFICADOR: <LETTER> ((<LETTER> | <DIGIT>)* (["A"-"Z","a"-"z","0"-"9"]) )? >
 | < #LETTER: ["A"-"Z","_","a"-"z"] >
-| < tCONSTCHAR : "\'"  (~["\'","\\","\n","\r"])*  "\'" >
-| < tCONSTCAD  : "\""  (~["\"","\\","\n","\r"])*  "\"" >
+| < tCONSTCHAR : "\'"  (~["\'","\\","\n","\r"] |  "\\" ["n","t","b","r","f","\\","\'","\""])*  "\'" >
+| < tCONSTCAD  : "\""  (~["\'","\\","\n","\r"] |  "\\" ["n","t","b","r","f","\\","\'","\""])*  "\"" >
 }
 
 void programa() : 
@@ -329,6 +329,7 @@ void factor() :
  |  < tCARAENT > "(" expresion() ")"
  |  < tIDENTIFICADOR >
  |  < tCONSTCHAR >
+ |  < tCONSTCAD >
  |  < tCONSTENTERA >
  |  < tTRUE >
  |  < tFALSE >
