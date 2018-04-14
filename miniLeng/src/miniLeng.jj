@@ -241,6 +241,9 @@ void sentencia() :
 	 | invocacion_accion()
  ]
 | mientras_que()
+| leer() ";"
+| escribir() ";"
+| seleccion()
 }
 
 
@@ -261,6 +264,39 @@ void mientras_que() :
 {
    <tMQ> expresion() lista_sentencias() <tFMQ>
 }
+
+void seleccion() :
+{}
+{
+	< tSI > expresion() < tENT > lista_sentencias() (< tSI_NO > lista_sentencias())*< tFSI >
+}
+void leer() :
+{}
+{
+   <tLEER> "(" lista_asignables() ")"
+}
+
+void escribir() :
+{}
+{
+   <tESCRIBIR> "(" lista_escribibles() ")"
+}
+
+
+
+void lista_asignables() :
+{}
+{
+  identificadores()
+}
+
+void lista_escribibles() :
+{}
+{
+  (< tCONSTCAD > | < tCONSTCHAR >) ( "," (< tIDENTIFICADOR >  |  < tENTACAR > "(" expresion() ")" ) )*
+}
+
+
 
 
 
