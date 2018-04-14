@@ -8,41 +8,51 @@ options
 
 PARSER_BEGIN(miniLeng)
 
+import java.io.*;
+
 public class miniLeng
 {
+  
   public static void main(String args []) throws ParseException
   {
-    miniLeng parser = new miniLeng(System.in);
-    while (true)
-    {
-      System.out.println("Reading from standard input...");
-      try
-      {
-        switch (miniLeng.one_line())
-        {
-          case 0 : 
-          System.out.println("OK.");
-          break;
-          case 1 : 
-          System.out.println("Goodbye.");
-          break;
-          default : 
-          break;
-        }
-      }
-      catch (Exception e)
-      {
-        System.out.println("NOK.");
-        System.out.println(e.getMessage());
-        miniLeng.ReInit(System.in);
-      }
-      catch (Error e)
-      {
-        System.out.println("Oops.");
-        System.out.println(e.getMessage());
-        break;
-      }
-    }
+    BufferedReader new_buffer = new BufferedReader(new InputStreamReader(System.in));
+	  String file;
+	  miniLeng parser;
+	  System.out.println("Ruta y nombre del fichero:");
+	  /*
+	  try
+	  {
+	    file=new_buffer.readLine();
+	  }catch(IOException e) {
+	    System.out.println("Error al leer la cadena");
+	    return;
+	  }
+	 */
+	  file = "/Users/heru/Documents/GitHub/programas/pruebas.ml";
+
+	  System.out.println(file);
+	  try
+	  {
+	    parser = new miniLeng(new FileInputStream(file));
+	  }catch(FileNotFoundException e) {
+	    System.out.println("Fallo al leer el fichero");
+	    return;
+	  }
+	  try
+	  {
+	    parser.programa();
+	  }
+	  catch (Exception e)
+	  {
+	    System.out.println("NOK.");
+	    System.out.println(e.getMessage());
+	    miniLeng.ReInit(System.in);
+	  }
+	  catch (Error e)
+	  {
+	    System.out.println("Oops.");
+	    System.out.println(e.getMessage());
+	  }
   }
 }
 
@@ -54,7 +64,7 @@ SKIP :
 | "\r"
 | "\t"
 | "\n"
-| "%" : COMMENT
+| "%" : COMMENT 
 }
 
 < COMMENT > SKIP :
@@ -62,22 +72,18 @@ SKIP :
   "\n" : DEFAULT
 }
 
-TOKEN : /* OPERATORS */
-{
-  < PLUS : "+" >
-| < MINUS : "-" >
-| < MULTIPLY : "*" >
-| < DIVIDE : "/" >
+<COMMENT> MORE : {
+	<~[]>
 }
 
 TOKEN : /*  Reservadas */
 {
-	< tPROGRAMA : "programa" >
+	< tPROGRAMA : "programa" > { System.out.println("tPROGRAMA reconocido"); }
 | 	< tVAR : "var" >
 | 	< tAND: "and" >
 | 	< tOR: "or" >
 | 	< tNOT: "not" >
-| 	< tPRINCIPIO : "Principio" > { System.out.println("Principio reconocido"); } 
+| 	< tPRINCIPIO : "principio" > { System.out.println("Principio reconocido"); } 
 | 	< tFIN: "fin" > { System.out.println("Fin reconocido"); }
 | 	< tSI: "si" >
 | 	< tENT: "ent" >
@@ -87,7 +93,7 @@ TOKEN : /*  Reservadas */
 | 	< tFMQ: "fmq" >
 | 	< tESCRIBIR : "escribir" >
 | 	< tLEER: "leer" >
-| 	< tMOD: ",od" >
+| 	< tMOD: "mod" >
 | 	< tDIV: "div" >
 | 	< tENTERO: "entero" >
 | 	< tBOOLEANO: "booleano" >
@@ -95,7 +101,7 @@ TOKEN : /*  Reservadas */
 | 	< tTRUE: "true" >
 | 	< tFALSE: "false" >
 | 	< tENTACAR: "entacar" >
-| 	< tCARAENT: "caraemt" >
+| 	< tCARAENT: "caraent" >
 | 	< tACCION: "accion" >
 | 	< tVAL : "val" >
 | 	< tREF: "ref" >
@@ -110,60 +116,25 @@ TOKEN : /*  Reservadas */
 
 TOKEN :   /* Digits */
 {
-  < CONSTANT : (< DIGIT >)+ >
-| < REAL : (< DIGIT >)+ "." (< DIGIT >)+ >
+  < tCONSTENTERA : (< DIGIT >)+ >
+| < tREAL : (< DIGIT >)+ "." (< DIGIT >)+ >
 | < #DIGIT : [ "0"-"9" ] >
 }
 
 
 TOKEN : {
- <IDENTIFIER: <LETTER> (<LETTER> | <DIGIT>)* ["A"-"Z","a"-"z","0"-"9"] >
-|  <#LETTER: ["A"-"Z","_","a"-"z"] >
+ < tIDENTIFICADOR: <LETTER> ((<LETTER> | <DIGIT>)* (["A"-"Z","a"-"z","0"-"9"]) )? >
+| < #LETTER: ["A"-"Z","_","a"-"z"] >
+| < tCONSTCHAR : "\'"  (~["\'","\\","\n","\r"])*  "\'" >
+| < tCONSTCAD  : "\""  (~["\"","\\","\n","\r"])*  "\"" >
 }
 
-int one_line() :
-{}
-{
-  sum() ";"
-  {
-    return 0;
-  }
-| sentencia_principio()
-  {
-	return 2;
-  }
-| ";"
-  {
-    return 1;
-  }
-  
-}
-
-void sum() :
-{}
-{
-  term()
-  (
-    (
-      < PLUS >
-    | < MINUS >
-    )
-    term()
-  )*
-}
-
-void sentencia_programa() : 
+void programa() : 
 {}
 {
 	<tPROGRAMA> <tIDENTIFICADOR> ";"
 	declaracion_variables() declaracion_acciones()
-	bloque_sentencias()    
-}
-
-void sentencia_programa() : 
-{}
-{
-    
+	bloque_sentencias()
 }
 
 void declaracion_variables() : 
@@ -192,12 +163,13 @@ void identificadores() :
 {
     < tIDENTIFICADOR > ( "," < tIDENTIFICADOR> )*
 }
-
-
+/***************************************************************************************************
+***************************************************************************************************/
+/* ******* Acciones *****/
 void declaracion_acciones() : 
 {}
 {
-    ( declaracion_accion )*
+    ( declaracion_accion() )*
 }
 
 
@@ -207,64 +179,157 @@ void declaracion_accion() :
     cabecera_accion() ";"
 	declaracion_variables() 
 	declaracion_acciones() 
-	bloque sentencias()
+	bloque_sentencias()
 }
 
 
 void cabecera_accion() : 
 {}
 {
-    < tACCION > < tIDENTIFICADOR > parametros_formales()
+    < tACCION > < tIDENTIFICADOR > parametros_formales() 
 }
 
 
-void parametos_formales() : 
+void parametros_formales() : 
 {}
 {
-    ***********
+	( "(" parametros() ")")?
 }
 
 void lista_parametros() : 
 {}
 {
-    ***********
-}
-        
-void sentencia_principio() :
-{}
-{
-	< tPRINCIPIO >  < tFIN >
+    identificadores() ( ";" parametros())?
 }
 
-void asignacion() :
-{ }
-{
-	
-}
-
-void term() :
+void parametros() : 
 {}
 {
-  unary()
-  (
-    (
-      < MULTIPLY >
-    | < DIVIDE >
-    )
-    unary()
-  )*
+    clase_parametros() tipo_variables() lista_parametros()
 }
 
-void unary() :
+void clase_parametros() : 
 {}
 {
-  < MINUS > element()
-| element()
+    < tVAL >
+ |  < tREF >
 }
 
-void element() :
+/***************************************************************************************************
+***************************************************************************************************/
+/* ******* Sentencias *****/
+
+void bloque_sentencias() : 
 {}
 {
-  < CONSTANT >
-| "(" sum() ")"
+    < tPRINCIPIO > lista_sentencias() < tFIN >
+}
+
+void lista_sentencias() : 
+{}
+{
+    ( sentencia() )*
+}
+
+
+void sentencia() : 
+{}
+{
+  < tIDENTIFICADOR >
+ [ 
+	   asignacion()
+	 | invocacion_accion()
+ ]
+| mientras_que()
+}
+
+
+void asignacion() : 
+{}
+{
+     < tOPAS > expresion() ";"
+}
+
+void invocacion_accion() :
+{}
+{
+	 argumentos() ";"
+}
+
+void mientras_que() :
+{}
+{
+   <tMQ> expresion() lista_sentencias() <tFMQ>
+}
+
+
+
+
+void argumentos() : 
+{}
+{
+    ( "(" (lista_expresiones())? ")")?
+}
+
+void lista_expresiones() : 
+{}
+{
+    expresion() ( "," expresion())*
+   
+}
+
+void expresion() : 
+{}
+{
+	termino() ( operador_aditivo() termino())*
+}
+
+void expresion_simple() : 
+{}
+{
+	factor()   
+}
+
+void operador_relacional() : 
+{}
+{
+    	< tMAYOR >
+  | 	< tMENOR >
+  | 	< tIGUAL >
+  | 	< tMAI >
+  | 	< tMEI  >
+  | 	< tNI >
+}
+
+void operador_aditivo() : 
+{}
+{
+    "+" | "-" | < tOR >
+}
+
+void operador_multiplicativo() : 
+{}
+{
+    "*" | < tDIV > |  < tMOD > | < tAND > 
+}
+
+void termino() : 
+{}
+{
+    factor() ( ( operador_multiplicativo() | operador_relacional() ) factor())*
+}
+
+void factor() : 
+{}
+{
+    "-" factor()
+ |  < tNOT > factor()
+ |  "(" expresion() ")"
+ |  < tENTACAR > "(" expresion() ")"
+ |  < tCARAENT > "(" expresion() ")"
+ |  < tIDENTIFICADOR >
+ |  < tCONSTCHAR >
+ |  < tCONSTENTERA >
+ |  < tTRUE >
+ |  < tFALSE >
 }
