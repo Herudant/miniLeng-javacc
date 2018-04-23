@@ -31,31 +31,35 @@ public class miniLeng
 	  file = "/Users/heru/Documents/GitHub/programas/pruebas.ml";
 
 	  System.out.println(file);
-	  try
-	  {
+	  try {
 	    parser = new miniLeng(new FileInputStream(file));
-	  }catch(FileNotFoundException e) {
+	  }
+	  catch(FileNotFoundException e) {
 	    System.out.println("Fallo al leer el fichero");
 	    return;
 	  }
-	  try
-	  {
+	  
+	  try {
 	    parser.programa();
 	  }
-	  catch (Exception e)
-	  {
-	    System.out.println("NOK.");
-	    System.out.println(e.getMessage());
-	    miniLeng.ReInit(System.in);
-	  }
-	  catch (Error e)
-	  {
+	  catch (Error e) {
+	    	int linea = token.beginLine;
+	    int columna = token.beginColumn;
+	    String simbolo = token.image;
+	    System.out.println("ERROR LÉXICO (<" + linea + ", " + columna + ">): símbolo no reconocido: <" + simbolo + ">");
 	    System.out.println("Oops.");
 	    System.out.println(e.getMessage());
 	  }
   }
+  /********** Tratamiento Errores **********************/
+  public static void tratarErrorSintactico(int line, int column, String msg_error) {
+	System.out.println("ERROR SINTACTICO?? (<" + line + ", " + column + ">): <" + msg_error + ">");
+  }
+
+
 }
 
+  
 PARSER_END(miniLeng)
 
 SKIP :
@@ -129,235 +133,537 @@ TOKEN : {
 | < tCONSTCAD  : "\""  (~["\'","\\","\n","\r"] |  "\\" ["n","t","b","r","f","\\","\'","\""])*  "\"" >
 }
 
+
+
+void programa_completo():
+{}
+{
+  programa() < EOF >
+}
+
+
+/*  programa ::= < tPROGRAMA > <tIDENTIFICADOR > ";"
+					declaracion_variables
+					declaracion_acciones
+					bloque_sentencias             */
 void programa() : 
 {}
 {
+  try { 
 	<tPROGRAMA> <tIDENTIFICADOR> ";"
 	declaracion_variables() declaracion_acciones()
 	bloque_sentencias()
+  }
+  catch (Exception e)
+  {
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
+	System.out.println(e.getMessage());    
+  }
 }
 
+
+/* declaracion_variables ::= (declaracion ";")* */
 void declaracion_variables() : 
 {}
 {
+  try { 
     (declaracion() ";")*
+  }
+  catch (Exception e)
+  {
+    /*
+	    int linea = token.next.beginLine;
+	    int columna = token.next.beginColumn;
+	    String msg_error = token.next.image;
+	    System.out.println("ERROR SINTACTICO?? (<" + linea + ", " + columna + ">): <" + msg_error + ">");
+	    System.out.println(e.getMessage());
+	*/
+
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
+	System.out.println(e.getMessage());      
+  }
 }
 
 
+/* declaracion ::= tipo_variables identificadores */
 void declaracion() : 
 {}
 {
+  try { 
     tipo_variables() identificadores()
+  }
+  catch (Exception e)
+  {
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
+	System.out.println(e.getMessage());       
+  }
 }
 
+/* tipo_variables ::= < tENTERO > | < tCARACTER > | < tBOOLEANO > */
 void tipo_variables() : 
 {}
 {
+  try { 
     < tENTERO >
 |   < tCARACTER >
 |   < tBOOLEANO >
+  }
+  catch (Exception e)
+  {
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
+	System.out.println(e.getMessage());     
+  }
 }
 
+
+/* identificadores ::= < tIDENTIFICADOR > ( "," < tIDENTIFICADOR >)* */
 void identificadores() : 
 {}
 {
+  try { 
     < tIDENTIFICADOR > ( "," < tIDENTIFICADOR> )*
+  }
+  catch (Exception e)
+  {
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
+	System.out.println(e.getMessage());       
+  }
 }
+
 /***************************************************************************************************
 ***************************************************************************************************/
 /* ******* Acciones *****/
+
+/* declaracion_acciones ::= (declaracion_accion)* */
 void declaracion_acciones() : 
 {}
 {
+  try { 
     ( declaracion_accion() )*
+  }
+  catch (Exception e)
+  {
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
+	System.out.println(e.getMessage());       
+  }
 }
 
 
+/* declaracion_accion ::= cabecera_accion ";"
+							declaracion_variables
+							declarracion_acciones
+							bloque sentencias	*/
 void declaracion_accion() : 
 {}
 {
+  try { 
     cabecera_accion() ";"
 	declaracion_variables() 
 	declaracion_acciones() 
 	bloque_sentencias()
+  }
+  catch (Exception e)
+  {
+	    int linea = token.next.beginLine;
+	    int columna = token.next.beginColumn;
+	    String msg_error = token.next.image;
+	    System.out.println("ERROR SINTACTICO?? (<" + linea + ", " + columna + ">): <" + msg_error + ">");
+	    System.out.println(e.getMessage());
+	    
+  }
 }
 
-
+/* cabecera_accion ::= < tACCION > < tIDENTIFICADOR > parametros_formales() */
 void cabecera_accion() : 
 {}
 {
-    < tACCION > < tIDENTIFICADOR > parametros_formales() 
+  try { 
+    < tACCION > < tIDENTIFICADOR > parametros_formales()
+  }
+  catch (Exception e)
+  {
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
+	System.out.println(e.getMessage());    
+  }
 }
 
-
+/* parametros_formales ::= ( "(" parametros ")")? */
 void parametros_formales() : 
 {}
 {
+  try { 
 	( "(" parametros() ")")?
+  }
+  catch (Exception e)
+  {
+	    int linea = token.next.beginLine;
+	    int columna = token.next.beginColumn;
+	    String msg_error = token.next.image;
+	    System.out.println("ERROR SINTACTICO?? (<" + linea + ", " + columna + ">): <" + msg_error + ">");
+	    System.out.println(e.getMessage());
+	    
+  }
 }
 
+/* lista_parametros ::= identificadores (";" paraemtros)? */
 void lista_parametros() : 
 {}
 {
+  try { 
     identificadores() ( ";" parametros())?
+  }
+  catch (Exception e)
+  {
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
+	System.out.println(e.getMessage());    
+  }
 }
 
+/* parametros ::= clase_parametros tipo_variables lista_parametros */
 void parametros() : 
 {}
 {
+  try { 
     clase_parametros() tipo_variables() lista_parametros()
+  }
+  catch (Exception e)
+  {
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
+	System.out.println(e.getMessage());     
+  }
 }
 
+
+/* clase_parametros ::= < tVAL > | < tREF > */
 void clase_parametros() : 
 {}
 {
+  try { 
     < tVAL >
  |  < tREF >
+  }
+  catch (Exception e)
+  {
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
+	System.out.println(e.getMessage());     
+  }
 }
 
 /***************************************************************************************************
 ***************************************************************************************************/
 /* ******* Sentencias *****/
 
+
+/* bloque_sentencias ::= < tPRINCIPIO > lista_sentencias < tFIN > */
 void bloque_sentencias() : 
 {}
 {
+  try { 
     < tPRINCIPIO > lista_sentencias() < tFIN >
+  }
+  catch (Exception e)
+  {
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
+	System.out.println(e.getMessage());      
+  }
 }
 
+
+/* lista_sentencias ::= ( sentencia )* */
 void lista_sentencias() : 
 {}
 {
+  try { 
     ( sentencia() )*
+  }
+  catch (Exception e)
+  {
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
+	System.out.println(e.getMessage());    
+  }
 }
 
-
+/* sentencia ::= asignacion | invoacion_accion | mientras_que | leer | escribir | selecion */
 void sentencia() : 
 {}
 {
-  < tIDENTIFICADOR >
- [ 
-	   asignacion()
-	 | invocacion_accion()
- ]
-| mientras_que()
-| leer() ";"
-| escribir() ";"
-| seleccion()
+  try { 
+	  < tIDENTIFICADOR >
+	 [ 
+		   asignacion()
+		 | invocacion_accion()
+	 ]
+	| mientras_que()
+	| leer() ";"
+	| escribir() ";"
+	| seleccion()
+  }
+  catch (Exception e)
+  {
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
+	System.out.println(e.getMessage());     
+  }
 }
 
-
+/* asignacion ::= < tOPAS > expresion ";" */
 void asignacion() : 
 {}
 {
+  try { 
      < tOPAS > expresion() ";"
+  }
+  catch (Exception e)
+  {
+	    int linea = token.next.beginLine;
+	    int columna = token.next.beginColumn;
+	    String msg_error = token.next.image;
+	    System.out.println("ERROR SINTACTICO?? (<" + linea + ", " + columna + ">): <" + msg_error + ">");
+	    System.out.println(e.getMessage());
+	    
+  }
 }
 
+/* invocacion_accion ::= argumentos ";" */
 void invocacion_accion() :
 {}
 {
+  try { 
 	 argumentos() ";"
+  }
+  catch (Exception e)
+  {
+	    int linea = token.next.beginLine;
+	    int columna = token.next.beginColumn;
+	    String msg_error = token.next.image;
+	    System.out.println("ERROR SINTACTICO?? (<" + linea + ", " + columna + ">): <" + msg_error + ">");
+	    System.out.println(e.getMessage());
+	    
+  }
 }
 
+/* mientras_que ::= < tMQ > expresion lista_sentencias < tFMQ > */
 void mientras_que() :
 {}
 {
-   <tMQ> expresion() lista_sentencias() <tFMQ>
+  try { 
+   < tMQ > expresion() lista_sentencias() < tFMQ >
+  }
+  catch (Exception e)
+  {
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
+	System.out.println(e.getMessage());    
+  }
 }
 
+/* seleccion ::= < tSI > expresion < tENT > lista_sentencias ( < tSI_NO > lista_sentencias )* < tFSI > */
 void seleccion() :
 {}
 {
+  try { 
 	< tSI > expresion() < tENT > lista_sentencias() (< tSI_NO > lista_sentencias())*< tFSI >
+  }
+  catch (Exception e)
+  {
+	    int linea = token.next.beginLine;
+	    int columna = token.next.beginColumn;
+	    String msg_error = token.next.image;
+	    System.out.println("ERROR SINTACTICO?? (<" + linea + ", " + columna + ">): <" + msg_error + ">");
+	    System.out.println(e.getMessage());
+	    
+  }
 }
+
+/* leer ::= < tLEER > "(" lista_asinables ")" */
 void leer() :
 {}
 {
+  try { 
    <tLEER> "(" lista_asignables() ")"
+  }
+  catch (Exception e)
+  {
+	    int linea = token.next.beginLine;
+	    int columna = token.next.beginColumn;
+	    String msg_error = token.next.image;
+	    System.out.println("ERROR SINTACTICO?? (<" + linea + ", " + columna + ">): <" + msg_error + ">");
+	    System.out.println(e.getMessage());
+	    
+  }
 }
 
+/* escribir ::= < tESCRIBIR > "(" lista_escribibles ")" */
 void escribir() :
 {}
 {
+  try { 
    <tESCRIBIR> "(" lista_escribibles() ")"
+  }
+  catch (Exception e)
+  {
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
+	System.out.println(e.getMessage());     
+  }
 }
 
-
-
+/* lista_asinables ::= identificadores */
 void lista_asignables() :
 {}
 {
-  identificadores()
+  try { 
+  	identificadores()
+  }
+  catch (Exception e)
+  {
+	    int linea = token.next.beginLine;
+	    int columna = token.next.beginColumn;
+	    String msg_error = token.next.image;
+	    System.out.println("ERROR SINTACTICO?? (<" + linea + ", " + columna + ">): <" + msg_error + ">");
+	    System.out.println(e.getMessage());
+	    
+  }
 }
 
-void lista_escribibles() :
+/* lista_escribibles ::= (< tCONSTCAD > | < tCONSTCHAR >) ( "," (< tIDENTIFICADOR >  |  < tENTACAR > "(" expresion ")" ) )* */
+void lista_escribibles() : 
 {}
 {
+  try { 
   (< tCONSTCAD > | < tCONSTCHAR >) ( "," (< tIDENTIFICADOR >  |  < tENTACAR > "(" expresion() ")" ) )*
+  }
+  catch (Exception e) {
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
+	System.out.println(e.getMessage());     
+  }
 }
 
 
 
-
-
-
+/* argumentos ::= ( "(" lista_expresiones ")" )? */
 void argumentos() : 
 {}
 {
-    ( "(" (lista_expresiones())? ")")?
+  try { 
+    ( "(" lista_expresiones() ")")?
+  }
+  catch (Exception e)
+  {
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
+	System.out.println(e.getMessage());    
+  }
 }
 
+/* lista_expresiones ::= expresion ( "," expresion)* */
 void lista_expresiones() : 
 {}
 {
+  try { 
     expresion() ( "," expresion())*
-   
+  }
+  catch (Exception e)
+  {
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
+	System.out.println(e.getMessage());     
+  }
 }
 
+/* expresion ::= expresion_simple | (operador_relacional expresion_simple)* */
 void expresion() : 
 {}
 {
-	termino() ( operador_aditivo() termino())*
+  try { 
+	expresion_simple()
+	| (operador_relacional() expresion_simple())*
+  }
+  catch (Exception e)
+  {
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
+	System.out.println(e.getMessage());       
+  }
 }
 
+/* expresion_simple ::= termino (operador_aditivo termino)* */
 void expresion_simple() : 
 {}
 {
-	factor()   
+  try { 
+	termino() ( operador_aditivo() termino())*
+  }
+  catch (Exception e)
+  {
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
+	System.out.println(e.getMessage());      
+  }
 }
+
 
 void operador_relacional() : 
 {}
 {
+  try { 
     	< tMAYOR >
   | 	< tMENOR >
   | 	< tIGUAL >
   | 	< tMAI >
   | 	< tMEI  >
   | 	< tNI >
+  }
+  catch (Exception e)
+  {
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
+	System.out.println(e.getMessage());      
+  }
 }
+
 
 void operador_aditivo() : 
 {}
 {
+  try { 
     "+" | "-" | < tOR >
+  }
+  catch (Exception e)
+  {
+	    int linea = token.next.beginLine;
+	    int columna = token.next.beginColumn;
+	    String msg_error = token.next.image;
+	    System.out.println("ERROR SINTACTICO?? (<" + linea + ", " + columna + ">): <" + msg_error + ">");
+	    System.out.println(e.getMessage());
+	    
+  }
 }
 
 void operador_multiplicativo() : 
 {}
 {
-    "*" | < tDIV > |  < tMOD > | < tAND > 
+  try { 
+    "*" | < tDIV > |  < tMOD > | < tAND >
+  }
+  catch (Exception e)
+  {
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
+	System.out.println(e.getMessage());      
+  }
 }
 
+/* termino ::= factor (operador multiplicativo factor)* */
 void termino() : 
 {}
 {
-    factor() ( ( operador_multiplicativo() | operador_relacional() ) factor())*
+  try { 
+    factor() (operador_multiplicativo()  factor())*
+  }
+  catch (Exception e)
+  {
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
+	System.out.println(e.getMessage());   
+  }
 }
+
 
 void factor() : 
 {}
 {
+  try { 
     "-" factor()
  |  < tNOT > factor()
  |  "(" expresion() ")"
@@ -369,4 +675,13 @@ void factor() :
  |  < tCONSTENTERA >
  |  < tTRUE >
  |  < tFALSE >
+  }
+  catch (Exception e)
+  {
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
+	System.out.println(e.getMessage());   
+  }
 }
+
+
+
