@@ -71,6 +71,7 @@ public class miniLeng
 
 		tabla.eliminar_variables(1);
 		tabla.eliminar_programa();
+		
 
 
 		int x = 3+2;
