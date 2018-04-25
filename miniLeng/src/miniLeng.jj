@@ -9,17 +9,21 @@ options
 PARSER_BEGIN(miniLeng)
 
 import java.io.*;
+import miniLeng.Simbolo;
+import miniLeng.Tabla_simbolos;
 
 public class miniLeng
 {
   
   public static void main(String args []) throws ParseException
   {
-    BufferedReader new_buffer = new BufferedReader(new InputStreamReader(System.in));
+    /*
+      BufferedReader new_buffer = new BufferedReader(new InputStreamReader(System.in));
 	  String file;
 	  miniLeng parser;
+	  
 	  System.out.println("Ruta y nombre del fichero:");
-	  /*
+	  
 	  try
 	  {
 	    file=new_buffer.readLine();
@@ -27,7 +31,7 @@ public class miniLeng
 	    System.out.println("Error al leer la cadena");
 	    return;
 	  }
-	 */
+	 
 	  file = "/Users/heru/Documents/GitHub/programas/pruebas.ml";
 
 	  System.out.println(file);
@@ -50,6 +54,27 @@ public class miniLeng
 	    System.out.println("Oops.");
 	    System.out.println(e.getMessage());
 	  }
+	  */
+
+		Tabla_simbolos tabla = new Tabla_simbolos();
+		tabla.inicializar_tabla();
+
+		tabla.introducir_programa("pepe", 0);
+
+		Simbolo esta = tabla.buscar_simbolo("pepe");
+
+		Simbolo esta2 = tabla.buscar_simbolo("pepa");
+
+		Simbolo s1 = tabla.introducir_variable("a",Simbolo.TipoVariable.ENTERO, 0, 0);
+		Simbolo s2 = tabla.introducir_variable("a",Simbolo.TipoVariable.ENTERO, 1, 0);
+		Simbolo s3 = tabla.introducir_variable("a",Simbolo.TipoVariable.ENTERO, 0, 0);
+
+		tabla.eliminar_variables(1);
+		tabla.eliminar_programa();
+
+
+		int x = 3+2;
+		
   }
   /********** Tratamiento Errores **********************/
   public static void tratarErrorSintactico(int line, int column, String msg_error) {
@@ -171,14 +196,6 @@ void declaracion_variables() :
   }
   catch (Exception e)
   {
-    /*
-	    int linea = token.next.beginLine;
-	    int columna = token.next.beginColumn;
-	    String msg_error = token.next.image;
-	    System.out.println("ERROR SINTACTICO?? (<" + linea + ", " + columna + ">): <" + msg_error + ">");
-	    System.out.println(e.getMessage());
-	*/
-
 	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
 	System.out.println(e.getMessage());      
   }

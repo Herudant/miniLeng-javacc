@@ -4,7 +4,9 @@ import java.util.ArrayList;
 
 public class Simbolo {
 
-	/* Atributos de la clase Simbolo */
+	/*************************************************************************/
+	/****************************** Atributos ********************************/
+	/*************************************************************************/
 	TipoSimbolo 			tipo;
 	TipoVariable 		variable;
 	ClaseParametro		parametro;
@@ -12,24 +14,32 @@ public class Simbolo {
 	String				nombre;
 	int					nivel;
 	boolean 				visible;
-	long 				dir;
+	int 				dir;	
 	
-	
-	/* Constructores de la clase Simbolo */
+	/*************************************************************************/
+	/**************************** Constructores ******************************/
+	/*************************************************************************/
 	public Simbolo() {}
-	public Simbolo(TipoSimbolo tipo, TipoVariable variable, ClaseParametro parametro,
-					String nombre, int nivel, boolean visible, long dir) {
+	public Simbolo (TipoSimbolo tipo, 
+			 		TipoVariable variable, 
+			 		ClaseParametro parametro,
+					String nombre, 
+					int nivel, 
+					int dir) 
+	{
 		this.tipo = tipo;
 		this.variable = variable;
 		this.parametro = parametro;
 		this.nombre = nombre;
 		this.nivel = nivel;
-		this.visible = visible;
+		this.visible = true;
 		this.dir = dir;
 		this.lista_parametros = new ArrayList<Simbolo>();
 	}
 	
-	/* Getters y setters */
+	/*************************************************************************/
+	/************************** Getters y Setters ****************************/
+	/*************************************************************************/
 	public TipoSimbolo getTipo() {
 		return tipo;
 	}
@@ -66,25 +76,25 @@ public class Simbolo {
 	public void setNivel(int nivel) {
 		this.nivel = nivel;
 	}
-	public boolean isVisible() {
+	public boolean esVisible() {
 		return visible;
 	}
 	public void setVisible(boolean visible) {
 		this.visible = visible;
 	}
-	public long getDir() {
+	public int getDir() {
 		return dir;
 	}
-	public void setDir(long dir) {
+	public void setDir(int dir) {
 		this.dir = dir;
 	}
-
 	
-	/* Tipos enumerdado para atributos */
+	/*************************************************************************/
+	/********************** Enumerados para atributos ************************/
+	/*************************************************************************/
 	public enum TipoSimbolo {
 	    PROGRAMA, VARIABLE, ACCION, PARAMETRO
 	}
-	
 	public enum TipoVariable {
 	    DESCONOCIDO, ENTERO, BOOLEANO, CHAR, CADENA
 	}
@@ -92,14 +102,19 @@ public class Simbolo {
 	    VAL, REF
 	}
 	
-	/************** Funciones publicas **************/
-	public void introducir_parametro(String nombre, TipoVariable tipo_var, ClaseParametro param, int nivel) {
+	/*************************************************************************/
+	/************************* Funciones publicas ****************************/
+	/*************************************************************************/
+	public void introducir_parametro(String nombre, 
+									TipoVariable tipo_var, 
+									ClaseParametro param, 
+									int nivel) 
+	{
 		this.nombre = nombre;
 		this.variable = tipo_var;
 		this.parametro = param;
 		this.nivel = nivel;
 	}
-	
 	public boolean esVariable() {
 		return this.tipo == TipoSimbolo.VARIABLE;
 	}
@@ -115,4 +130,8 @@ public class Simbolo {
 	public boolean esReferencia() {
 		return this.parametro == ClaseParametro.REF;
 	}
+	public boolean esPrograma() {
+		return this.tipo == TipoSimbolo.PROGRAMA;
+	}
+	/*************************************************************************/
 }
