@@ -1,10 +1,9 @@
 package miniLeng;
 
-import java.util.List;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Random;
-import java.util.Vector;
+import java.util.concurrent.ThreadLocalRandom;
 
 import miniLeng.Simbolo.ClaseParametro;
 import miniLeng.Simbolo.TipoSimbolo;
@@ -13,38 +12,39 @@ import miniLeng.Simbolo.TipoVariable;
 public class Tabla_simbolos {
 	
 	private final static int TABLE_SIZE = 31;  // Mayor número primo que 2^5
-
+	private int T[];
+	
 	ArrayList<LinkedList<Simbolo>> table;
 	
 	
+	/*************************************************************************/
+	/************************* Funciones privadas ****************************/
+	/*************************************************************************/	
 	
-	
-	/* Funcion de hash de Pearson */
+	/* Funcion de hash de Pearson, utiliza una tabla auxiliar con los indices
+	 * ordenados aleatoriamente. */
 	private int hash_function(String s) {
-
-	   int T[] = {
-			   
-		      // 0-30 shuffled in any (random) order suffices
-			   0, 1, 2, 3, 4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31
-	
-
-		};
-		   
 		int h = 0;
 		for (int i = 0; i < s.length() ; i++) {
 			h = T[(h ^ s.charAt(i)) % 31];
 		}
-		
 		return h;
 	}
 	
+	/* Mezcla un array de manera aleatoria */
+	private static void shuffleArray(int[] ar)
+	  {
+	    Random rnd = ThreadLocalRandom.current();
+	    for (int i = ar.length - 1; i > 0; i--)
+	    {
+	      int index = rnd.nextInt(i + 1);
+	      int a = ar[index];
+	      ar[index] = ar[i];
+	      ar[i] = a;
+	    }
+	  }
 	
-	
-	/*************************************************************************/
-	/************************* Funciones publicas ****************************/
-	/*************************************************************************/
-	
-	
+	/* Añade un simbolo en la tabla de simbolos */
 	private void addLinkedList(String nombre, Simbolo s) {
 		int h = hash_function(nombre);
 		LinkedList<Simbolo> lista = table.get(h);
@@ -56,18 +56,35 @@ public class Tabla_simbolos {
 		else {
 			lista.add(s);
 		}
-		
-		
 	}
+	
+	/*************************************************************************/
+	/************************* Funciones publicas ****************************/
+	/*************************************************************************/
+
+	/* Constructor de la clase */
+	public Tabla_simbolos() {
+		this.table = new ArrayList<LinkedList<Simbolo>>(TABLE_SIZE);
+		this.T = new int[TABLE_SIZE];
+		for (int i = 0; i < TABLE_SIZE; i++) {
+			this.table.add(new LinkedList<Simbolo>());
+			T[i] = i;
+		}
+		shuffleArray(T);
+	}
+	
 	/***************	*******************************************************
 	** Crea una tabla de símbolos vacía.  Este procedimiento debe invocarse 
 	** antes de hacer ninguna operación con la tabla de símbolos.
 	**********************************************************************/
 	public void inicializar_tabla(){
 		this.table = new ArrayList<LinkedList<Simbolo>>(TABLE_SIZE);
+		this.T = new int[TABLE_SIZE];
 		for (int i = 0; i < TABLE_SIZE; i++) {
 			this.table.add(new LinkedList<Simbolo>());
+			T[i] = i;
 		}
+		shuffleArray(T);
 	}
 
 	
@@ -93,7 +110,7 @@ public class Tabla_simbolos {
 		return ret;
 	}
 
-	/* Busca el simbolo por nivel */
+	/* Busca el simbolo que coincida con el nombre y nivel de los parámetros */
 	public Simbolo buscar_simbolo(String nombre, int nivel)   {  //throws SimboloNoEncontradoException
 		Simbolo ret = null;
 		int h = hash_function(nombre);

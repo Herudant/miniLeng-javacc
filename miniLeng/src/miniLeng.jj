@@ -12,18 +12,26 @@ import java.io.*;
 import miniLeng.Simbolo;
 import miniLeng.Tabla_simbolos;
 
+
+
+
 public class miniLeng
 {
   
+  static Tabla_simbolos tabla;
+
+  static int nivel;
+static int dir;
   public static void main(String args []) throws ParseException
   {
-    /*
+    
       BufferedReader new_buffer = new BufferedReader(new InputStreamReader(System.in));
 	  String file;
 	  miniLeng parser;
+	  dir = 0;
 	  
 	  System.out.println("Ruta y nombre del fichero:");
-	  
+	 /* 
 	  try
 	  {
 	    file=new_buffer.readLine();
@@ -31,10 +39,10 @@ public class miniLeng
 	    System.out.println("Error al leer la cadena");
 	    return;
 	  }
-	 
-	  file = "/Users/heru/Documents/GitHub/programas/pruebas.ml";
-
+	  */
+	  file = "/Users/heru/git/miniLeng-javacc/miniLeng/src/pruebas.txt";
 	  System.out.println(file);
+	  
 	  try {
 	    parser = new miniLeng(new FileInputStream(file));
 	  }
@@ -42,9 +50,11 @@ public class miniLeng
 	    System.out.println("Fallo al leer el fichero");
 	    return;
 	  }
-	  
+
+	  parser.tabla = new Tabla_simbolos();
+	  parser.tabla.inicializar_tabla();
 	  try {
-	    parser.programa();
+	    parser.programa_completo();
 	  }
 	  catch (Error e) {
 	    	int linea = token.beginLine;
@@ -54,10 +64,10 @@ public class miniLeng
 	    System.out.println("Oops.");
 	    System.out.println(e.getMessage());
 	  }
-	  */
+	 /* 
 
 		Tabla_simbolos tabla = new Tabla_simbolos();
-		tabla.inicializar_tabla();
+		//tabla.inicializar_tabla();
 
 		tabla.introducir_programa("pepe", 0);
 
@@ -68,97 +78,29 @@ public class miniLeng
 		Simbolo s1 = tabla.introducir_variable("a",Simbolo.TipoVariable.ENTERO, 0, 0);
 		Simbolo s2 = tabla.introducir_variable("a",Simbolo.TipoVariable.ENTERO, 1, 0);
 		Simbolo s3 = tabla.introducir_variable("a",Simbolo.TipoVariable.ENTERO, 0, 0);
-
+		Simbolo s4 = tabla.introducir_variable("b",Simbolo.TipoVariable.ENTERO, 0, 0);
+		
 		tabla.eliminar_variables(1);
+		tabla.eliminar_variables(0);
 		tabla.eliminar_programa();
 		
 
 
 		int x = 3+2;
-		
+	*/
   }
   /********** Tratamiento Errores **********************/
   public static void tratarErrorSintactico(int line, int column, String msg_error) {
-	System.out.println("ERROR SINTACTICO?? (<" + line + ", " + column + ">): <" + msg_error + ">");
+	System.out.println("ERROR SINTACTICO (<" + line + ", " + column + ">): Simbolo encontrado \"" + msg_error + "\"");
   }
-
+  public static void errorSemantico(String msg_error) {
+	System.out.println(msg_error);
+  }
 
 }
 
   
 PARSER_END(miniLeng)
-
-SKIP :
-{
-  " "
-| "\r"
-| "\t"
-| "\n"
-| "%" : COMMENT 
-}
-
-< COMMENT > SKIP :
-{
-  "\n" : DEFAULT
-}
-
-<COMMENT> MORE : {
-	<~[]>
-}
-
-TOKEN : /*  Reservadas */
-{
-	< tPROGRAMA : "programa" > { System.out.println("tPROGRAMA reconocido"); }
-| 	< tVAR : "var" >
-| 	< tAND: "and" >
-| 	< tOR: "or" >
-| 	< tNOT: "not" >
-| 	< tPRINCIPIO : "principio" > { System.out.println("Principio reconocido"); } 
-| 	< tFIN: "fin" > { System.out.println("Fin reconocido"); }
-| 	< tSI: "si" >
-| 	< tENT: "ent" >
-| 	< tSI_NO : "si_no" >
-| 	< tFSI: "fsi" >
-| 	< tMQ: "mq" >
-| 	< tFMQ: "fmq" >
-| 	< tESCRIBIR : "escribir" >
-| 	< tLEER: "leer" >
-| 	< tMOD: "mod" >
-| 	< tDIV: "div" >
-| 	< tENTERO: "entero" >
-| 	< tBOOLEANO: "booleano" >
-| 	< tCARACTER : "caracter" >
-| 	< tTRUE: "true" >
-| 	< tFALSE: "false" >
-| 	< tENTACAR: "entacar" >
-| 	< tCARAENT: "caraent" >
-| 	< tACCION: "accion" >
-| 	< tVAL : "val" >
-| 	< tREF: "ref" >
-| 	< tMAYOR: ">" >
-| 	< tMENOR: "<" >
-| 	< tIGUAL: "=" >
-| 	< tMAI: ">=" >
-| 	< tMEI : "<=" >
-| 	< tNI: "<>" >
-| 	< tOPAS: ":=" >
-}
-
-TOKEN :   /* Digits */
-{
-  < tCONSTENTERA : (< DIGIT >)+ >
-| < tREAL : (< DIGIT >)+ "." (< DIGIT >)+ >
-| < #DIGIT : [ "0"-"9" ] >
-}
-
-
-TOKEN : {
- < tIDENTIFICADOR: <LETTER> ((<LETTER> | <DIGIT>)* (["A"-"Z","a"-"z","0"-"9"]) )? >
-| < #LETTER: ["A"-"Z","_","a"-"z"] >
-| < tCONSTCHAR : "\'"  (~["\'","\\","\n","\r"] |  "\\" ["n","t","b","r","f","\\","\'","\""])*  "\'" >
-| < tCONSTCAD  : "\""  (~["\'","\\","\n","\r"] |  "\\" ["n","t","b","r","f","\\","\'","\""])*  "\"" >
-}
-
 
 
 void programa_completo():
@@ -173,10 +115,14 @@ void programa_completo():
 					declaracion_acciones
 					bloque_sentencias             */
 void programa() : 
-{}
+{ Token t1, t2 = null; }
 {
   try { 
-	<tPROGRAMA> <tIDENTIFICADOR> ";"
+	<tPROGRAMA> t1 = <tIDENTIFICADOR> ";"
+	{
+	  tabla.introducir_programa(t1.image, 0);
+	  nivel = 0;
+	}
 	declaracion_variables() declaracion_acciones()
 	bloque_sentencias()
   }
@@ -205,10 +151,10 @@ void declaracion_variables() :
 
 /* declaracion ::= tipo_variables identificadores */
 void declaracion() : 
-{}
+{Simbolo.TipoVariable tipoVar;}
 {
   try { 
-    tipo_variables() identificadores()
+    tipoVar = tipo_variables() identificadores(tipoVar)
   }
   catch (Exception e)
   {
@@ -218,13 +164,13 @@ void declaracion() :
 }
 
 /* tipo_variables ::= < tENTERO > | < tCARACTER > | < tBOOLEANO > */
-void tipo_variables() : 
+Simbolo.TipoVariable tipo_variables() : 
 {}
 {
   try { 
-    < tENTERO >
-|   < tCARACTER >
-|   < tBOOLEANO >
+    < tENTERO >    { return Simbolo.TipoVariable.ENTERO; }
+|   < tCARACTER >  { return Simbolo.TipoVariable.ENTERO; }
+|   < tBOOLEANO >  { return Simbolo.TipoVariable.ENTERO; }
   }
   catch (Exception e)
   {
@@ -235,11 +181,18 @@ void tipo_variables() :
 
 
 /* identificadores ::= < tIDENTIFICADOR > ( "," < tIDENTIFICADOR >)* */
-void identificadores() : 
-{}
+void identificadores(Simbolo.TipoVariable tipoVar) : 
+{ Token t1,t2; }
 {
   try { 
-    < tIDENTIFICADOR > ( "," < tIDENTIFICADOR> )*
+    t1 = < tIDENTIFICADOR >
+	{
+		if ( tabla.buscar_simbolo(t1.image) != null) 
+		    miniLeng.errorSemantico("Identificador duplicado");
+		else 
+			tabla.introducir_variable(t1.image, tipoVar, nivel, dir);
+	}
+     ( "," < tIDENTIFICADOR> )*
   }
   catch (Exception e)
   {
@@ -282,12 +235,8 @@ void declaracion_accion() :
   }
   catch (Exception e)
   {
-	    int linea = token.next.beginLine;
-	    int columna = token.next.beginColumn;
-	    String msg_error = token.next.image;
-	    System.out.println("ERROR SINTACTICO?? (<" + linea + ", " + columna + ">): <" + msg_error + ">");
-	    System.out.println(e.getMessage());
-	    
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
+	System.out.println(e.getMessage());  
   }
 }
 
@@ -314,21 +263,17 @@ void parametros_formales() :
   }
   catch (Exception e)
   {
-	    int linea = token.next.beginLine;
-	    int columna = token.next.beginColumn;
-	    String msg_error = token.next.image;
-	    System.out.println("ERROR SINTACTICO?? (<" + linea + ", " + columna + ">): <" + msg_error + ">");
-	    System.out.println(e.getMessage());
-	    
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
+	System.out.println(e.getMessage());  
   }
 }
 
 /* lista_parametros ::= identificadores (";" paraemtros)? */
-void lista_parametros() : 
+void lista_parametros(Simbolo.TipoVariable tipoVar) : 
 {}
 {
   try { 
-    identificadores() ( ";" parametros())?
+    identificadores(tipoVar) ( ";" parametros())?
   }
   catch (Exception e)
   {
@@ -339,10 +284,10 @@ void lista_parametros() :
 
 /* parametros ::= clase_parametros tipo_variables lista_parametros */
 void parametros() : 
-{}
+{ Simbolo.TipoVariable tipoVar; }
 {
   try { 
-    clase_parametros() tipo_variables() lista_parametros()
+    clase_parametros() tipoVar = tipo_variables() lista_parametros(tipoVar)
   }
   catch (Exception e)
   {
@@ -432,12 +377,8 @@ void asignacion() :
   }
   catch (Exception e)
   {
-	    int linea = token.next.beginLine;
-	    int columna = token.next.beginColumn;
-	    String msg_error = token.next.image;
-	    System.out.println("ERROR SINTACTICO?? (<" + linea + ", " + columna + ">): <" + msg_error + ">");
-	    System.out.println(e.getMessage());
-	    
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
+	System.out.println(e.getMessage());  
   }
 }
 
@@ -450,12 +391,8 @@ void invocacion_accion() :
   }
   catch (Exception e)
   {
-	    int linea = token.next.beginLine;
-	    int columna = token.next.beginColumn;
-	    String msg_error = token.next.image;
-	    System.out.println("ERROR SINTACTICO?? (<" + linea + ", " + columna + ">): <" + msg_error + ">");
-	    System.out.println(e.getMessage());
-	    
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
+	System.out.println(e.getMessage());      
   }
 }
 
@@ -482,12 +419,8 @@ void seleccion() :
   }
   catch (Exception e)
   {
-	    int linea = token.next.beginLine;
-	    int columna = token.next.beginColumn;
-	    String msg_error = token.next.image;
-	    System.out.println("ERROR SINTACTICO?? (<" + linea + ", " + columna + ">): <" + msg_error + ">");
-	    System.out.println(e.getMessage());
-	    
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
+	System.out.println(e.getMessage()); 
   }
 }
 
@@ -500,12 +433,8 @@ void leer() :
   }
   catch (Exception e)
   {
-	    int linea = token.next.beginLine;
-	    int columna = token.next.beginColumn;
-	    String msg_error = token.next.image;
-	    System.out.println("ERROR SINTACTICO?? (<" + linea + ", " + columna + ">): <" + msg_error + ">");
-	    System.out.println(e.getMessage());
-	    
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
+	System.out.println(e.getMessage());    
   }
 }
 
@@ -528,16 +457,12 @@ void lista_asignables() :
 {}
 {
   try { 
-  	identificadores()
+  	< tIDENTIFICADOR> ( "," < tIDENTIFICADOR> )*
   }
   catch (Exception e)
   {
-	    int linea = token.next.beginLine;
-	    int columna = token.next.beginColumn;
-	    String msg_error = token.next.image;
-	    System.out.println("ERROR SINTACTICO?? (<" + linea + ", " + columna + ">): <" + msg_error + ">");
-	    System.out.println(e.getMessage());
-	    
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
+	System.out.println(e.getMessage());      
   }
 }
 
@@ -590,7 +515,7 @@ void expresion() :
 {
   try { 
 	expresion_simple()
-	| (operador_relacional() expresion_simple())*
+	 (operador_relacional() expresion_simple())*
   }
   catch (Exception e)
   {
@@ -641,12 +566,8 @@ void operador_aditivo() :
   }
   catch (Exception e)
   {
-	    int linea = token.next.beginLine;
-	    int columna = token.next.beginColumn;
-	    String msg_error = token.next.image;
-	    System.out.println("ERROR SINTACTICO?? (<" + linea + ", " + columna + ">): <" + msg_error + ">");
-	    System.out.println(e.getMessage());
-	    
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
+	System.out.println(e.getMessage());     
   }
 }
 
@@ -701,5 +622,76 @@ void factor() :
   }
 }
 
+
+SKIP :
+{
+  " "
+| "\r"
+| "\t"
+| "\n"
+| "%" : COMMENT 
+}
+
+< COMMENT > SKIP :
+{
+  "\n" : DEFAULT
+}
+
+<COMMENT> MORE : {
+	<~[]>
+}
+
+TOKEN : /*  Reservadas */
+{
+	< tPROGRAMA : "programa" > { System.out.println("tPROGRAMA reconocido"); }
+| 	< tVAR : "var" >
+| 	< tAND: "and" >
+| 	< tOR: "or" >
+| 	< tNOT: "not" >
+| 	< tPRINCIPIO : "principio" > { System.out.println("Principio reconocido"); } 
+| 	< tFIN: "fin" > { System.out.println("Fin reconocido"); }
+| 	< tSI: "si" >
+| 	< tENT: "ent" >
+| 	< tSI_NO : "si_no" >
+| 	< tFSI: "fsi" >
+| 	< tMQ: "mq" >
+| 	< tFMQ: "fmq" >
+| 	< tESCRIBIR : "escribir" >
+| 	< tLEER: "leer" >
+| 	< tMOD: "mod" >
+| 	< tDIV: "div" >
+| 	< tENTERO: "entero" >
+| 	< tBOOLEANO: "booleano" >
+| 	< tCARACTER : "caracter" >
+| 	< tTRUE: "true" >
+| 	< tFALSE: "false" >
+| 	< tENTACAR: "entacar" >
+| 	< tCARAENT: "caraent" >
+| 	< tACCION: "accion" >
+| 	< tVAL : "val" >
+| 	< tREF: "ref" >
+| 	< tMAYOR: ">" >
+| 	< tMENOR: "<" >
+| 	< tIGUAL: "=" >
+| 	< tMAI: ">=" >
+| 	< tMEI : "<=" >
+| 	< tNI: "<>" >
+| 	< tOPAS: ":=" >
+}
+
+TOKEN :   /* Digits */
+{
+  < tCONSTENTERA : (< DIGIT >)+ >
+| < tREAL : (< DIGIT >)+ "." (< DIGIT >)+ >
+| < #DIGIT : [ "0"-"9" ] >
+}
+
+
+TOKEN : {
+ < tIDENTIFICADOR: <LETTER> ((<LETTER> | <DIGIT>)* (["A"-"Z","a"-"z","0"-"9"]) )? >
+| < #LETTER: ["A"-"Z","_","a"-"z"] >
+| < tCONSTCHAR : "\'"  (~["\'","\\","\n","\r"] |  "\\" ["n","t","b","r","f","\\","\'","\""])*  "\'" >
+| < tCONSTCAD  : "\""  (~["\'","\\","\n","\r"] |  "\\" ["n","t","b","r","f","\\","\'","\""])*  "\"" >
+}
 
 
