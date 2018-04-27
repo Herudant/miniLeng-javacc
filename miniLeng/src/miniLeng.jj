@@ -11,6 +11,7 @@ PARSER_BEGIN(miniLeng)
 import java.io.*;
 import miniLeng.Simbolo;
 import miniLeng.Tabla_simbolos;
+import miniLeng.Globals;
 
 
 
@@ -19,16 +20,13 @@ public class miniLeng
 {
   
   static Tabla_simbolos tabla;
-
-  static int nivel;
-static int dir;
   public static void main(String args []) throws ParseException
   {
     
       BufferedReader new_buffer = new BufferedReader(new InputStreamReader(System.in));
 	  String file;
 	  miniLeng parser;
-	  dir = 0;
+	  Globals variables = new Globals();
 	  
 	  System.out.println("Ruta y nombre del fichero:");
 	 /* 
@@ -51,10 +49,9 @@ static int dir;
 	    return;
 	  }
 
-	  parser.tabla = new Tabla_simbolos();
-	  parser.tabla.inicializar_tabla();
+	  //tabla.inicializar_tabla();
 	  try {
-	    parser.programa_completo();
+	    parser.programa_completo(variables);
 	  }
 	  catch (Error e) {
 	    	int linea = token.beginLine;
@@ -64,21 +61,23 @@ static int dir;
 	    System.out.println("Oops.");
 	    System.out.println(e.getMessage());
 	  }
+
+	  int x = 3+2;
 	 /* 
 
-		Tabla_simbolos tabla = new Tabla_simbolos();
+		Tabla_simbolos t = new g.t_simbolos();
 		//tabla.inicializar_tabla();
 
 		tabla.introducir_programa("pepe", 0);
 
-		Simbolo esta = tabla.buscar_simbolo("pepe");
+		Simbolo esta = g.t.buscar_simbolo("pepe");
 
-		Simbolo esta2 = tabla.buscar_simbolo("pepa");
+		Simbolo esta2 = g.t.buscar_simbolo("pepa");
 
-		Simbolo s1 = tabla.introducir_variable("a",Simbolo.TipoVariable.ENTERO, 0, 0);
-		Simbolo s2 = tabla.introducir_variable("a",Simbolo.TipoVariable.ENTERO, 1, 0);
-		Simbolo s3 = tabla.introducir_variable("a",Simbolo.TipoVariable.ENTERO, 0, 0);
-		Simbolo s4 = tabla.introducir_variable("b",Simbolo.TipoVariable.ENTERO, 0, 0);
+		Simbolo s1 = g.t.introducir_variable("a",Simbolo.TipoVariable.ENTERO, 0, 0);
+		Simbolo s2 = g.t.introducir_variable("a",Simbolo.TipoVariable.ENTERO, 1, 0);
+		Simbolo s3 = g.t.introducir_variable("a",Simbolo.TipoVariable.ENTERO, 0, 0);
+		Simbolo s4 = g.t.introducir_variable("b",Simbolo.TipoVariable.ENTERO, 0, 0);
 		
 		tabla.eliminar_variables(1);
 		tabla.eliminar_variables(0);
@@ -103,10 +102,10 @@ static int dir;
 PARSER_END(miniLeng)
 
 
-void programa_completo():
+void programa_completo(Globals g):
 {}
 {
-  programa() < EOF >
+  programa(g) < EOF >
 }
 
 
@@ -114,17 +113,17 @@ void programa_completo():
 					declaracion_variables
 					declaracion_acciones
 					bloque_sentencias             */
-void programa() : 
+void programa(Globals g) : 
 { Token t1, t2 = null; }
 {
   try { 
 	<tPROGRAMA> t1 = <tIDENTIFICADOR> ";"
 	{
-	  tabla.introducir_programa(t1.image, 0);
-	  nivel = 0;
+	  //TODO: Comprobar que no existe otro programa
+	  g.t.introducir_programa(t1.image, 0);
 	}
-	declaracion_variables() declaracion_acciones()
-	bloque_sentencias()
+	declaracion_variables(g) declaracion_acciones(g)
+	bloque_sentencias(g)
   }
   catch (Exception e)
   {
@@ -135,11 +134,11 @@ void programa() :
 
 
 /* declaracion_variables ::= (declaracion ";")* */
-void declaracion_variables() : 
+void declaracion_variables(Globals g) : 
 {}
 {
   try { 
-    (declaracion() ";")*
+    (declaracion(g) ";")*
   }
   catch (Exception e)
   {
@@ -150,11 +149,11 @@ void declaracion_variables() :
 
 
 /* declaracion ::= tipo_variables identificadores */
-void declaracion() : 
+void declaracion(Globals g) : 
 {Simbolo.TipoVariable tipoVar;}
 {
   try { 
-    tipoVar = tipo_variables() identificadores(tipoVar)
+    tipoVar = tipo_variables(g) identificadores(g, tipoVar)
   }
   catch (Exception e)
   {
@@ -164,13 +163,13 @@ void declaracion() :
 }
 
 /* tipo_variables ::= < tENTERO > | < tCARACTER > | < tBOOLEANO > */
-Simbolo.TipoVariable tipo_variables() : 
+Simbolo.TipoVariable tipo_variables(Globals g) : 
 {}
 {
   try { 
     < tENTERO >    { return Simbolo.TipoVariable.ENTERO; }
-|   < tCARACTER >  { return Simbolo.TipoVariable.ENTERO; }
-|   < tBOOLEANO >  { return Simbolo.TipoVariable.ENTERO; }
+|   < tCARACTER >  { return Simbolo.TipoVariable.CARACTER; }
+|   < tBOOLEANO >  { return Simbolo.TipoVariable.BOOLEANO; }
   }
   catch (Exception e)
   {
@@ -181,16 +180,16 @@ Simbolo.TipoVariable tipo_variables() :
 
 
 /* identificadores ::= < tIDENTIFICADOR > ( "," < tIDENTIFICADOR >)* */
-void identificadores(Simbolo.TipoVariable tipoVar) : 
+void identificadores(Globals g, Simbolo.TipoVariable tipoVar) : 
 { Token t1,t2; }
 {
   try { 
     t1 = < tIDENTIFICADOR >
 	{
-		if ( tabla.buscar_simbolo(t1.image) != null) 
+		if ( g.t.buscar_simbolo(t1.image) != null) 
 		    miniLeng.errorSemantico("Identificador duplicado");
 		else 
-			tabla.introducir_variable(t1.image, tipoVar, nivel, dir);
+			g.t.introducir_variable(t1.image, tipoVar, g.nivel, g.dir);
 	}
      ( "," < tIDENTIFICADOR> )*
   }
@@ -206,11 +205,11 @@ void identificadores(Simbolo.TipoVariable tipoVar) :
 /* ******* Acciones *****/
 
 /* declaracion_acciones ::= (declaracion_accion)* */
-void declaracion_acciones() : 
+void declaracion_acciones(Globals g) : 
 {}
 {
   try { 
-    ( declaracion_accion() )*
+    ( declaracion_accion(g) )*
   }
   catch (Exception e)
   {
@@ -224,14 +223,21 @@ void declaracion_acciones() :
 							declaracion_variables
 							declarracion_acciones
 							bloque sentencias	*/
-void declaracion_accion() : 
+void declaracion_accion(Globals g) : 
 {}
 {
   try { 
-    cabecera_accion() ";"
-	declaracion_variables() 
-	declaracion_acciones() 
-	bloque_sentencias()
+    cabecera_accion(g) ";"
+	declaracion_variables(g) 
+	declaracion_acciones(g) 
+	bloque_sentencias(g)
+	{
+	  //Eliminamos variables del bloque y bajamos un nivel
+	  g.t.eliminar_varialbes(g.nivel);
+	  g.t.eliminar_acciones(g.nivel);
+	  g.t.eliminar_parametros_ocultos(g.nivel+1);
+	  g.nivel--;
+	}
   }
   catch (Exception e)
   {
@@ -240,12 +246,34 @@ void declaracion_accion() :
   }
 }
 
-/* cabecera_accion ::= < tACCION > < tIDENTIFICADOR > parametros_formales() */
-void cabecera_accion() : 
-{}
+/* cabecera_accion ::= < tACCION > < tIDENTIFICADOR > parametros_formales */
+void cabecera_accion(Globals g) : 
+{
+  Token t1;
+  Simbolo s;
+  boolean ok=false;
+  List<Simbolo> parametros;
+ }
 {
   try { 
-    < tACCION > < tIDENTIFICADOR > parametros_formales()
+    < tACCION >
+    t1 = < tIDENTIFICADOR >
+	{
+	  //Introduce en la tabla la accion
+		s = g.t.buscar_simbolo(t1.image, g.nivel);
+		if ( s==null ) {
+			// No existe el simbolo y lo añado
+			g.t.introducir_accion(t1.image,g.nivel,g.dir);
+			ok = true;
+		}
+		else {
+		  	// Existe el simbolo en el mismo nivel
+			miniLeng.errorSemantico("Identificador duplicado");
+		}
+		g.nivel++;
+	}
+
+   parametros_formales(g, ok)
   }
   catch (Exception e)
   {
@@ -255,11 +283,11 @@ void cabecera_accion() :
 }
 
 /* parametros_formales ::= ( "(" parametros ")")? */
-void parametros_formales() : 
+void parametros_formales(Globals g, booleano ok) : 
 {}
 {
   try { 
-	( "(" parametros() ")")?
+	( "(" parametros(g, ok) ")")?
   }
   catch (Exception e)
   {
@@ -269,11 +297,11 @@ void parametros_formales() :
 }
 
 /* lista_parametros ::= identificadores (";" paraemtros)? */
-void lista_parametros(Simbolo.TipoVariable tipoVar) : 
+void lista_parametros(Globals g, Simbolo.TipoVariable tipoVar) : 
 {}
 {
   try { 
-    identificadores(tipoVar) ( ";" parametros())?
+    identificadores(g, tipoVar) ( ";" parametros(g))?
   }
   catch (Exception e)
   {
@@ -283,11 +311,11 @@ void lista_parametros(Simbolo.TipoVariable tipoVar) :
 }
 
 /* parametros ::= clase_parametros tipo_variables lista_parametros */
-void parametros() : 
+void parametros(Globals g, booleano ok) : 
 { Simbolo.TipoVariable tipoVar; }
 {
   try { 
-    clase_parametros() tipoVar = tipo_variables() lista_parametros(tipoVar)
+    clase_parametros(g) tipoVar = tipo_variables(g) lista_parametros(g, tipoVar)
   }
   catch (Exception e)
   {
@@ -298,7 +326,7 @@ void parametros() :
 
 
 /* clase_parametros ::= < tVAL > | < tREF > */
-void clase_parametros() : 
+void clase_parametros(Globals g) : 
 {}
 {
   try { 
@@ -318,11 +346,11 @@ void clase_parametros() :
 
 
 /* bloque_sentencias ::= < tPRINCIPIO > lista_sentencias < tFIN > */
-void bloque_sentencias() : 
+void bloque_sentencias(Globals g) : 
 {}
 {
   try { 
-    < tPRINCIPIO > lista_sentencias() < tFIN >
+    < tPRINCIPIO > lista_sentencias(g) < tFIN >
   }
   catch (Exception e)
   {
@@ -333,11 +361,11 @@ void bloque_sentencias() :
 
 
 /* lista_sentencias ::= ( sentencia )* */
-void lista_sentencias() : 
+void lista_sentencias(Globals g) : 
 {}
 {
   try { 
-    ( sentencia() )*
+    ( sentencia(g) )*
   }
   catch (Exception e)
   {
@@ -347,19 +375,19 @@ void lista_sentencias() :
 }
 
 /* sentencia ::= asignacion | invoacion_accion | mientras_que | leer | escribir | selecion */
-void sentencia() : 
+void sentencia(Globals g) : 
 {}
 {
   try { 
 	  < tIDENTIFICADOR >
 	 [ 
-		   asignacion()
-		 | invocacion_accion()
+		   asignacion(g)
+		 | invocacion_accion(g)
 	 ]
-	| mientras_que()
-	| leer() ";"
-	| escribir() ";"
-	| seleccion()
+	| mientras_que(g)
+	| leer(g) ";"
+	| escribir(g) ";"
+	| seleccion(g)
   }
   catch (Exception e)
   {
@@ -369,11 +397,11 @@ void sentencia() :
 }
 
 /* asignacion ::= < tOPAS > expresion ";" */
-void asignacion() : 
+void asignacion(Globals g) : 
 {}
 {
   try { 
-     < tOPAS > expresion() ";"
+     < tOPAS > expresion(g) ";"
   }
   catch (Exception e)
   {
@@ -383,11 +411,11 @@ void asignacion() :
 }
 
 /* invocacion_accion ::= argumentos ";" */
-void invocacion_accion() :
+void invocacion_accion(Globals g) :
 {}
 {
   try { 
-	 argumentos() ";"
+	 argumentos(g) ";"
   }
   catch (Exception e)
   {
@@ -397,11 +425,11 @@ void invocacion_accion() :
 }
 
 /* mientras_que ::= < tMQ > expresion lista_sentencias < tFMQ > */
-void mientras_que() :
+void mientras_que(Globals g) :
 {}
 {
   try { 
-   < tMQ > expresion() lista_sentencias() < tFMQ >
+   < tMQ > expresion(g) lista_sentencias(g) < tFMQ >
   }
   catch (Exception e)
   {
@@ -411,11 +439,11 @@ void mientras_que() :
 }
 
 /* seleccion ::= < tSI > expresion < tENT > lista_sentencias ( < tSI_NO > lista_sentencias )* < tFSI > */
-void seleccion() :
+void seleccion(Globals g) :
 {}
 {
   try { 
-	< tSI > expresion() < tENT > lista_sentencias() (< tSI_NO > lista_sentencias())*< tFSI >
+	< tSI > expresion(g) < tENT > lista_sentencias(g) (< tSI_NO > lista_sentencias(g))*< tFSI >
   }
   catch (Exception e)
   {
@@ -425,11 +453,11 @@ void seleccion() :
 }
 
 /* leer ::= < tLEER > "(" lista_asinables ")" */
-void leer() :
+void leer(Globals g) :
 {}
 {
   try { 
-   <tLEER> "(" lista_asignables() ")"
+   <tLEER> "(" lista_asignables(g) ")"
   }
   catch (Exception e)
   {
@@ -439,11 +467,11 @@ void leer() :
 }
 
 /* escribir ::= < tESCRIBIR > "(" lista_escribibles ")" */
-void escribir() :
+void escribir(Globals g) :
 {}
 {
   try { 
-   <tESCRIBIR> "(" lista_escribibles() ")"
+   <tESCRIBIR> "(" lista_escribibles(g) ")"
   }
   catch (Exception e)
   {
@@ -453,7 +481,7 @@ void escribir() :
 }
 
 /* lista_asinables ::= identificadores */
-void lista_asignables() :
+void lista_asignables(Globals g) :
 {}
 {
   try { 
@@ -467,11 +495,11 @@ void lista_asignables() :
 }
 
 /* lista_escribibles ::= (< tCONSTCAD > | < tCONSTCHAR >) ( "," (< tIDENTIFICADOR >  |  < tENTACAR > "(" expresion ")" ) )* */
-void lista_escribibles() : 
+void lista_escribibles(Globals g) : 
 {}
 {
   try { 
-  (< tCONSTCAD > | < tCONSTCHAR >) ( "," (< tIDENTIFICADOR >  |  < tENTACAR > "(" expresion() ")" ) )*
+  (< tCONSTCAD > | < tCONSTCHAR >) ( "," (< tIDENTIFICADOR >  |  < tENTACAR > "(" expresion(g) ")" ) )*
   }
   catch (Exception e) {
 	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
@@ -482,11 +510,11 @@ void lista_escribibles() :
 
 
 /* argumentos ::= ( "(" lista_expresiones ")" )? */
-void argumentos() : 
+void argumentos(Globals g) : 
 {}
 {
   try { 
-    ( "(" lista_expresiones() ")")?
+    ( "(" lista_expresiones(g) ")")?
   }
   catch (Exception e)
   {
@@ -496,11 +524,11 @@ void argumentos() :
 }
 
 /* lista_expresiones ::= expresion ( "," expresion)* */
-void lista_expresiones() : 
+void lista_expresiones(Globals g) : 
 {}
 {
   try { 
-    expresion() ( "," expresion())*
+    expresion(g) ( "," expresion(g))*
   }
   catch (Exception e)
   {
@@ -510,12 +538,12 @@ void lista_expresiones() :
 }
 
 /* expresion ::= expresion_simple | (operador_relacional expresion_simple)* */
-void expresion() : 
+void expresion(Globals g) : 
 {}
 {
   try { 
-	expresion_simple()
-	 (operador_relacional() expresion_simple())*
+	expresion_simple(g)
+	 (operador_relacional(g) expresion_simple(g))*
   }
   catch (Exception e)
   {
@@ -525,11 +553,11 @@ void expresion() :
 }
 
 /* expresion_simple ::= termino (operador_aditivo termino)* */
-void expresion_simple() : 
+void expresion_simple(Globals g) : 
 {}
 {
   try { 
-	termino() ( operador_aditivo() termino())*
+	termino(g) ( operador_aditivo(g) termino(g))*
   }
   catch (Exception e)
   {
@@ -539,7 +567,7 @@ void expresion_simple() :
 }
 
 
-void operador_relacional() : 
+void operador_relacional(Globals g) : 
 {}
 {
   try { 
@@ -558,7 +586,7 @@ void operador_relacional() :
 }
 
 
-void operador_aditivo() : 
+void operador_aditivo(Globals g) : 
 {}
 {
   try { 
@@ -571,7 +599,7 @@ void operador_aditivo() :
   }
 }
 
-void operador_multiplicativo() : 
+void operador_multiplicativo(Globals g) : 
 {}
 {
   try { 
@@ -585,11 +613,11 @@ void operador_multiplicativo() :
 }
 
 /* termino ::= factor (operador multiplicativo factor)* */
-void termino() : 
+void termino(Globals g) : 
 {}
 {
   try { 
-    factor() (operador_multiplicativo()  factor())*
+    factor(g) (operador_multiplicativo(g)  factor(g))*
   }
   catch (Exception e)
   {
@@ -599,15 +627,15 @@ void termino() :
 }
 
 
-void factor() : 
+void factor(Globals g) : 
 {}
 {
   try { 
-    "-" factor()
- |  < tNOT > factor()
- |  "(" expresion() ")"
- |  < tENTACAR > "(" expresion() ")"
- |  < tCARAENT > "(" expresion() ")"
+    "-" factor(g)
+ |  < tNOT > factor(g)
+ |  "(" expresion(g) ")"
+ |  < tENTACAR > "(" expresion(g) ")"
+ |  < tCARAENT > "(" expresion(g) ")"
  |  < tIDENTIFICADOR >
  |  < tCONSTCHAR >
  |  < tCONSTCAD >

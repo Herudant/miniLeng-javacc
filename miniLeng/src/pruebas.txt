@@ -1,0 +1,42 @@
+% Tras introducir un mes y un anio devuelve por pantalla el calendari
+
+programa pruebas;
+	booleano headivinado;
+accion a2 (val entero b; ref entero a);
+	booleano headivinado;
+	principio
+		n:= 1 * 2 + 1;
+
+		pepito(a, 1+2);
+
+		
+		abc();
+		abc ;
+	fin
+
+principio
+	variable := 5;
+	variable := 5 mod 5;
+	pepe := true ;
+	pepa := false;
+	pepito := entacar(2);
+	pepita := caraent("abcd");
+	pepita := caraent('abcd\n');
+	mq (min <> max) and not headivinado
+     	pedir_dato ;
+        correcto := dato > 0;
+    fmq
+    escribir("La letra es la ", min, entacar(13), entacar (10));
+    leer(d);
+    %leer();
+    %cien:=anho MOD 400=0;
+    si d<=0 ent
+        escribir("El numero debe ser postivo.");
+        %escribir (entacar (13), entacar (10));
+    si_no
+    	headivinado := true;
+    si_no
+        si mes=2 ent dia1mes:=(dia1anho+31) mod 7;
+        fsi
+    fsi
+fin

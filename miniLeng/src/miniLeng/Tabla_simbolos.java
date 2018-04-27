@@ -73,7 +73,7 @@ public class Tabla_simbolos {
 		shuffleArray(T);
 	}
 	
-	/***************	*******************************************************
+	/**********************************************************************
 	** Crea una tabla de símbolos vacía.  Este procedimiento debe invocarse 
 	** antes de hacer ninguna operación con la tabla de símbolos.
 	**********************************************************************/
