@@ -27,7 +27,7 @@ public class miniLeng
 	  String file;
 	  miniLeng parser;
 	  Globals variables = new Globals();
-	  
+	  variables.t = new Tabla_simbolos();
 	  System.out.println("Ruta y nombre del fichero:");
 	 /* 
 	  try
@@ -38,7 +38,7 @@ public class miniLeng
 	    return;
 	  }
 	  */
-	  file = "/Users/heru/git/miniLeng-javacc/miniLeng/src/pruebas.txt";
+	  file = "/Users/heru/git/miniLeng-javacc/miniLeng/src/pruebas2.txt";
 	  System.out.println(file);
 	  
 	  try {
@@ -114,7 +114,7 @@ void programa_completo(Globals g):
 					declaracion_acciones
 					bloque_sentencias             */
 void programa(Globals g) : 
-{ Token t1, t2 = null; }
+{ Token t1; }
 {
   try { 
 	<tPROGRAMA> t1 = <tIDENTIFICADOR> ";"
@@ -168,7 +168,7 @@ Simbolo.TipoVariable tipo_variables(Globals g) :
 {
   try { 
     < tENTERO >    { return Simbolo.TipoVariable.ENTERO; }
-|   < tCARACTER >  { return Simbolo.TipoVariable.CARACTER; }
+|   < tCARACTER >  { return Simbolo.TipoVariable.CADENA; }
 |   < tBOOLEANO >  { return Simbolo.TipoVariable.BOOLEANO; }
   }
   catch (Exception e)
@@ -181,17 +181,27 @@ Simbolo.TipoVariable tipo_variables(Globals g) :
 
 /* identificadores ::= < tIDENTIFICADOR > ( "," < tIDENTIFICADOR >)* */
 void identificadores(Globals g, Simbolo.TipoVariable tipoVar) : 
-{ Token t1,t2; }
+{ Token t1,t2; Simbolo s; }
 {
   try { 
     t1 = < tIDENTIFICADOR >
 	{
-		if ( g.t.buscar_simbolo(t1.image) != null) 
-		    miniLeng.errorSemantico("Identificador duplicado");
-		else 
+	  //TODO: Puede ser otro tipo de error
+	  s =  g.t.buscar_simbolo(t1.image, g.nivel);
+		if ( s != null && s.esVisible() ) 
+		    miniLeng.errorSemantico("Identificador duplicado: " + t1.image);
+		else
 			g.t.introducir_variable(t1.image, tipoVar, g.nivel, g.dir);
 	}
-     ( "," < tIDENTIFICADOR> )*
+     ( "," t2 = < tIDENTIFICADOR>
+	{
+	  s =  g.t.buscar_simbolo(t2.image, g.nivel);
+		if ( s != null && s.esVisible() ) 
+		    miniLeng.errorSemantico("Identificador duplicado: " + t2.image );
+		else 
+			g.t.introducir_variable(t2.image, tipoVar, g.nivel, g.dir);
+	}	
+     )*
   }
   catch (Exception e)
   {
@@ -233,8 +243,9 @@ void declaracion_accion(Globals g) :
 	bloque_sentencias(g)
 	{
 	  //Eliminamos variables del bloque y bajamos un nivel
-	  g.t.eliminar_varialbes(g.nivel);
+	  g.t.eliminar_variables(g.nivel);
 	  g.t.eliminar_acciones(g.nivel);
+	  g.t.ocultar_parametros(g.nivel);
 	  g.t.eliminar_parametros_ocultos(g.nivel+1);
 	  g.nivel--;
 	}
@@ -250,9 +261,7 @@ void declaracion_accion(Globals g) :
 void cabecera_accion(Globals g) : 
 {
   Token t1;
-  Simbolo s;
-  boolean ok=false;
-  List<Simbolo> parametros;
+  Simbolo s = null;
  }
 {
   try { 
@@ -260,20 +269,16 @@ void cabecera_accion(Globals g) :
     t1 = < tIDENTIFICADOR >
 	{
 	  //Introduce en la tabla la accion
-		s = g.t.buscar_simbolo(t1.image, g.nivel);
-		if ( s==null ) {
-			// No existe el simbolo y lo añado
-			g.t.introducir_accion(t1.image,g.nivel,g.dir);
-			ok = true;
-		}
-		else {
-		  	// Existe el simbolo en el mismo nivel
+	  s = g.t.introducir_accion(t1.image,g.nivel,g.dir);
+		if ( s == null ) {
+			// Existe el simbolo en el mismo nivel
 			miniLeng.errorSemantico("Identificador duplicado");
 		}
+
 		g.nivel++;
 	}
 
-   parametros_formales(g, ok)
+   parametros_formales(g, s)
   }
   catch (Exception e)
   {
@@ -283,11 +288,11 @@ void cabecera_accion(Globals g) :
 }
 
 /* parametros_formales ::= ( "(" parametros ")")? */
-void parametros_formales(Globals g, booleano ok) : 
+void parametros_formales(Globals g, Simbolo s) : 
 {}
 {
   try { 
-	( "(" parametros(g, ok) ")")?
+	( "(" parametros(g, s) ")")?
   }
   catch (Exception e)
   {
@@ -297,11 +302,32 @@ void parametros_formales(Globals g, booleano ok) :
 }
 
 /* lista_parametros ::= identificadores (";" paraemtros)? */
-void lista_parametros(Globals g, Simbolo.TipoVariable tipoVar) : 
-{}
+void lista_parametros(Globals g, Simbolo s, Simbolo.TipoVariable tipoVar, Simbolo.ClaseParametro tipoParam) : 
+{Token t1, t2;}
 {
   try { 
-    identificadores(g, tipoVar) ( ";" parametros(g))?
+    t1 = < tIDENTIFICADOR >
+	{
+	  //TODO: Puede ser otro tipo de error
+		if ( g.t.buscar_simbolo(t1.image, g.nivel) != null) 
+		    miniLeng.errorSemantico("Identificador duplicado: " + t1.image);
+		else { 
+			g.t.introducir_parametro(t1.image, tipoVar, tipoParam, g.nivel, g.dir);
+			if ( s != null && s.esAccion())
+				s.introducir_parametro(t1.image, tipoVar, tipoParam, g.nivel);
+		}
+	}
+     ( "," t2 = < tIDENTIFICADOR >
+	{
+		if ( g.t.buscar_simbolo(t2.image, g.nivel) != null) 
+		    miniLeng.errorSemantico("Identificador duplicado: " + t2.image );
+		else { 
+			g.t.introducir_parametro(t2.image, tipoVar, tipoParam, g.nivel, g.dir);
+			if ( s != null && s.esAccion())
+				s.introducir_parametro(t2.image, tipoVar, tipoParam, g.nivel);
+		}
+	}	
+     )* ( ";" parametros(g, s))?
   }
   catch (Exception e)
   {
@@ -311,11 +337,14 @@ void lista_parametros(Globals g, Simbolo.TipoVariable tipoVar) :
 }
 
 /* parametros ::= clase_parametros tipo_variables lista_parametros */
-void parametros(Globals g, booleano ok) : 
-{ Simbolo.TipoVariable tipoVar; }
+void parametros(Globals g, Simbolo s) : 
+{
+  Simbolo.TipoVariable tipoVar;
+  Simbolo.ClaseParametro tipoParam;
+ }
 {
   try { 
-    clase_parametros(g) tipoVar = tipo_variables(g) lista_parametros(g, tipoVar)
+    tipoParam = clase_parametros(g) tipoVar = tipo_variables(g) lista_parametros(g, s, tipoVar, tipoParam)
   }
   catch (Exception e)
   {
@@ -326,12 +355,12 @@ void parametros(Globals g, booleano ok) :
 
 
 /* clase_parametros ::= < tVAL > | < tREF > */
-void clase_parametros(Globals g) : 
+Simbolo.ClaseParametro clase_parametros(Globals g) : 
 {}
 {
   try { 
-    < tVAL >
- |  < tREF >
+    < tVAL > { return Simbolo.ClaseParametro.VAL; }
+ |  < tREF > { return Simbolo.ClaseParametro.REF; }
   }
   catch (Exception e)
   {

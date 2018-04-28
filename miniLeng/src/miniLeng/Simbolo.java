@@ -2,6 +2,8 @@ package miniLeng;
 
 import java.util.ArrayList;
 
+import miniLeng.Simbolo.TipoSimbolo;
+
 public class Simbolo {
 
 	/*************************************************************************/
@@ -14,7 +16,7 @@ public class Simbolo {
 	String				nombre;
 	int					nivel;
 	boolean 				visible;
-	int 				dir;	
+	int 					dir;	
 	
 	/*************************************************************************/
 	/**************************** Constructores ******************************/
@@ -110,10 +112,23 @@ public class Simbolo {
 									ClaseParametro param, 
 									int nivel) 
 	{
-		this.nombre = nombre;
-		this.variable = tipo_var;
-		this.parametro = param;
-		this.nivel = nivel;
+		Simbolo s = new Simbolo(TipoSimbolo.PARAMETRO,  	// TipoSimbolo
+								variable,			  	// TipoVariable
+								parametro,   			// ClaseParametro
+								nombre,				 	// Nombre
+								nivel,					// Nivel
+								dir	);					// Dir
+		boolean esta = false;
+		for ( Simbolo simb : this.lista_parametros) {
+			if (simb.nombre == nombre) {
+				esta = true;
+				break;
+			}
+		}
+		if (!esta) {
+			this.lista_parametros.add(s);
+		}
+			
 	}
 	public boolean esVariable() {
 		return this.tipo == TipoSimbolo.VARIABLE;

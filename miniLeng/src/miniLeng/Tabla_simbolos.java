@@ -11,7 +11,7 @@ import miniLeng.Simbolo.TipoVariable;
 
 public class Tabla_simbolos {
 	
-	private final static int TABLE_SIZE = 31;  // Mayor número primo que 2^5
+	private final static int TABLE_SIZE = 5;  // Mayor número primo que 2^5 (31)
 	private int T[];
 	
 	ArrayList<LinkedList<Simbolo>> table;
@@ -26,7 +26,7 @@ public class Tabla_simbolos {
 	private int hash_function(String s) {
 		int h = 0;
 		for (int i = 0; i < s.length() ; i++) {
-			h = T[(h ^ s.charAt(i)) % 31];
+			h = T[(h ^ s.charAt(i)) % TABLE_SIZE];
 		}
 		return h;
 	}
@@ -101,7 +101,7 @@ public class Tabla_simbolos {
 			int max_nivel = -1;
 			// Busco en la lista enlazada el simbolo de mayor nivel 
 			for (Simbolo s : table.get(h)) {
-				if (s.getNombre() == nombre && s.getNivel() > max_nivel) {
+				if (s.getNombre().equals(nombre) && s.getNivel() > max_nivel) {
 					max_nivel = s.getNivel();
 					ret = s;
 				}
@@ -117,7 +117,7 @@ public class Tabla_simbolos {
 		if(table.get(h) != null) {
 			// Busco en la lista enlazada el simbolo de mayor nivel 
 			for (Simbolo s : table.get(h)) {
-				if (s.getNombre() == nombre && s.getNivel() == nivel) {
+				if (s.getNombre().equals(nombre) && s.getNivel() == nivel) {
 					ret = s;
 					break;
 				}
