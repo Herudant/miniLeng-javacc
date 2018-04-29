@@ -19,7 +19,6 @@ import miniLeng.Globals;
 public class miniLeng
 {
   
-  static Tabla_simbolos tabla;
   public static void main(String args []) throws ParseException
   {
     
@@ -567,12 +566,34 @@ void lista_expresiones(Globals g) :
 }
 
 /* expresion ::= expresion_simple | (operador_relacional expresion_simple)* */
-void expresion(Globals g) : 
-{}
+RegistroExpr expresion(Globals g) : 
+{ RegistroExpr r1,r2 = null;
+  RegistroExpr resul;
+}
 {
   try { 
-	expresion_simple(g)
-	 (operador_relacional(g) expresion_simple(g))*
+	r1 = expresion_simple(g)
+	(operador_relacional(g)
+	r2 = expresion_simple(g)
+	{
+		if( (r1.tipo != Simbolo.TipoVariable.DESCONOCIDO)
+		   && ( r2.tipo != Simbolo.TipoVariable.DESCONOCIDO)
+		   && ( r1.tipo != r2.tipo ) ) {
+			error_semantico("Los operandos deben ser del mismo tipo");
+		  resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
+		}
+		else {
+		  resul.tipo = Simbolo.TipoVariable.BOOLEANO;
+		  //TODO: Calcular resultado
+		}
+	}
+	)*
+	{
+	  if (r2 == null)
+	    return r1;
+	  else
+	    return resul;
+	}
   }
   catch (Exception e)
   {
@@ -582,11 +603,38 @@ void expresion(Globals g) :
 }
 
 /* expresion_simple ::= termino (operador_aditivo termino)* */
-void expresion_simple(Globals g) : 
-{}
+RegistroExpr expresion_simple(Globals g) : 
+{
+  RegistroExpr resul, r1, r2=null;
+  Simbolo.TipoOperador = op;
+  Boolean ok;
+}
 {
   try { 
-	termino(g) ( operador_aditivo(g) termino(g))*
+	r1 = termino(g)
+	( op = operador_aditivo(g) r2 = termino(g)
+	{
+	  switch (op) {
+		case Simbolo.TipoOperador.SUMA:
+		
+			break;
+		case Simbolo.TipoOperador.RESTA:
+
+			break;
+		case Simbolo.TipoOperador.OR:
+
+			break;
+		default:
+			break;
+	   }
+	}
+	)*
+	{
+	  if (r2 == null)
+	    return r1;
+	  else
+	    return resul;
+	}  
   }
   catch (Exception e)
   {
@@ -615,11 +663,13 @@ void operador_relacional(Globals g) :
 }
 
 
-void operador_aditivo(Globals g) : 
+Simbolo.TipoOperador operador_aditivo(Globals g) : 
 {}
 {
   try { 
-    "+" | "-" | < tOR >
+    "+" 		{ return Simbolo.TipoOperador.SUMA; }
+    | "-"	{ return Simbolo.TipoOperador.RESTA; }
+    | < tOR > { return Simbolo.TipoOperador.OR; }
   }
   catch (Exception e)
   {
@@ -656,21 +706,109 @@ void termino(Globals g) :
 }
 
 
-void factor(Globals g) : 
-{}
+RegistroExpr factor(Globals g) : 
+{
+  Token t;
+  Simbolo s;
+  RegistroExpr r1,resul;
+  Simbolo.TipoVariable tipoVar;
+}
 {
   try { 
-    "-" factor(g)
- |  < tNOT > factor(g)
- |  "(" expresion(g) ")"
- |  < tENTACAR > "(" expresion(g) ")"
- |  < tCARAENT > "(" expresion(g) ")"
- |  < tIDENTIFICADOR >
- |  < tCONSTCHAR >
+    "-" r1 = factor(g)
+  {	
+	if ( (r1.tipo != Simbolo.TipoVariable.ENTERO)
+	     && (t1.tipo != Simbolo.TipoVariable.DESCONOCIDO)) {
+      error_semantico("Tipo incompatible, se espetaba entero");
+      resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
+    }
+    else {
+      resul.tipo = Simbolo.TipoVariable.ENTERO;
+    }
+    return resul;
+  }
+ |  < tNOT > r1 = factor(g)
+ {	
+	if ( (r1.tipo != Simbolo.TipoVariable.BOOLEANO)
+	     && (r1.tipo != Simbolo.TipoVariable.DESCONOCIDO)) {
+      error_semantico("Tipo incompatible, se espetaba booleano");
+      resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
+    }
+    else {
+      resul.tipo = Simbolo.TipoVariable.BOOLEANO;
+    }
+    return resul;
+ }
+ |  "(" r1 = expresion(g) ")"
+ {
+   return r1;
+ }
+ |  < tENTACAR > "(" r1 = expresion(g) ")"
+ {
+	if ( (r1.tipo != Simbolo.TipoVariable.ENTERO)
+	     && (t1.tipo != Simbolo.TipoVariable.DESCONOCIDO)) {
+      error_semantico("La expresion no se puede convertir en un carácter válido");
+      resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
+    }
+    else {
+      resul.tipo = Simbolo.TipoVariable.CHAR;
+    }
+    return resul;
+ }
+ |  < tCARAENT > "(" r1 = expresion(g) ")"
+ {
+	if ( (r1.tipo != Simbolo.TipoVariable.CHAR)
+	     && (t1.tipo != Simbolo.TipoVariable.DESCONOCIDO)) {
+      error_semantico("La expresion no se puede convertir en un valor válido");
+      resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
+    }
+    else {
+      resul.tipo = Simbolo.TipoVariable.CHAR;
+    }
+    return resul;
+ }
+ |  t = < tIDENTIFICADOR >
+ {
+   s = g.t.buscar_simbolo(t.image,g.nivel);
+   if ( s == null ) {
+     error_semantico("Identificador desconocido");
+     resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
+   }
+   else {
+     resul.tipo = s.getTipo();
+   }
+   return resul;
+ }
+ |  t = < tCONSTCHAR >
+ {
+   resul.valorString = t.image;
+   resul.tipo = Simbolo.TipoVariable.CHAR;
+   return resul;
+ }
  |  < tCONSTCAD >
- |  < tCONSTENTERA >
+ {
+   resul.valorString = t.image;
+   resul.tipo = Simbolo.TipoVariable.CADENA;
+   return resul;
+ }
+ |  t = < tCONSTENTERA >
+ {
+   resul.valorEnt = Integer.parseInt(t.image);
+   resul.tipo = Simbolo.TipoVariable.ENTERO;
+   return resul;
+ }
  |  < tTRUE >
+ {
+   resul.valorBool = true;
+   resul.tipo = Simbolo.TipoVariable.BOOLEANO;
+   return resul;
+ }
  |  < tFALSE >
+ {
+   resul.valorBool = false;
+   resul.tipo = Simbolo.TipoVariable.BOOLEANO;
+   return resul;
+ }
   }
   catch (Exception e)
   {

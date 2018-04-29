@@ -97,6 +97,9 @@ public class Simbolo {
 	public enum TipoSimbolo {
 	    PROGRAMA, VARIABLE, ACCION, PARAMETRO
 	}
+	public enum TipoOperador {
+	    SUMA, RESTA, OR
+	}
 	public enum TipoVariable {
 	    DESCONOCIDO, ENTERO, BOOLEANO, CHAR, CADENA
 	}
@@ -127,8 +130,22 @@ public class Simbolo {
 		}
 		if (!esta) {
 			this.lista_parametros.add(s);
-		}
-			
+		}			
+	}
+	public boolean esEntero() {
+		return this.variable == TipoVariable.ENTERO;
+	}
+	public boolean esChar() {
+		return this.variable == TipoVariable.CHAR;
+	}
+	public boolean esBool() {
+		return this.variable == TipoVariable.BOOLEANO;
+	}
+	public boolean esCadena() {
+		return this.variable == TipoVariable.CADENA;
+	}
+	public boolean esDesconocido() {
+		return this.variable == TipoVariable.DESCONOCIDO;
 	}
 	public boolean esVariable() {
 		return this.tipo == TipoSimbolo.VARIABLE;

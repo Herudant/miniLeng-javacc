@@ -2,8 +2,8 @@ package miniLeng;
 
 public class RegistroExpr {
 	public int			valorEnt;
-	public boolean		varlorBool;
-	public char			valorChar;
+	public boolean		valorBool;
+	public String		valorString;
 	
 	Simbolo.TipoVariable	tipoVar;
 }
