@@ -5,5 +5,5 @@ public class RegistroExpr {
 	public boolean		valorBool;
 	public String		valorString;
 	
-	Simbolo.TipoVariable	tipoVar;
+	public Simbolo.TipoVariable	tipo;
 }

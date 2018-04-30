@@ -9,14 +9,14 @@ public class Simbolo {
 	/*************************************************************************/
 	/****************************** Atributos ********************************/
 	/*************************************************************************/
-	TipoSimbolo 			tipo;
+	TipoSimbolo 		tipo;
 	TipoVariable 		variable;
 	ClaseParametro		parametro;
 	ArrayList<Simbolo> 	lista_parametros;
 	String				nombre;
 	int					nivel;
-	boolean 				visible;
-	int 					dir;	
+	boolean 			visible;
+	int 				dir;
 	
 	/*************************************************************************/
 	/**************************** Constructores ******************************/
@@ -98,7 +98,7 @@ public class Simbolo {
 	    PROGRAMA, VARIABLE, ACCION, PARAMETRO
 	}
 	public enum TipoOperador {
-	    SUMA, RESTA, OR
+	    SUMA, RESTA, OR, MUL, DIV, MOD, AND, LT, GT, LE, GE, EQ, NE
 	}
 	public enum TipoVariable {
 	    DESCONOCIDO, ENTERO, BOOLEANO, CHAR, CADENA
@@ -115,7 +115,7 @@ public class Simbolo {
 									ClaseParametro param, 
 									int nivel) 
 	{
-		Simbolo s = new Simbolo(TipoSimbolo.PARAMETRO,  	// TipoSimbolo
+		Simbolo s = new Simbolo(TipoSimbolo.PARAMETRO,  // TipoSimbolo
 								variable,			  	// TipoVariable
 								parametro,   			// ClaseParametro
 								nombre,				 	// Nombre
