@@ -900,7 +900,7 @@ RegistroExpr factor(Globals g) :
   {	
 	if ( (r1.tipo != Simbolo.TipoVariable.ENTERO)
 	     && (r1.tipo != Simbolo.TipoVariable.DESCONOCIDO)) {
-      miniLeng.error_semantico("Tipo incompatible, se espetaba entero");
+      miniLeng.error_semantico("Tipo incompatible, se esperaba entero");
       resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
     }
     else {
@@ -912,7 +912,7 @@ RegistroExpr factor(Globals g) :
  {
 	if ( (r1.tipo != Simbolo.TipoVariable.BOOLEANO)
 	     && (r1.tipo != Simbolo.TipoVariable.DESCONOCIDO)) {
-      miniLeng.error_semantico("Tipo incompatible, se espetaba booleano");
+      miniLeng.error_semantico("Tipo incompatible, se esperaba booleano");
       resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
     }
     else {
