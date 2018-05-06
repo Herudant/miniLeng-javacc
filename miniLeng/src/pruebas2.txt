@@ -9,4 +9,5 @@ accion foo (val entero bar1; ref entero bar2, bar1);
 	
 principio
 	pepe(a,b);
+	pepin := 5;
 fin
