@@ -2,7 +2,6 @@ package miniLeng;
 
 import java.util.ArrayList;
 
-import miniLeng.Simbolo.TipoSimbolo;
 
 public class Simbolo {
 

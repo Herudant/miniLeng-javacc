@@ -426,7 +426,7 @@ void asignacion(Globals g, Token t) :
      r = expresion(g) ";"
      {
         //TODO: Realizar mas comprobaciones
-        if ( (r.tipo != tipo) && comprobar_tipos(r.tipo, tipo, Simbolo.TipoVariable.DESCONOCIDO))
+        if ( (r.tipo != tipo) && comparar_tipos(r.tipo, tipo, Simbolo.TipoVariable.DESCONOCIDO))
         {
             miniLeng.error_semantico("Tipos incompatibles en la asignacion");
         }
@@ -577,8 +577,9 @@ void lista_expresiones(Globals g) :
 /* expresion ::= expresion_simple | (operador_relacional expresion_simple)* */
 RegistroExpr expresion(Globals g) : 
 { RegistroExpr r1,r2 = null;
-  Simbolo.TipoOperador = op;
-  RegistroExpr resul;
+  Simbolo.TipoOperador op;
+  RegistroExpr resul = new RegistroExpr();
+  Boolean ok;
 }
 {
   try { 
@@ -593,31 +594,31 @@ RegistroExpr expresion(Globals g) :
 		else {
 		    resul.tipo = Simbolo.TipoVariable.BOOLEANO;
 		    //TODO: Calcular resultado -- Hacerlo para todos los tipos
-            ok = validar_tipo(r1.tipo, Simbolo.TipoVariable.BOOLEANO);
-            ok = validar_tipo(r2.tipo, Simbolo.TipoVariable.BOOLEANO);
+            ok = validar_tipo(r1.tipo, Simbolo.TipoVariable.BOOLEANO)
+                && validar_tipo(r2.tipo, Simbolo.TipoVariable.BOOLEANO);
             if ( !ok || !comparar_tipos(r1.tipo,r2.tipo,Simbolo.TipoVariable.BOOLEANO))
             {
                 resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
             }
             else {
                 switch (op) {
-                    case Simbolo.TipoOperador.GT:
-                        resul.valorBool = r1.valorBool > r2.valorBool;
+                    case GT:
+                        resul.valorBool = r1.valorEnt > r2.valorEnt;
             		    break;
-            	    case Simbolo.TipoOperador.LT:
-                        resul.valorBool = r1.valorBool < r2.valorBool;
+            	    case LT:
+                        resul.valorBool = r1.valorEnt < r2.valorEnt;
             		    break;
-            	    case Simbolo.TipoOperador.GE:
-                        resul.valorBool = r1.valorBool >= r2.valorBool;
+            	    case GE:
+                        resul.valorBool = r1.valorEnt >= r2.valorEnt;
             			break;
-            	    case Simbolo.TipoOperador.LE:
-                        resul.valorBool = r1.valorBool <= r2.valorBool;
+            	    case LE:
+                        resul.valorBool = r1.valorEnt <= r2.valorEnt;
             			break;
-             	    case Simbolo.TipoOperador.EQ:
-                         resul.valorBool = r1.valorBool == r2.valorBool;
+             	    case EQ:
+                         resul.valorBool = r1.valorEnt == r2.valorEnt;
              			break;
-            	    case Simbolo.TipoOperador.NE:
-                        resul.valorBool = r1.valorBool != r2.valorBool;
+            	    case NE:
+                        resul.valorBool = r1.valorEnt != r2.valorEnt;
             			break;
             	    default:
             		    break;
@@ -643,8 +644,9 @@ RegistroExpr expresion(Globals g) :
 /* expresion_simple ::= termino (operador_aditivo termino)* */
 RegistroExpr expresion_simple(Globals g) : 
 {
-  RegistroExpr resul, r1, r2=null;
-  Simbolo.TipoOperador = op;
+  RegistroExpr r1, r2=null;
+  RegistroExpr resul = new RegistroExpr();
+  Simbolo.TipoOperador op;
   Boolean ok;
 }
 {
@@ -656,9 +658,9 @@ RegistroExpr expresion_simple(Globals g) :
 	  ok = true;
 	  //TODO: Comproboar overflow/underflow
 	  switch (op) {
-		case Simbolo.TipoOperador.SUMA:
-		    ok = validar_tipo(r1.tipo, Simbolo.TipoVariable.ENTERO);
-		    ok = validar_tipo(r2.tipo, Simbolo.TipoVariable.ENTERO);
+		case SUMA:
+		    ok = validar_tipo(r1.tipo, Simbolo.TipoVariable.ENTERO)
+		        && validar_tipo(r2.tipo, Simbolo.TipoVariable.ENTERO);
 		    if ( ok && comparar_tipos(r1.tipo,r2.tipo,Simbolo.TipoVariable.ENTERO))
             {
                 resul.tipo = Simbolo.TipoVariable.ENTERO;
@@ -668,9 +670,9 @@ RegistroExpr expresion_simple(Globals g) :
                 resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
             }
 			break;
-		case Simbolo.TipoOperador.RESTA:
-		    ok = validar_tipo(r1.tipo, Simbolo.TipoVariable.ENTERO);
-		    ok = validar_tipo(r2.tipo, Simbolo.TipoVariable.ENTERO);
+		case RESTA:
+		    ok = validar_tipo(r1.tipo, Simbolo.TipoVariable.ENTERO)
+		        && validar_tipo(r2.tipo, Simbolo.TipoVariable.ENTERO);
 		    if ( ok && comparar_tipos(r1.tipo,r2.tipo,Simbolo.TipoVariable.ENTERO))
             {
                 resul.tipo = Simbolo.TipoVariable.ENTERO;
@@ -680,13 +682,13 @@ RegistroExpr expresion_simple(Globals g) :
                 resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
             }
 			break;
-		case Simbolo.TipoOperador.OR:
-		    ok = validar_tipo(r1.tipo, Simbolo.TipoVariable.BOOLEANO);
-		    ok = validar_tipo(r2.tipo, Simbolo.TipoVariable.BOOLEANO);
+		case OR:
+		    ok = validar_tipo(r1.tipo, Simbolo.TipoVariable.BOOLEANO)
+		        && validar_tipo(r2.tipo, Simbolo.TipoVariable.BOOLEANO);
 		    if ( ok && comparar_tipos(r1.tipo,r2.tipo,Simbolo.TipoVariable.BOOLEANO))
             {
                 resul.tipo = Simbolo.TipoVariable.BOOLEANO;
-                resul.valorEnt = r1.valorBool | r2.valorBool;
+                resul.valorBool = r1.valorBool | r2.valorBool;
             }
             else {
                 resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
@@ -713,10 +715,11 @@ RegistroExpr expresion_simple(Globals g) :
 
 
 /* termino ::= factor (operador multiplicativo factor)* */
-void termino(Globals g) : 
+RegistroExpr termino(Globals g) : 
 {
-  RegistroExpr resul, r1, r2=null;
-  Simbolo.TipoOperador = op;
+  RegistroExpr r1, r2=null;
+  RegistroExpr resul = new RegistroExpr();
+  Simbolo.TipoOperador op;
   Boolean ok;
 }
 {
@@ -728,9 +731,9 @@ void termino(Globals g) :
 	  ok = true;
 	  //TODO: Comproboar overflow/underflow
 	  switch (op) {
-		case Simbolo.TipoOperador.MUL:
-		    ok = validar_tipo(r1.tipo, Simbolo.TipoVariable.ENTERO);
-		    ok = validar_tipo(r2.tipo, Simbolo.TipoVariable.ENTERO);
+		case MUL:
+		    ok = validar_tipo(r1.tipo, Simbolo.TipoVariable.ENTERO)
+		        && validar_tipo(r2.tipo, Simbolo.TipoVariable.ENTERO);
 		    if ( ok && comparar_tipos(r1.tipo,r2.tipo,Simbolo.TipoVariable.ENTERO))
             {
                 resul.tipo = Simbolo.TipoVariable.ENTERO;
@@ -740,9 +743,9 @@ void termino(Globals g) :
                 resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
             }
 			break;
-		case Simbolo.TipoOperador.DIV:
-		    ok = validar_tipo(r1.tipo, Simbolo.TipoVariable.ENTERO);
-		    ok = validar_tipo(r2.tipo, Simbolo.TipoVariable.ENTERO);
+		case DIV:
+		    ok = validar_tipo(r1.tipo, Simbolo.TipoVariable.ENTERO)
+		        && validar_tipo(r2.tipo, Simbolo.TipoVariable.ENTERO);
 		    //TODO: COMPROBAR DIVISION POR 0
 		    if ( ok && comparar_tipos(r1.tipo,r2.tipo,Simbolo.TipoVariable.ENTERO))
             {
@@ -759,9 +762,9 @@ void termino(Globals g) :
                 resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
             }
 			break;
-		case Simbolo.TipoOperador.MOD:
-		    ok = validar_tipo(r1, Simbolo.TipoVariable.ENTERO);
-		    ok = validar_tipo(r2, Simbolo.TipoVariable.ENTERO);
+		case MOD:
+		    ok = validar_tipo(r1.tipo, Simbolo.TipoVariable.ENTERO)
+		        && validar_tipo(r2.tipo, Simbolo.TipoVariable.ENTERO);
             //TODO: COMPROBAR MOD POR 0
 		    if ( ok && comparar_tipos(r1.tipo,r2.tipo,Simbolo.TipoVariable.ENTERO))
             {
@@ -778,13 +781,13 @@ void termino(Globals g) :
                 resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
             }
 			break;
-		case Simbolo.TipoOperador.AND:
-		    ok = validar_tipo(r1.tipo, Simbolo.TipoVariable.BOOLEANO);
-		    ok = validar_tipo(r2.tipo, Simbolo.TipoVariable.BOOLEANO);
+		case AND:
+		    ok = validar_tipo(r1.tipo, Simbolo.TipoVariable.BOOLEANO)
+		        && validar_tipo(r2.tipo, Simbolo.TipoVariable.BOOLEANO);
 		    if ( ok && comparar_tipos(r1.tipo,r2.tipo,Simbolo.TipoVariable.BOOLEANO))
             {
                 resul.tipo = Simbolo.TipoVariable.BOOLEANO;
-                resul.valorEnt = r1.valorBool & r2.valorBool;
+                resul.valorBool = r1.valorBool & r2.valorBool;
             }
             else {
                 resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
@@ -796,6 +799,12 @@ void termino(Globals g) :
 	}
 
     )*
+    {
+	  if (r2 == null)
+	    return r1;
+	  else
+	    return resul;
+	}  
   }
   catch (Exception e)
   {
@@ -809,7 +818,7 @@ RegistroExpr factor(Globals g) :
 {
   Token t;
   Simbolo s;
-  RegistroExpr r1,resul;
+  RegistroExpr r1,resul = new RegistroExpr();
   Simbolo.TipoVariable tipoVar;
 }
 {
@@ -874,7 +883,7 @@ RegistroExpr factor(Globals g) :
      resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
    }
    else {
-     resul.tipo = s.getTipo();
+     resul.tipo = s.getVariable();
    }
    return resul;
  }
@@ -884,7 +893,7 @@ RegistroExpr factor(Globals g) :
    resul.tipo = Simbolo.TipoVariable.CHAR;
    return resul;
  }
- |  < tCONSTCAD >
+ |  t = < tCONSTCAD >
  {
    resul.valorString = t.image;
    resul.tipo = Simbolo.TipoVariable.CADENA;
