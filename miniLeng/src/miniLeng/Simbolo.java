@@ -16,7 +16,9 @@ public class Simbolo {
 	int					nivel;
 	boolean 			visible;
 	int 				dir;
+	int					num_params;
 	
+
 	/*************************************************************************/
 	/**************************** Constructores ******************************/
 	/*************************************************************************/
@@ -35,6 +37,7 @@ public class Simbolo {
 		this.nivel = nivel;
 		this.visible = true;
 		this.dir = dir;
+		this.num_params = 0;
 		this.lista_parametros = new ArrayList<Simbolo>();
 	}
 	
@@ -89,6 +92,12 @@ public class Simbolo {
 	public void setDir(int dir) {
 		this.dir = dir;
 	}
+	public int getNum_params() {
+		return num_params;
+	}
+	public void setNum_params(int num_params) {
+		this.num_params = num_params;
+	}
 	
 	/*************************************************************************/
 	/********************** Enumerados para atributos ************************/
@@ -130,6 +139,9 @@ public class Simbolo {
 		if (!esta) {
 			this.lista_parametros.add(s);
 		}			
+	}
+	public void add_param() {
+		this.num_params += 1;
 	}
 	public boolean esEntero() {
 		return this.variable == TipoVariable.ENTERO;

@@ -116,10 +116,12 @@ public class Tabla_simbolos {
 		int h = hash_function(nombre);
 		if(table.get(h) != null) {
 			// Busco en la lista enlazada el simbolo de mayor nivel 
-			for (Simbolo s : table.get(h)) {
-				if (s.getNombre().equals(nombre) && s.getNivel() == nivel) {
-					ret = s;
-					break;
+			for(int i=nivel; i >= 0 ; i--) {
+				for (Simbolo s : table.get(h)) {
+					if (s.getNombre().equals(nombre) && s.getNivel() == i) {
+						ret = s;
+						break;
+					}
 				}
 			}
 		}

@@ -13,6 +13,7 @@ import miniLeng.Simbolo;
 import miniLeng.Tabla_simbolos;
 import miniLeng.Globals;
 import miniLeng.RegistroExpr;
+import java.util.ArrayList;
 
 public class miniLeng
 {
@@ -35,7 +36,7 @@ public class miniLeng
 	    return;
 	  }
 	  */
-	  file = "/Users/heru/git/miniLeng-javacc/miniLeng/src/pruebas3.txt";
+	  file = "/Users/heru/git/miniLeng-javacc/miniLeng/src/pruebas4.txt";
 	  System.out.println(file);
 	  
 	  try {
@@ -78,7 +79,7 @@ public class miniLeng
   }
 
   public static void warning(String msg_error, int line) {
-	System.out.println("WARNING : linea  -  " + line + " " + msg_error);
+	System.out.println("WARNING : linea " + line + " -- " + msg_error);
   }
   
   public static boolean comparar_tipos(Simbolo.TipoVariable t1, Simbolo.TipoVariable t2, Simbolo.TipoVariable tipo, int verbose){
@@ -249,7 +250,7 @@ void declaracion_accion(Globals g) :
   }
 }
 
-/* cabecera_accion ::= < tACCION > < tIDENTIFICADOR > parametros_formales */
+/* cabecera_accion ::= < tACCION > < tIDENTIFICADOR > (parametros_formales)? */
 void cabecera_accion(Globals g) : 
 {
   Token t1;
@@ -269,7 +270,7 @@ void cabecera_accion(Globals g) :
 	  g.nivel++;
 	}
 
-   parametros_formales(g, s)
+   (parametros_formales(g, s) )?
   }
   catch (Exception e)
   {
@@ -283,7 +284,7 @@ void parametros_formales(Globals g, Simbolo s) :
 {}
 {
   try { 
-	( "(" parametros(g, s) ")")?
+	 "(" (parametros(g, s))? ")"
   }
   catch (Exception e)
   {
@@ -299,6 +300,7 @@ void lista_parametros(Globals g, Simbolo s, Simbolo.TipoVariable tipoVar, Simbol
   try { 
     t1 = < tIDENTIFICADOR >
 	{
+	    s.add_param();
 	  //TODO: Puede ser otro tipo de error
 		if ( g.t.buscar_simbolo(t1.image, g.nivel) != null) 
 		    miniLeng.error_semantico("Identificador duplicado", t1);
@@ -310,6 +312,7 @@ void lista_parametros(Globals g, Simbolo s, Simbolo.TipoVariable tipoVar, Simbol
 	}
      ( "," t2 = < tIDENTIFICADOR >
 	{
+	  	s.add_param();
 		if ( g.t.buscar_simbolo(t2.image, g.nivel) != null) 
 		    miniLeng.error_semantico("Identificador duplicado", t2);
 		else { 
@@ -464,7 +467,7 @@ void invocacion_accion(Globals g, Token t) :
             miniLeng.error_semantico("No se puede realizar una llamda a una accion sobre un parametro", t);
         }
      }
-	 argumentos(g) ";"
+	 argumentos(g, s) ";"
   }
   catch (Exception e)
   {
@@ -582,11 +585,11 @@ void lista_escribibles(Globals g) :
 
 
 /* argumentos ::= ( "(" lista_expresiones ")" )? */
-void argumentos(Globals g) : 
+void argumentos(Globals g, Simbolo s) : 
 {}
 {
   try { 
-    ( "(" lista_expresiones(g) ")")?
+    "(" (lista_expresiones(g, s))? ")"
   }
   catch (Exception e)
   {
@@ -596,11 +599,16 @@ void argumentos(Globals g) :
 }
 
 /* lista_expresiones ::= expresion ( "," expresion)* */
-void lista_expresiones(Globals g) : 
-{ RegistroExpr r; }
+void lista_expresiones(Globals g, Simbolo s) : 
+{
+  RegistroExpr r;
+  int num_params = 0;
+  ArrayList<RegistroExpr> params = new ArrayList<RegistroExpr>();
+}
 {
   try { 
-    r = expresion(g) ( "," r = expresion(g))*
+    r = expresion(g) { num_params++; params.add(r); }
+    ( "," r = expresion(g) { num_params++; params.add(r);  })*
   }
   catch (Exception e)
   {
