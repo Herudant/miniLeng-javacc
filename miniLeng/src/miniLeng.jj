@@ -67,14 +67,9 @@ public class miniLeng
   }
 
   public static void error_semantico(String msg_error) {
-	System.out.println("ERROR SEMANTICO : " + msg_error);
+	System.out.println(msg_error);
   }
-  public static void error_semantico(String msg_error, Token t) {
-    int line = t.next.beginLine;
-    int col = t.next.beginColumn;
-    String id = t.image;
-	System.out.println("ERROR SEMANTICO (<" + line + ", " + col + ">): " + msg_error + "Simbolo encontrado \"" + id + "\"");
-  }
+
   public static boolean comparar_tipos(Simbolo.TipoVariable t1, Simbolo.TipoVariable t2, Simbolo.TipoVariable tipo){
     boolean resul = true;
     if ( t1 != tipo && t2 != tipo )
@@ -173,7 +168,7 @@ void identificadores(Globals g, Simbolo.TipoVariable tipoVar) :
 	  //TODO: Puede ser otro tipo de error
 	  s =  g.t.buscar_simbolo(t1.image, g.nivel);
 		if ( s != null && s.esVisible() ) 
-		    miniLeng.errorSemantico("Identificador duplicado", t1);
+		    miniLeng.errorSemantico("Identificador duplicado: " + t1.image);
 		else
 			g.t.introducir_variable(t1.image, tipoVar, g.nivel, g.dir);
 	}
@@ -181,7 +176,7 @@ void identificadores(Globals g, Simbolo.TipoVariable tipoVar) :
 	{
 	  s =  g.t.buscar_simbolo(t2.image, g.nivel);
 		if ( s != null && s.esVisible() ) 
-		    miniLeng.errorSemantico("Identificador duplicado", t2);
+		    miniLeng.errorSemantico("Identificador duplicado: " + t2.image );
 		else 
 			g.t.introducir_variable(t2.image, tipoVar, g.nivel, g.dir);
 	}	
@@ -256,7 +251,7 @@ void cabecera_accion(Globals g) :
 	  s = g.t.introducir_accion(t1.image,g.nivel,g.dir);
 	  if ( s == null ) {
 		// Existe el simbolo en el mismo nivel
-		miniLeng.errorSemantico("Identificador duplicado", t1);
+		miniLeng.errorSemantico("Identificador duplicado");
 	  }
 	  g.nivel++;
 	}
@@ -478,16 +473,7 @@ void seleccion(Globals g) :
 {  RegistroExpr r; }
 {
   try { 
-	< tSI > r = expresion(g)
-	{
-        if ( !validar_tipo(r.tipo, Simbolo.TipoVariable.BOOLEANO)){
-            miniLeng.error_semantico("La condicion de la seleccion debe ser un booleano");
-        }
-	}
-	< tENT >
-	lista_sentencias(g)
-	(< tSI_NO > lista_sentencias(g))*
-	< tFSI >
+	< tSI > r = expresion(g) < tENT > lista_sentencias(g) (< tSI_NO > lista_sentencias(g))*< tFSI >
   }
   catch (Exception e)
   {
@@ -877,7 +863,7 @@ RegistroExpr factor(Globals g) :
  {
    s = g.t.buscar_simbolo(t.image,g.nivel);
    if ( s == null ) {
-     miniLeng.error_semantico("Identificador desconocido",t);
+     miniLeng.error_semantico("Identificador desconocido");
      resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
    }
    else {
