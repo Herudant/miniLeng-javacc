@@ -609,6 +609,24 @@ void lista_expresiones(Globals g, Simbolo s) :
   try { 
     r = expresion(g) { num_params++; params.add(r); }
     ( "," r = expresion(g) { num_params++; params.add(r);  })*
+    {
+		// Comprobar que los parametros de llamada a la funcion coindicen con los de la tabla
+		if (s.getNum_params() != num_params) {
+			miniLeng.error_semantico("El número de parámetros de llamada a la función " + s.getNombre() + " no coindice");
+		}
+		else{
+			// Comprobar cada tipo
+			for(Simbolo accion_param : s.getLista_simbolos()) {
+				if(accion_param.getTipo()) {
+				}
+				
+			}
+		}
+
+		  
+		
+
+    }
   }
   catch (Exception e)
   {
