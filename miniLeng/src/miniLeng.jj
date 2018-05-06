@@ -35,7 +35,7 @@ public class miniLeng
 	    return;
 	  }
 	  */
-	  file = "/Users/heru/git/miniLeng-javacc/miniLeng/src/pruebas2.txt";
+	  file = "/Users/heru/git/miniLeng-javacc/miniLeng/src/pruebas3.txt";
 	  System.out.println(file);
 	  
 	  try {
@@ -71,18 +71,24 @@ public class miniLeng
 	System.out.println("ERROR SEMANTICO : " + msg_error);
   }
   public static void error_semantico(String msg_error, Token t) {
-    int line = t.next.beginLine;
-    int col = t.next.beginColumn;
+    int line = t.beginLine;
+    int col = t.beginColumn;
     String id = t.image;
-	System.out.println("ERROR SEMANTICO (<" + line + ", " + col + ">): " + msg_error + "Simbolo encontrado \"" + id + "\"");
+	System.out.println("ERROR SEMANTICO (<" + line + ", " + col + ">): " + msg_error + ": \"" + id + "\"");
   }
 
-  public static boolean comparar_tipos(Simbolo.TipoVariable t1, Simbolo.TipoVariable t2, Simbolo.TipoVariable tipo){
+  public static void warning(String msg_error, int line) {
+	System.out.println("WARNING : linea  -  " + line + " " + msg_error);
+  }
+  
+  public static boolean comparar_tipos(Simbolo.TipoVariable t1, Simbolo.TipoVariable t2, Simbolo.TipoVariable tipo, int verbose){
     boolean resul = true;
     if ( t1 != tipo && t2 != tipo )
     {
-        miniLeng.error_semantico("Los operadorores deben ser " + tipo);
-        resul = false;
+      resul = false;
+      if (verbose==1) { 
+        miniLeng.error_semantico("linea " + token.beginLine + "  - Los operadorores deben ser " + tipo);
+      }      
     }
     return resul;
   }
@@ -91,7 +97,7 @@ public class miniLeng
     boolean resul = true;
     if ( t != tipo  && t != Simbolo.TipoVariable.DESCONOCIDO)
     {
-        miniLeng.error_semantico("El operador debe ser " + tipo);
+        miniLeng.error_semantico("linea " + token.beginLine + "  -  El operador debe ser " + tipo);
         resul=false;
     }
     return resul;
@@ -383,7 +389,7 @@ void sentencia(Globals g) :
 	  t = < tIDENTIFICADOR >
 	 [ 
 		   asignacion(g, t)
-		 | invocacion_accion(g)
+		 | invocacion_accion(g, t)
 	 ]
 	| mientras_que(g)
 	| leer(g) ";"
@@ -403,6 +409,7 @@ void asignacion(Globals g, Token t) :
  RegistroExpr r;
  Simbolo s;
  Simbolo.TipoVariable tipo;
+ Boolean ok = true;
 }
 {
   try { 
@@ -414,10 +421,12 @@ void asignacion(Globals g, Token t) :
         if ( s == null ){
             miniLeng.error_semantico("Identificador desconocido en la parte izquierda de la asignacion", t);
             tipo = Simbolo.TipoVariable.DESCONOCIDO;
+            ok = false;
         }
         else if (s.esParametro() && s.esValor()){
-            miniLeng.error_semantico("No se puede realizar una asignacion a un parametro");
+            miniLeng.error_semantico("No se puede realizar una asignacion a un parametro", t);
             tipo = Simbolo.TipoVariable.DESCONOCIDO;
+            ok = false;
         }
         else{
             tipo = s.getVariable();
@@ -426,11 +435,10 @@ void asignacion(Globals g, Token t) :
      r = expresion(g) ";"
      {
         //TODO: Realizar mas comprobaciones
-        if ( (r.tipo != tipo) && comparar_tipos(r.tipo, tipo, Simbolo.TipoVariable.DESCONOCIDO))
+        if ( ok && (r.tipo != tipo) && !comparar_tipos(r.tipo, tipo, Simbolo.TipoVariable.DESCONOCIDO,0))
         {
-            miniLeng.error_semantico("Tipos incompatibles en la asignacion");
+            miniLeng.error_semantico("Tipos incompatibles en la asignacion", t);
         }
-        //TODO: Asigno?
      }
   }
   catch (Exception e)
@@ -441,10 +449,21 @@ void asignacion(Globals g, Token t) :
 }
 
 /* invocacion_accion ::= argumentos ";" */
-void invocacion_accion(Globals g) :
-{}
+void invocacion_accion(Globals g, Token t) :
+{ Simbolo s; }
 {
   try { 
+     {
+        //TODO: Realizar mas comprobaciones
+        // Comprobar que existe el identificador
+        s = g.t.buscar_simbolo(t.image, g.nivel);
+        if ( s == null ){
+            miniLeng.error_semantico("Identificador desconocido en la llamada a la accion", t);
+        }
+        else if (!s.esAccion()){
+            miniLeng.error_semantico("No se puede realizar una llamda a una accion sobre un parametro", t);
+        }
+     }
 	 argumentos(g) ";"
   }
   catch (Exception e)
@@ -456,15 +475,16 @@ void invocacion_accion(Globals g) :
 
 /* mientras_que ::= < tMQ > expresion lista_sentencias < tFMQ > */
 void mientras_que(Globals g) :
-{ RegistroExpr r; }
+{ RegistroExpr r; boolean ok; }
 {
   try { 
     < tMQ > r = expresion(g)
      {
         //TODO: Comprobar codigo muerto
-        if ( !validar_tipo(r.tipo, Simbolo.TipoVariable.BOOLEANO)){
-            miniLeng.error_semantico("La condicion del while debe ser un booleano");
-        }
+        ok = validar_tipo(r.tipo, Simbolo.TipoVariable.BOOLEANO);
+        if ( ok && r.valorBool == true ) {
+			miniLeng.warning("Generacion de código muerto", token.beginLine);
+		}
      }
     lista_sentencias(g) < tFMQ >
   }
@@ -477,10 +497,25 @@ void mientras_que(Globals g) :
 
 /* seleccion ::= < tSI > expresion < tENT > lista_sentencias ( < tSI_NO > lista_sentencias )* < tFSI > */
 void seleccion(Globals g) :
-{  RegistroExpr r; }
+{  RegistroExpr r; boolean ok; }
 {
   try { 
-	< tSI > r = expresion(g) < tENT > lista_sentencias(g) (< tSI_NO > lista_sentencias(g))*< tFSI >
+	 < tSI > r = expresion(g)
+     {
+        //TODO: Comprobar codigo muerto
+        ok=validar_tipo(r.tipo, Simbolo.TipoVariable.BOOLEANO);
+     }
+	< tENT >
+	lista_sentencias(g)
+	(< tSI_NO >
+	{
+		// Comprobar que la sentencia no sea true y genere codigo muerto
+		if ( ok && r.valorBool == true ) {
+			miniLeng.warning("Generacion de código muerto", token.beginLine);
+		}
+	}
+	lista_sentencias(g))*
+	< tFSI >
   }
   catch (Exception e)
   {
@@ -587,43 +622,81 @@ RegistroExpr expresion(Globals g) :
 	(op =operador_relacional(g)
 	 r2 = expresion_simple(g)
 	{
-		if((r1.tipo != r2.tipo) && comparar_tipos(r1.tipo,r2.tipo, Simbolo.TipoVariable.DESCONOCIDO)) {
+		if((r1.tipo != r2.tipo) && !comparar_tipos(r1.tipo,r2.tipo, Simbolo.TipoVariable.DESCONOCIDO,0)) {
 		    miniLeng.error_semantico("Los operandos deben ser del mismo tipo");
 		    resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
 		}
 		else {
 		    resul.tipo = Simbolo.TipoVariable.BOOLEANO;
-		    //TODO: Calcular resultado -- Hacerlo para todos los tipos
-            ok = validar_tipo(r1.tipo, Simbolo.TipoVariable.BOOLEANO)
-                && validar_tipo(r2.tipo, Simbolo.TipoVariable.BOOLEANO);
-            if ( !ok || !comparar_tipos(r1.tipo,r2.tipo,Simbolo.TipoVariable.BOOLEANO))
-            {
-                resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
-            }
-            else {
-                switch (op) {
-                    case GT:
-                        resul.valorBool = r1.valorEnt > r2.valorEnt;
-            		    break;
-            	    case LT:
-                        resul.valorBool = r1.valorEnt < r2.valorEnt;
-            		    break;
-            	    case GE:
-                        resul.valorBool = r1.valorEnt >= r2.valorEnt;
-            			break;
-            	    case LE:
-                        resul.valorBool = r1.valorEnt <= r2.valorEnt;
-            			break;
-             	    case EQ:
-                         resul.valorBool = r1.valorEnt == r2.valorEnt;
-             			break;
-            	    case NE:
-                        resul.valorBool = r1.valorEnt != r2.valorEnt;
-            			break;
-            	    default:
-            		    break;
-                }
-            }
+		    switch (r1.tipo) {
+				case ENTERO:
+					ok = validar_tipo(r2.tipo, Simbolo.TipoVariable.ENTERO);
+					if ( !ok )
+						resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
+					else {
+					    switch (op) {
+                   			case GT:
+                        		resul.valorBool = r1.valorEnt > r2.valorEnt;
+            		    		break;
+            	    		case LT:
+                        		resul.valorBool = r1.valorEnt < r2.valorEnt;
+            		    		break;
+            	    		case GE:
+                        		resul.valorBool = r1.valorEnt >= r2.valorEnt;
+            					break;
+            	    		case LE:
+                        		resul.valorBool = r1.valorEnt <= r2.valorEnt;
+            					break;
+             	    		case EQ:
+                         		resul.valorBool = r1.valorEnt == r2.valorEnt;
+             					break;
+            	    		case NE:
+                        		resul.valorBool = r1.valorEnt != r2.valorEnt;
+            					break;
+            	    		default:
+            		    		break;
+                		}
+              		}
+					break;
+				case CADENA:
+					ok = validar_tipo(r2.tipo, Simbolo.TipoVariable.CADENA);
+					if ( !ok )
+						resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
+					else {
+					    switch (op) {
+             	    		case EQ:
+                         		resul.valorBool = r1.valorString.equals(r2.valorString);
+             					break;
+            	    		case NE:
+                        		resul.valorBool = !r1.valorString.equals(r2.valorString);
+            					break;
+            	    		default:
+            	    		    miniLeng.error_semantico("No se puede utilizar el operador " + op + " sobre una cadena");
+            		    		break;
+                		}
+              		}
+					break;
+				case BOOLEANO:
+					ok = validar_tipo(r2.tipo, Simbolo.TipoVariable.BOOLEANO);
+					if ( !ok )
+						resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
+					else {
+					    switch (op) {
+             	    		case EQ:
+                         		resul.valorBool = r1.valorBool == r2.valorBool;
+             					break;
+            	    		case NE:
+                        		resul.valorBool = r1.valorBool != r2.valorBool;
+            					break;
+            	    		default:
+            	    		    miniLeng.error_semantico("No se puede utilizar la operador " + op + " sobre un booleano");
+            		    		break;
+                		}
+              		}				
+					break;
+				default: // DESCONOCIDO
+					break;
+		    }
 		}
 	}
 	)*
@@ -661,7 +734,7 @@ RegistroExpr expresion_simple(Globals g) :
 		case SUMA:
 		    ok = validar_tipo(r1.tipo, Simbolo.TipoVariable.ENTERO)
 		        && validar_tipo(r2.tipo, Simbolo.TipoVariable.ENTERO);
-		    if ( ok && comparar_tipos(r1.tipo,r2.tipo,Simbolo.TipoVariable.ENTERO))
+		    if ( ok && comparar_tipos(r1.tipo,r2.tipo,Simbolo.TipoVariable.ENTERO,1))
             {
                 resul.tipo = Simbolo.TipoVariable.ENTERO;
                 resul.valorEnt = r1.valorEnt + r2.valorEnt;
@@ -673,7 +746,7 @@ RegistroExpr expresion_simple(Globals g) :
 		case RESTA:
 		    ok = validar_tipo(r1.tipo, Simbolo.TipoVariable.ENTERO)
 		        && validar_tipo(r2.tipo, Simbolo.TipoVariable.ENTERO);
-		    if ( ok && comparar_tipos(r1.tipo,r2.tipo,Simbolo.TipoVariable.ENTERO))
+		    if ( ok && comparar_tipos(r1.tipo,r2.tipo,Simbolo.TipoVariable.ENTERO,1))
             {
                 resul.tipo = Simbolo.TipoVariable.ENTERO;
                 resul.valorEnt = r1.valorEnt - r2.valorEnt;
@@ -685,7 +758,7 @@ RegistroExpr expresion_simple(Globals g) :
 		case OR:
 		    ok = validar_tipo(r1.tipo, Simbolo.TipoVariable.BOOLEANO)
 		        && validar_tipo(r2.tipo, Simbolo.TipoVariable.BOOLEANO);
-		    if ( ok && comparar_tipos(r1.tipo,r2.tipo,Simbolo.TipoVariable.BOOLEANO))
+		    if ( ok && comparar_tipos(r1.tipo,r2.tipo,Simbolo.TipoVariable.BOOLEANO,1))
             {
                 resul.tipo = Simbolo.TipoVariable.BOOLEANO;
                 resul.valorBool = r1.valorBool | r2.valorBool;
@@ -734,7 +807,7 @@ RegistroExpr termino(Globals g) :
 		case MUL:
 		    ok = validar_tipo(r1.tipo, Simbolo.TipoVariable.ENTERO)
 		        && validar_tipo(r2.tipo, Simbolo.TipoVariable.ENTERO);
-		    if ( ok && comparar_tipos(r1.tipo,r2.tipo,Simbolo.TipoVariable.ENTERO))
+		    if ( ok && comparar_tipos(r1.tipo,r2.tipo,Simbolo.TipoVariable.ENTERO,1))
             {
                 resul.tipo = Simbolo.TipoVariable.ENTERO;
                 resul.valorEnt = r1.valorEnt * r2.valorEnt;
@@ -747,10 +820,10 @@ RegistroExpr termino(Globals g) :
 		    ok = validar_tipo(r1.tipo, Simbolo.TipoVariable.ENTERO)
 		        && validar_tipo(r2.tipo, Simbolo.TipoVariable.ENTERO);
 		    //TODO: COMPROBAR DIVISION POR 0
-		    if ( ok && comparar_tipos(r1.tipo,r2.tipo,Simbolo.TipoVariable.ENTERO))
+		    if ( ok && comparar_tipos(r1.tipo,r2.tipo,Simbolo.TipoVariable.ENTERO,1))
             {
                 if ( r2.valorEnt == 0 ) {
-                    miniLeng.error_semantico("Division por 0");
+                    miniLeng.error_semantico("Division por 0", token);
                     resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
                 }
                 else{
@@ -766,7 +839,7 @@ RegistroExpr termino(Globals g) :
 		    ok = validar_tipo(r1.tipo, Simbolo.TipoVariable.ENTERO)
 		        && validar_tipo(r2.tipo, Simbolo.TipoVariable.ENTERO);
             //TODO: COMPROBAR MOD POR 0
-		    if ( ok && comparar_tipos(r1.tipo,r2.tipo,Simbolo.TipoVariable.ENTERO))
+		    if ( ok && comparar_tipos(r1.tipo,r2.tipo,Simbolo.TipoVariable.ENTERO,1))
             {
                 if ( r2.valorEnt == 0 ) {
                     miniLeng.error_semantico("Operacion modulo por 0");
@@ -784,7 +857,7 @@ RegistroExpr termino(Globals g) :
 		case AND:
 		    ok = validar_tipo(r1.tipo, Simbolo.TipoVariable.BOOLEANO)
 		        && validar_tipo(r2.tipo, Simbolo.TipoVariable.BOOLEANO);
-		    if ( ok && comparar_tipos(r1.tipo,r2.tipo,Simbolo.TipoVariable.BOOLEANO))
+		    if ( ok && comparar_tipos(r1.tipo,r2.tipo,Simbolo.TipoVariable.BOOLEANO,1))
             {
                 resul.tipo = Simbolo.TipoVariable.BOOLEANO;
                 resul.valorBool = r1.valorBool & r2.valorBool;
@@ -1039,13 +1112,13 @@ SKIP :
 
 TOKEN : /*  Reservadas */
 {
-	< tPROGRAMA : "programa" > { System.out.println("tPROGRAMA reconocido"); }
+	< tPROGRAMA : "programa" > 
 | 	< tVAR : "var" >
 | 	< tAND: "and" >
 | 	< tOR: "or" >
 | 	< tNOT: "not" >
-| 	< tPRINCIPIO : "principio" > { System.out.println("Principio reconocido"); } 
-| 	< tFIN: "fin" > { System.out.println("Fin reconocido"); }
+| 	< tPRINCIPIO : "principio" > 
+| 	< tFIN: "fin" > 
 | 	< tSI: "si" >
 | 	< tENT: "ent" >
 | 	< tSI_NO : "si_no" >
