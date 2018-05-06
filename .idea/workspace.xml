@@ -2,10 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8cbcb7bf-1827-4b70-99ff-64958abb1482" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/miniLeng/src/miniLeng.jj" beforeDir="false" afterPath="$PROJECT_DIR$/miniLeng/src/miniLeng.jj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/miniLeng/src/pruebas2.txt" beforeDir="false" afterPath="$PROJECT_DIR$/miniLeng/src/pruebas2.txt" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -33,8 +31,8 @@
       <file leaf-file-name="miniLeng.jj" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/miniLeng/src/miniLeng.jj">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="183">
-              <caret line="867" column="77" selection-start-line="867" selection-start-column="77" selection-end-line="867" selection-end-column="77" />
+            <state relative-caret-position="255">
+              <caret line="17" column="1" lean-forward="true" selection-start-line="17" selection-start-column="1" selection-end-line="17" selection-end-column="1" />
             </state>
           </provider>
         </entry>
@@ -68,7 +66,7 @@
       <file leaf-file-name="Simbolo.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/miniLeng/src/miniLeng/Simbolo.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1020">
+            <state relative-caret-position="558">
               <caret line="102" column="30" selection-start-line="102" selection-start-column="30" selection-end-line="102" selection-end-column="30" />
             </state>
           </provider>
@@ -88,12 +86,10 @@
   <component name="FindInProjectRecents">
     <findStrings>
       <find>mientras</find>
-      <find>expresion</find>
       <find>expresion(Glo</find>
       <find>error_Semantico</find>
       <find>expresion(Gl</find>
       <find>expresion(</find>
-      <find>asignacio</find>
       <find>seleccion</find>
       <find>lista_sentencias</find>
       <find>sentencia</find>
@@ -101,6 +97,9 @@
       <find>Identificador desconocido</find>
       <find>tratar</find>
       <find>Identificador</find>
+      <find>errorSemantico</find>
+      <find>asignacio</find>
+      <find>expresion</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -163,6 +162,13 @@
               <item name="miniLeng-javacc" type="462c0819:PsiDirectoryNode" />
               <item name="miniLeng" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="miniLeng-javacc" type="b2602c69:ProjectViewProjectNode" />
+              <item name="miniLeng-javacc" type="462c0819:PsiDirectoryNode" />
+              <item name="miniLeng" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="miniLeng" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -249,12 +255,27 @@
       <updated>1525085245334</updated>
       <workItem from="1525085249173" duration="637000" />
       <workItem from="1525085905705" duration="8358000" />
-      <workItem from="1525594393373" duration="2151000" />
+      <workItem from="1525594393373" duration="3068000" />
     </task>
+    <task id="LOCAL-00001" summary="if añadido, mensajes de errores (faltan leer y escribir por hacer)">
+      <created>1525596778515</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1525596778515</updated>
+    </task>
+    <task id="LOCAL-00002" summary="if añadido, mensajes de errores (faltan leer y escribir por hacer)">
+      <created>1525597114710</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1525597114710</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="11146000" />
+    <option name="totallyTimeSpent" value="12063000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -274,12 +295,12 @@
       <window_info anchor="right" id="Palette&#9;" order="8" />
       <window_info id="Image Layers" order="7" />
       <window_info anchor="right" id="Capture Analysis" order="4" />
-      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.48867315" side_tool="true" visible="true" weight="0.15457876" />
+      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.50161815" side_tool="true" visible="true" weight="0.20805861" />
       <window_info anchor="right" id="Maven Projects" order="7" weight="0.32962668" />
       <window_info anchor="bottom" id="Database Changes" order="8" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Version Control" order="11" weight="0.20805861" />
+      <window_info anchor="bottom" id="Version Control" order="11" sideWeight="0.49838188" visible="true" weight="0.20805861" />
       <window_info anchor="bottom" id="Run" order="3" />
-      <window_info anchor="bottom" id="Terminal" order="9" sideWeight="0.51132685" visible="true" weight="0.15457876" />
+      <window_info anchor="bottom" id="Terminal" order="9" sideWeight="0.5105178" weight="0.15457876" />
       <window_info id="Capture Tool" order="5" />
       <window_info id="Designer" order="3" />
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.25" />
@@ -305,6 +326,10 @@
   </component>
   <component name="VcsContentAnnotationSettings">
     <option name="myLimit" value="2678400000" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="if añadido, mensajes de errores (faltan leer y escribir por hacer)" />
+    <option name="LAST_COMMIT_MESSAGE" value="if añadido, mensajes de errores (faltan leer y escribir por hacer)" />
   </component>
   <component name="antWorkspaceConfiguration">
     <option name="IS_AUTOSCROLL_TO_SOURCE" value="false" />
@@ -366,13 +391,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/miniLeng/src/miniLeng/Simbolo.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1020">
-          <caret line="102" column="30" selection-start-line="102" selection-start-column="30" selection-end-line="102" selection-end-column="30" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/miniLeng/bin/miniLeng.jj">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
@@ -391,10 +409,17 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/miniLeng/src/miniLeng/Simbolo.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="558">
+          <caret line="102" column="30" selection-start-line="102" selection-start-column="30" selection-end-line="102" selection-end-column="30" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/miniLeng/src/miniLeng.jj">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="183">
-          <caret line="867" column="77" selection-start-line="867" selection-start-column="77" selection-end-line="867" selection-end-column="77" />
+        <state relative-caret-position="255">
+          <caret line="17" column="1" lean-forward="true" selection-start-line="17" selection-start-column="1" selection-end-line="17" selection-end-column="1" />
         </state>
       </provider>
     </entry>

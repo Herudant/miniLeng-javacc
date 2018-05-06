@@ -12,6 +12,7 @@ import java.io.*;
 import miniLeng.Simbolo;
 import miniLeng.Tabla_simbolos;
 import miniLeng.Globals;
+import miniLeng.RegistroExpr;
 
 public class miniLeng
 {
@@ -174,7 +175,7 @@ void identificadores(Globals g, Simbolo.TipoVariable tipoVar) :
 	  //TODO: Puede ser otro tipo de error
 	  s =  g.t.buscar_simbolo(t1.image, g.nivel);
 		if ( s != null && s.esVisible() ) 
-		    miniLeng.errorSemantico("Identificador duplicado", t1);
+		    miniLeng.error_semantico("Identificador duplicado", t1);
 		else
 			g.t.introducir_variable(t1.image, tipoVar, g.nivel, g.dir);
 	}
@@ -182,7 +183,7 @@ void identificadores(Globals g, Simbolo.TipoVariable tipoVar) :
 	{
 	  s =  g.t.buscar_simbolo(t2.image, g.nivel);
 		if ( s != null && s.esVisible() ) 
-		    miniLeng.errorSemantico("Identificador duplicado", t2);
+		    miniLeng.error_semantico("Identificador duplicado", t2);
 		else 
 			g.t.introducir_variable(t2.image, tipoVar, g.nivel, g.dir);
 	}	
@@ -257,7 +258,7 @@ void cabecera_accion(Globals g) :
 	  s = g.t.introducir_accion(t1.image,g.nivel,g.dir);
 	  if ( s == null ) {
 		// Existe el simbolo en el mismo nivel
-		miniLeng.errorSemantico("Identificador duplicado", t1);
+		miniLeng.error_semantico("Identificador duplicado", t1);
 	  }
 	  g.nivel++;
 	}
@@ -294,7 +295,7 @@ void lista_parametros(Globals g, Simbolo s, Simbolo.TipoVariable tipoVar, Simbol
 	{
 	  //TODO: Puede ser otro tipo de error
 		if ( g.t.buscar_simbolo(t1.image, g.nivel) != null) 
-		    miniLeng.errorSemantico("Identificador duplicado", t1);
+		    miniLeng.error_semantico("Identificador duplicado", t1);
 		else { 
 			g.t.introducir_parametro(t1.image, tipoVar, tipoParam, g.nivel, g.dir);
 			if ( s != null && s.esAccion())
@@ -304,7 +305,7 @@ void lista_parametros(Globals g, Simbolo s, Simbolo.TipoVariable tipoVar, Simbol
      ( "," t2 = < tIDENTIFICADOR >
 	{
 		if ( g.t.buscar_simbolo(t2.image, g.nivel) != null) 
-		    miniLeng.errorSemantico("Identificador duplicado", t2);
+		    miniLeng.error_semantico("Identificador duplicado", t2);
 		else { 
 			g.t.introducir_parametro(t2.image, tipoVar, tipoParam, g.nivel, g.dir);
 			if ( s != null && s.esAccion())
@@ -419,7 +420,7 @@ void asignacion(Globals g, Token t) :
             tipo = Simbolo.TipoVariable.DESCONOCIDO;
         }
         else{
-            tipo = s.getTipo();
+            tipo = s.getVariable();
         }
      }
      r = expresion(g) ";"
@@ -601,22 +602,22 @@ RegistroExpr expresion(Globals g) :
             else {
                 switch (op) {
                     case Simbolo.TipoOperador.GT:
-                        resul.valorEnt = r1.valorBool > r2.valorBool;
+                        resul.valorBool = r1.valorBool > r2.valorBool;
             		    break;
             	    case Simbolo.TipoOperador.LT:
-                        resul.valorEnt = r1.valorBool < r2.valorBool;
+                        resul.valorBool = r1.valorBool < r2.valorBool;
             		    break;
             	    case Simbolo.TipoOperador.GE:
-                        resul.valorEnt = r1.valorBool >= r2.valorBool;
+                        resul.valorBool = r1.valorBool >= r2.valorBool;
             			break;
             	    case Simbolo.TipoOperador.LE:
-                        resul.valorEnt = r1.valorBool <= r2.valorBool;
+                        resul.valorBool = r1.valorBool <= r2.valorBool;
             			break;
              	    case Simbolo.TipoOperador.EQ:
-                         resul.valorEnt = r1.valorBool == r2.valorBool;
+                         resul.valorBool = r1.valorBool == r2.valorBool;
              			break;
             	    case Simbolo.TipoOperador.NE:
-                        resul.valorEnt = r1.valorBool != r2.valorBool;
+                        resul.valorBool = r1.valorBool != r2.valorBool;
             			break;
             	    default:
             		    break;
@@ -844,7 +845,7 @@ RegistroExpr factor(Globals g) :
  |  < tENTACAR > "(" r1 = expresion(g) ")"
  {
 	if ( (r1.tipo != Simbolo.TipoVariable.ENTERO)
-	     && (t1.tipo != Simbolo.TipoVariable.DESCONOCIDO)) {
+	     && (r1.tipo != Simbolo.TipoVariable.DESCONOCIDO)) {
       miniLeng.error_semantico("La expresion no se puede convertir en un carácter válido");
       resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
     }
@@ -856,7 +857,7 @@ RegistroExpr factor(Globals g) :
  |  < tCARAENT > "(" r1 = expresion(g) ")"
  {
 	if ( (r1.tipo != Simbolo.TipoVariable.CHAR)
-	     && (t1.tipo != Simbolo.TipoVariable.DESCONOCIDO)) {
+	     && (r1.tipo != Simbolo.TipoVariable.DESCONOCIDO)) {
       miniLeng.error_semantico("La expresion no se puede convertir en un valor válido");
       resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
     }
