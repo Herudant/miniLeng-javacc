@@ -275,8 +275,7 @@ void cabecera_accion(Globals g) :
     t1 = < tIDENTIFICADOR >
 	{
 	  //Introduce en la tabla la accion
-	  s = g.t.introducir_accion(t1.image,g.nivel,g.dir);
-	  if ( s == null ) {
+	  if ( (s = g.t.introducir_accion(t1.image,g.nivel,g.dir)) == null ) {
 		// Existe el simbolo en el mismo nivel
 		miniLeng.error_semantico("Identificador duplicado", t1);
 	  }
