@@ -1,0 +1,6 @@
+
+programa pruebas;
+	entero aux;
+principio
+	aux := 4 * 2 + aux;
+fin

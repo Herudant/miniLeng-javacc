@@ -13,6 +13,7 @@ import miniLeng.Simbolo;
 import miniLeng.Tabla_simbolos;
 import miniLeng.Globals;
 import miniLeng.RegistroExpr;
+import miniLeng.ASTNode;
 import java.util.ArrayList;
 
 public class miniLeng
@@ -36,7 +37,8 @@ public class miniLeng
 	    return;
 	  }
 	  */
-	  file = "/Users/heru/git/miniLeng-javacc/miniLeng/src/pruebas4.txt";
+	  //file = "/Users/heru/git/miniLeng-javacc/miniLeng/src/pruebas4.txt";
+	  file = "/Users/heru/git/miniLeng/miniLeng-javacc/miniLeng/src/pruebas5.txt";
 	  System.out.println(file);
 	  
 	  try {
@@ -103,6 +105,14 @@ public class miniLeng
     }
     return resul;
   }
+
+  public static void formarNodoAST(ASTNode root, ASTNode left, ASTNode right, ASTNode.TipoNodo type, Simbolo.TipoOperador op) {
+     // Generacion de codigo
+     root.setType(type);
+     root.setTypeOp(op);
+     root.setLeft(left);
+     root.setRight(right);
+  }
 }
 
   
@@ -126,15 +136,18 @@ void programa(Globals g) :
   try { 
 	<tPROGRAMA> t1 = <tIDENTIFICADOR> ";"
 	{
-	  //TODO: Comprobar que no existe otro programa
-	  g.t.introducir_programa(t1.image, 0);
+	  //TODO: Comprobar que no existe otro programa <TFIN >?
+	  g.setDireccionInicial();
+	  g.t.introducir_programa(t1.image, g.dir);
+	  g.ast.crearAST(t1.image);
 	}
-	declaracion_variables(g) declaracion_acciones(g)
+	declaracion_variables(g)
+	declaracion_acciones(g)
 	bloque_sentencias(g)
   }
   catch (Exception e)
   {
-	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
+	miniLeng.tratarErrorSintactico(token.beginLine, token.beginColumn, token.image);
 	System.out.println(e.getMessage());    
   }
 }
@@ -413,6 +426,7 @@ void asignacion(Globals g, Token t) :
  Simbolo s;
  Simbolo.TipoVariable tipo;
  Boolean ok = true;
+ ASTNode node;
 }
 {
   try { 
@@ -427,7 +441,7 @@ void asignacion(Globals g, Token t) :
             ok = false;
         }
         else if (s.esParametro() && s.esValor()){
-            miniLeng.error_semantico("No se puede realizar una asignacion a un parametro", t);
+            miniLeng.error_semantico("No se permote realizar una asignacion a un parametro pasado como valor", t);
             tipo = Simbolo.TipoVariable.DESCONOCIDO;
             ok = false;
         }
@@ -442,6 +456,12 @@ void asignacion(Globals g, Token t) :
         {
             miniLeng.error_semantico("Tipos incompatibles en la asignacion", t);
         }
+        else {
+            // Insertar nodo ASG en AST (Left: variable, Right: expresion)
+			node = g.ast.insertar_inst(t.image,ASTNode.TipoNodo.ASG);
+			node.setLeft(new ASTNode(t.image));
+			node.setRight(r.nodoAST);
+        }
      }
   }
   catch (Exception e)
@@ -453,7 +473,7 @@ void asignacion(Globals g, Token t) :
 
 /* invocacion_accion ::= argumentos ";" */
 void invocacion_accion(Globals g, Token t) :
-{ Simbolo s; }
+{ Simbolo s; boolean ok = false; }
 {
   try { 
      {
@@ -467,7 +487,13 @@ void invocacion_accion(Globals g, Token t) :
             miniLeng.error_semantico("No se puede realizar una llamda a una accion sobre un parametro", t);
         }
      }
-	 argumentos(g, s) ";"
+	 (argumentos(g, s) { ok=true; })? ";"
+	 {
+		// Compruebo los parametros de la invocacción en caso de llamarse sin parametros
+      	if(!ok && s!= null && s.getNum_params() != 0) {
+        	miniLeng.error_semantico("linea " + token.beginLine + "  -  Se esperaban " + s.getNum_params() + " parámetros al invocar a la accion " + s.getNombre());
+    	}
+     }
   }
   catch (Exception e)
   {
@@ -586,10 +612,17 @@ void lista_escribibles(Globals g) :
 
 /* argumentos ::= ( "(" lista_expresiones ")" )? */
 void argumentos(Globals g, Simbolo s) : 
-{}
+{boolean ok=false;}
 {
   try { 
-    "(" (lista_expresiones(g, s))? ")"
+    "(" (lista_expresiones(g, s) { ok=true; })? ")"
+    {
+		// Compruebo los parametros de la invocacción en caso de llamarse sin parametros
+      	if(!ok && s != null && s.getNum_params() != 0) {
+        	miniLeng.error_semantico("linea " + token.beginLine + "  -  Se esperaban " + s.getNum_params() + " parámetros al invocar a la accion " + s.getNombre());	
+    	}
+    }
+    
   }
   catch (Exception e)
   {
@@ -617,14 +650,17 @@ void lista_expresiones(Globals g, Simbolo s) :
 		else{
 			// Comprobar cada tipo
 			for(Simbolo accion_param : s.getLista_simbolos()) {
-				if(accion_param.getTipo()) {
+
+			  	r = params.get(0);
+			  	if (r.clase == Simbolo.ClaseParametro.VAL && accion_param.esValor() ) {
+			  	  miniLeng.error_semantico("No se puede pasar un parámetro por valor como referencia en la invocación a la accion");
+			  	}
+				if(!miniLeng.validar_tipo(r.tipo, accion_param.getVariable())) {
+				  break;
 				}
-				
+				params.remove(0);
 			}
 		}
-
-		  
-		
 
     }
   }
@@ -796,6 +832,9 @@ RegistroExpr expresion_simple(Globals g) :
 		default:
 			break;
 	   }
+	   // Generación de código
+	   resul.nodoAST = new ASTNode();
+       miniLeng.formarNodoAST(resul.nodoAST, r1.nodoAST, r2.nodoAST, ASTNode.TipoNodo.OP,op);
 	}
 	)*
 	{
@@ -820,6 +859,7 @@ RegistroExpr termino(Globals g) :
   RegistroExpr resul = new RegistroExpr();
   Simbolo.TipoOperador op;
   Boolean ok;
+
 }
 {
   try { 
@@ -827,7 +867,6 @@ RegistroExpr termino(Globals g) :
     ( op = operador_multiplicativo(g)
       r2 = factor(g)
 {
-	  ok = true;
 	  //TODO: Comproboar overflow/underflow
 	  switch (op) {
 		case MUL:
@@ -895,6 +934,9 @@ RegistroExpr termino(Globals g) :
 		default:
 			break;
 	   }
+       // Generacion de codigo
+       resul.nodoAST = new ASTNode();
+       miniLeng.formarNodoAST(resul.nodoAST, r1.nodoAST, r2.nodoAST, ASTNode.TipoNodo.OP,op);
 	}
 
     )*
@@ -983,6 +1025,7 @@ RegistroExpr factor(Globals g) :
    }
    else {
      resul.tipo = s.getVariable();
+     resul.clase = s.getParametro();
    }
    return resul;
  }
@@ -1002,6 +1045,7 @@ RegistroExpr factor(Globals g) :
  {
    resul.valorEnt = Integer.parseInt(t.image);
    resul.tipo = Simbolo.TipoVariable.ENTERO;
+   resul.nodoAST = new ASTNode(resul.valorEnt);
    return resul;
  }
  |  < tTRUE >

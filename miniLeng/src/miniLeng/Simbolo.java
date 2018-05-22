@@ -124,11 +124,11 @@ public class Simbolo {
 									int nivel) 
 	{
 		Simbolo s = new Simbolo(TipoSimbolo.PARAMETRO,  // TipoSimbolo
-								variable,			  	// TipoVariable
-								parametro,   			// ClaseParametro
+								tipo_var,			  	// TipoVariable
+								param,   			// ClaseParametro
 								nombre,				 	// Nombre
 								nivel,					// Nivel
-								dir	);					// Dir
+								0);					// Dir
 		boolean esta = false;
 		for ( Simbolo simb : this.lista_parametros) {
 			if (simb.nombre == nombre) {
