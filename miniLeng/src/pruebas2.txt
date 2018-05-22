@@ -1,14 +1,13 @@
 programa pruebas;
 	booleano headivinado;
 
-accion foo (val entero bar1; ref entero bar2);
+accion foo (val entero bar1; ref entero bar2, bar1);
 	booleano headivinado;
 	principio
 		pepe(a,b);
 	fin
 	
 principio
+	pepe(a,b);
 	pepin := 5;
-	headivinado := 1;
-	headivinado := true;
 fin
