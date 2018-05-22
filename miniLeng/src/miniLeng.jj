@@ -834,7 +834,7 @@ RegistroExpr expresion_simple(Globals g) :
 	   }
 	   // Generación de código
 	   resul.nodoAST = new ASTNode();
-       miniLeng.formarNodoAST(resul.nodoAST, r1.nodoAST, r2.nodoAST, ASTNode.TipoNodo.OP,op);
+       miniLeng.formarNodoAST(resul.nodoAST, r2.nodoAST, r1.nodoAST, ASTNode.TipoNodo.OP,op);
 	}
 	)*
 	{
@@ -966,7 +966,8 @@ RegistroExpr factor(Globals g) :
 {
   try { 
     "-" r1 = factor(g)
-  {	
+  {
+    // Comprobar si es del tipo ENTERO o DESCONOCIDO
 	if ( (r1.tipo != Simbolo.TipoVariable.ENTERO)
 	     && (r1.tipo != Simbolo.TipoVariable.DESCONOCIDO)) {
       miniLeng.error_semantico("Tipo incompatible, se esperaba entero");
@@ -979,6 +980,7 @@ RegistroExpr factor(Globals g) :
   }
  |  < tNOT > r1 = factor(g)
  {
+    // Comprobar si es del tipo BOOL o DESCONOCIDO
 	if ( (r1.tipo != Simbolo.TipoVariable.BOOLEANO)
 	     && (r1.tipo != Simbolo.TipoVariable.DESCONOCIDO)) {
       miniLeng.error_semantico("Tipo incompatible, se esperaba booleano");
@@ -995,6 +997,7 @@ RegistroExpr factor(Globals g) :
  }
  |  < tENTACAR > "(" r1 = expresion(g) ")"
  {
+    // Comprobar si es del tipo ENTERO o DESCONOCIDO
 	if ( (r1.tipo != Simbolo.TipoVariable.ENTERO)
 	     && (r1.tipo != Simbolo.TipoVariable.DESCONOCIDO)) {
       miniLeng.error_semantico("La expresion no se puede convertir en un carácter válido");
@@ -1007,6 +1010,7 @@ RegistroExpr factor(Globals g) :
  }
  |  < tCARAENT > "(" r1 = expresion(g) ")"
  {
+    // Comprobar si es del tipo CHAR o DESCONOCIDO
 	if ( (r1.tipo != Simbolo.TipoVariable.CHAR)
 	     && (r1.tipo != Simbolo.TipoVariable.DESCONOCIDO)) {
       miniLeng.error_semantico("La expresion no se puede convertir en un valor válido");
@@ -1019,14 +1023,15 @@ RegistroExpr factor(Globals g) :
  }
  |  t = < tIDENTIFICADOR >
  {
-   s = g.t.buscar_simbolo(t.image,g.nivel);
-   if ( s == null ) {
+   // Comprobar si es del tipo ENTERO o DESCONOCIDO
+   if ( (s = g.t.buscar_simbolo(t.image,g.nivel)) == null ) {
      miniLeng.error_semantico("Identificador desconocido", t);
      resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
    }
    else {
      resul.tipo = s.getVariable();
      resul.clase = s.getParametro();
+     resul.nodoAST = new ASTNode(t.image, ASTNode.TipoNodo.VAR);
    }
    return resul;
  }
@@ -1034,12 +1039,14 @@ RegistroExpr factor(Globals g) :
  {
    resul.valorString = t.image;
    resul.tipo = Simbolo.TipoVariable.CHAR;
+   resul.nodoAST = new ASTNode(t.image);
    return resul;
  }
  |  t = < tCONSTCAD >
  {
    resul.valorString = t.image;
    resul.tipo = Simbolo.TipoVariable.CADENA;
+   resul.nodoAST = new ASTNode(t.image);
    return resul;
  }
  |  t = < tCONSTENTERA >
@@ -1053,12 +1060,16 @@ RegistroExpr factor(Globals g) :
  {
    resul.valorBool = true;
    resul.tipo = Simbolo.TipoVariable.BOOLEANO;
+   // Se utiliza un 1 como entero para guardar una constante TRUE
+   resul.nodoAST = new ASTNode(1);
    return resul;
  }
  |  < tFALSE >
  {
    resul.valorBool = false;
    resul.tipo = Simbolo.TipoVariable.BOOLEANO;
+   // Se utiliza un 1 como entero para guardar una constante FALSE
+   resul.nodoAST = new ASTNode(-1);
    return resul;
  }
   }
