@@ -479,8 +479,7 @@ void invocacion_accion(Globals g, Token t) :
      {
         //TODO: Realizar mas comprobaciones
         // Comprobar que existe el identificador
-        s = g.t.buscar_simbolo(t.image, g.nivel);
-        if ( s == null ){
+        if ( (s = g.t.buscar_simbolo(t.image, g.nivel)) == null ){
             miniLeng.error_semantico("Identificador desconocido en la llamada a la accion", t);
         }
         else if (!s.esAccion()){
