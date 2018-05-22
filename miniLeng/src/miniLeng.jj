@@ -934,6 +934,7 @@ RegistroExpr termino(Globals g) :
 		default:
 			break;
 	   }
+	   
        // Generacion de codigo
        resul.nodoAST = new ASTNode();
        miniLeng.formarNodoAST(resul.nodoAST, r1.nodoAST, r2.nodoAST, ASTNode.TipoNodo.OP,op);
