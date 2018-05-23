@@ -15,7 +15,7 @@ public class ASTNode {
 	ASTNode		next;  // Indica la siguiente instruccion
 	
 	public enum TipoNodo {
-	   DSG , ACC, WHILE, IF, OP, ASG, RD, RW, VAR
+	   DSG , ACC, WHILE, IF, OP, ASG, RD, RW, VAR, COND, CONST
 	}
 	
 	

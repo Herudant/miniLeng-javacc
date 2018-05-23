@@ -15,11 +15,18 @@ public class AST {
 		this.last_inst = root;
 	}
 	
-	public ASTNode insertar_inst(String name, ASTNode.TipoNodo type) {
+	public ASTNode insertar(String name, ASTNode.TipoNodo type) {
 		ASTNode new_ins = new ASTNode(name, type);
 		this.last_inst.setNext(new_ins);
 		this.last_inst = new_ins;
 		
 		return new_ins;
+	}
+	
+	public void insertar(ASTNode nodo) {
+		last_inst = nodo;
+		while (last_inst != null) {
+			last_inst = last_inst.getNext();
+		}
 	}
 }

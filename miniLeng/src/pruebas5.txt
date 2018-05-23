@@ -1,6 +1,19 @@
 
 programa pruebas;
-	entero aux;
+	entero aux, d;
 principio
 	aux := 4 * 2 + aux;
+	aux := 4 + 1;
+	
+	mq (aux <> 4)
+		aux := aux - 1;
+		aux := 3+2;
+	fmq
+	
+	si d<=0 ent
+		aux := 1;
+    si_no
+    	aux := 0;
+    fsi	
+    
 fin

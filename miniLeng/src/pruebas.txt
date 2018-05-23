@@ -14,6 +14,8 @@ accion a2 (val entero b; ref entero a);
 		abc ;
 	fin
 
+
+	
 principio
 	variable := 5;
 	variable := 5 mod 5;

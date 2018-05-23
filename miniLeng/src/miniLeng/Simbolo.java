@@ -112,7 +112,7 @@ public class Simbolo {
 	    DESCONOCIDO, ENTERO, BOOLEANO, CHAR, CADENA
 	}
 	public enum ClaseParametro {
-	    VAL, REF
+	    VAL, REF, VAR, CONST
 	}
 	
 	/*************************************************************************/
