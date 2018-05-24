@@ -1,0 +1,72 @@
+;Programa pruebas.
+	ENP L0
+;Comienzo del programa pruebas.
+L0:
+; Direccion aux
+	SRF	0	3
+	STC	2
+	STC	4
+	DIV
+; variable aux
+	SRF	0	3
+	DRF
+	PLUS
+; Asignacion a aux
+	ASG
+; Direccion aux
+	SRF	0	3
+; variable aux
+	SRF	0	3
+	DRF
+	STC	1
+	PLUS
+; Asignacion a aux
+	ASG
+L1:
+; MQ
+; Comprobar condicion
+; variable aux
+	SRF	0	3
+	DRF
+	STC	4
+; condicion
+	NEQ
+	JMF	2
+; Lista de sentencias
+; Direccion aux
+	SRF	0	3
+; variable aux
+	SRF	0	3
+	DRF
+	STC	1
+	SBT
+; Asignacion a aux
+	ASG
+; Direccion aux
+	SRF	0	3
+	STC	3
+	STC	2
+	PLUS
+; Asignacion a aux
+	ASG
+; Fin MQ
+L2:
+; SI
+; Comprobar condicion
+; variable d
+	SRF	0	4
+	DRF
+	STC	0
+; condicion
+	LTE
+	JMF	3
+; Lista de sentencias
+; Direccion aux
+	SRF	0	3
+	STC	1
+; Asignacion a aux
+	ASG
+; Fin SI
+L3:
+;Fin de programa pruebas.
+	LVP

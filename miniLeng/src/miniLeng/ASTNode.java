@@ -9,6 +9,7 @@ public class ASTNode {
 	TipoOperador typeOp;
 	String		name;
 	int			value;
+	int			dir;
 	ASTNode		cond;	// Solo se usa en los tipos WHILE e IF
 	ASTNode		left;
 	ASTNode		right;  
@@ -20,47 +21,41 @@ public class ASTNode {
 	
 	
 	public ASTNode(TipoNodo type, String name, int value, ASTNode cond, ASTNode left, ASTNode right) {
+		super();
 		this.type = type;
-		this.typeOp = null;
 		this.name = name;
 		this.value = value;
 		this.cond = cond;
 		this.left = left;
 		this.right = right;
-		this.next = null;
 	}
 	
 	public ASTNode(String name, TipoNodo type) {
+		super();
 		this.type = type;
-		this.typeOp = null;
 		this.name = name;
-		this.value = 0;
-		this.cond = null;
-		this.left = null;
-		this.right = null;	
-		this.next = null;
+	}
+	
+	public ASTNode(int value, TipoNodo type) {
+		super();
+		this.type = type;
+		this.value = value;
 	}
 	
 	public ASTNode(String name) {
-		this.type = null;
-		this.typeOp = null;
+		super();
 		this.name = name;
-		this.value = 0;
-		this.cond = null;
-		this.left = null;
-		this.right = null;	
-		this.next = null;
+	}
+	
+	public ASTNode(String name, int dir) {
+		super();
+		this.name = name;
+		this.dir = dir;
 	}
 	
 	public ASTNode(int value) {
-		this.type = null;
-		this.typeOp = null;
-		this.name = "";
+		super();
 		this.value = value;
-		this.cond = null;
-		this.left = null;
-		this.right = null;
-		this.next = null;
 	}
 	
 	public ASTNode() {
@@ -72,6 +67,7 @@ public class ASTNode {
 		this.left = null;
 		this.right = null;	
 		this.next = null;
+		this.dir = 0;
 	}
 	
 	public TipoOperador getTypeOp() {
@@ -138,6 +134,15 @@ public class ASTNode {
 		this.next = next;
 	}
 
+	public int getDir() {
+		return dir;
+	}
+
+	public void setDir(int dir) {
+		this.dir = dir;
+	}
+
+	
 
 	
 }

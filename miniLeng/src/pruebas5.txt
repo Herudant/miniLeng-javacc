@@ -3,7 +3,7 @@ programa pruebas;
 	entero aux, d;
 principio
 	aux := 4 * 2 + aux;
-	aux := 4 + 1;
+	aux := aux + 1;
 	
 	mq (aux <> 4)
 		aux := aux - 1;
@@ -12,8 +12,6 @@ principio
 	
 	si d<=0 ent
 		aux := 1;
-    si_no
-    	aux := 0;
     fsi	
     
 fin

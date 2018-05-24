@@ -14,6 +14,7 @@ import miniLeng.Tabla_simbolos;
 import miniLeng.Globals;
 import miniLeng.RegistroExpr;
 import miniLeng.ASTNode;
+import miniLeng.GeneradorCodigo;
 import java.util.ArrayList;
 
 public class miniLeng
@@ -145,7 +146,21 @@ void programa(Globals g) :
 	declaracion_acciones(g)
 	sentencias = bloque_sentencias(g)
 	{
-		g.ast.insertar(sentencias);
+	    g.ast.insertar(sentencias);
+	    String etiqueta;
+	    GeneradorCodigo codigo = new GeneradorCodigo(t1.image);
+	    etiqueta = codigo.nueva_etiqueta();
+	    codigo.escribir(";Programa " + t1.image + ".");
+	    codigo.escribir("\tENP " + etiqueta);
+
+	    codigo.escribir(";Comienzo del programa " + t1.image + ".");
+
+	    codigo.escribir(etiqueta + ":");	    
+		codigo.escribir(sentencias);
+
+	    codigo.escribir(";Fin de programa " + t1.image + ".");
+	    codigo.escribir("\tLVP");
+	    codigo.cerrar();		
 	}
   }
   catch (Exception e)
@@ -199,16 +214,20 @@ void identificadores(Globals g, Simbolo.TipoVariable tipoVar) :
 	  s =  g.t.buscar_simbolo(t1.image, g.nivel);
 		if ( s != null && s.esVisible() ) 
 		    miniLeng.error_semantico("Identificador duplicado", t1);
-		else
+		else { 
 			g.t.introducir_variable(t1.image, tipoVar, g.nivel, g.dir);
+			g.dir++;
+		}
 	}
      ( "," t2 = < tIDENTIFICADOR>
 	{
 	  s =  g.t.buscar_simbolo(t2.image, g.nivel);
 		if ( s != null && s.esVisible() ) 
 		    miniLeng.error_semantico("Identificador duplicado", t2);
-		else 
+		else { 
 			g.t.introducir_variable(t2.image, tipoVar, g.nivel, g.dir);
+			g.dir++;
+		}
 	}	
      )*
   }
@@ -282,6 +301,7 @@ void cabecera_accion(Globals g) :
 		// Existe el simbolo en el mismo nivel
 		miniLeng.error_semantico("Identificador duplicado", t1);
 	  }
+	  g.setDireccionInicial();
 	  g.nivel++;
 	}
 
@@ -459,8 +479,7 @@ ASTNode asignacion(Globals g, Token t) :
      {
         //TODO: Realizar mas comprobaciones
         // Comprobar que existe el identificador
-        s = g.t.buscar_simbolo(t.image, g.nivel);
-        if ( s == null ){
+        if ( (s = g.t.buscar_simbolo(t.image, g.nivel)) == null ){
             miniLeng.error_semantico("Identificador desconocido en la parte izquierda de la asignacion", t);
             tipo = Simbolo.TipoVariable.DESCONOCIDO;
             ok = false;
@@ -485,7 +504,7 @@ ASTNode asignacion(Globals g, Token t) :
             // Insertar nodo ASG en AST (Left: variable, Right: expresion)
 			node = new ASTNode();
 			node.setType(ASTNode.TipoNodo.ASG);
-			node.setLeft(new ASTNode(t.image));
+			node.setLeft(new ASTNode(t.image, s.getDir()));
 			node.setRight(r.nodoAST);
         }
         return node;
@@ -563,7 +582,7 @@ ASTNode mientras_que(Globals g) :
 /* seleccion ::= < tSI > expresion < tENT > lista_sentencias ( < tSI_NO > lista_sentencias )? < tFSI > */
 ASTNode seleccion(Globals g) :
 {  RegistroExpr r; boolean ok;
-   ASTNode nodoSeleccion = null, sentencias;}
+   ASTNode nodoSeleccion = null, sentenciasL=null, sentenciasR=null;}
 {
   try { 
 	 < tSI > r = expresion(g)
@@ -576,9 +595,9 @@ ASTNode seleccion(Globals g) :
 		}
      }
 	< tENT >
-	sentencias = lista_sentencias(g)
+	sentenciasL = lista_sentencias(g)
 	{
-	   nodoSeleccion.setLeft(sentencias);
+	   nodoSeleccion.setLeft(sentenciasL);
 	}
 	(< tSI_NO >
 	{
@@ -587,11 +606,11 @@ ASTNode seleccion(Globals g) :
 			miniLeng.warning("Generacion de código muerto", token.beginLine);
 		}
 	}
-	sentencias = lista_sentencias(g)
+	sentenciasR = lista_sentencias(g)
 	)?  
 	< tFSI >
 	{
-		nodoSeleccion.setRight(sentencias);
+		nodoSeleccion.setRight(sentenciasR);
 		return nodoSeleccion;
     }
   }
@@ -1095,6 +1114,7 @@ RegistroExpr factor(Globals g) :
      resul.clase = (s.getParametro() != null) ? s.getParametro() : Simbolo.ClaseParametro.VAR;
      //resul.clase = s.getParametro();
      resul.nodoAST = new ASTNode(t.image, ASTNode.TipoNodo.VAR);
+     resul.nodoAST.setDir(s.getDir());
    }
    return resul;
  }
