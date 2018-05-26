@@ -1,6 +1,12 @@
 
 programa pruebas;
 	entero aux, d;
+	caracter pepe;
+	
+	accion foo(ref entero bar);
+	principio
+		bar := 1;
+	fin
 principio
 	aux := 4 * 2 + aux;
 	aux := aux + 1;
@@ -12,6 +18,10 @@ principio
 	
 	si d<=0 ent
 		aux := 1;
+	si_no
+		d := 1;
     fsi	
-    
+    leer(aux,d);
+    escribir("abc", pepe);
+    pepe := "hola";
 fin

@@ -66,7 +66,34 @@ L2:
 	STC	1
 ; Asignacion a aux
 	ASG
-; Fin SI
+	JMF	4
+; SI_NO
 L3:
+; Direccion d
+	SRF	0	4
+	STC	1
+; Asignacion a d
+	ASG
+; Fin SI
+L4:
+; Leer
+; variable aux
+	SRF	0	3
+	RD	1
+; variable d
+	SRF	0	4
+	RD	1
+; Escribir
+	STC	"abc"
+	WRT	0
+; variable pepe
+	SRF	0	5
+	DRF
+	WRT	0
+; Direccion pepe
+	SRF	0	5
+	STC	0
+; Asignacion a pepe
+	ASG
 ;Fin de programa pruebas.
 	LVP

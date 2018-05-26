@@ -1,12 +1,14 @@
 package miniLeng;
 
 import miniLeng.Simbolo.TipoOperador;
+import miniLeng.Simbolo.TipoVariable;
 
 public class ASTNode {
 
 
 	TipoNodo	type;
 	TipoOperador typeOp;
+	TipoVariable typeVar;
 	String		name;
 	int			value;
 	int			dir;
@@ -16,7 +18,7 @@ public class ASTNode {
 	ASTNode		next;  // Indica la siguiente instruccion
 	
 	public enum TipoNodo {
-	   DSG , ACC, WHILE, IF, OP, ASG, RD, RW, VAR, COND, CONST
+	   DSG , ACC, WHILE, IF, OP, ASG, FUN, RD, WR, VAR, COND, CONST
 	}
 	
 	
@@ -41,18 +43,25 @@ public class ASTNode {
 		this.type = type;
 		this.value = value;
 	}
-	
+	public ASTNode(TipoNodo type) {
+		super();
+		this.type = type;
+	}
+	public ASTNode(String name, TipoVariable typeVar) {
+		super();
+		this.name = name;
+		this.type = TipoNodo.VAR;
+		this.typeVar = typeVar;
+	}
 	public ASTNode(String name) {
 		super();
 		this.name = name;
 	}
-	
 	public ASTNode(String name, int dir) {
 		super();
 		this.name = name;
 		this.dir = dir;
 	}
-	
 	public ASTNode(int value) {
 		super();
 		this.value = value;
@@ -68,8 +77,17 @@ public class ASTNode {
 		this.right = null;	
 		this.next = null;
 		this.dir = 0;
+		this.typeVar = null;
 	}
 	
+	public TipoVariable getTypeVar() {
+		return typeVar;
+	}
+
+	public void setTypeVar(TipoVariable typeVar) {
+		this.typeVar = typeVar;
+	}
+
 	public TipoOperador getTypeOp() {
 		return typeOp;
 	}

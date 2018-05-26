@@ -124,29 +124,25 @@ void programa_completo(Globals g):
   programa(g) < EOF >
 }
 
-
 /*  programa ::= < tPROGRAMA > <tIDENTIFICADOR > ";"
 					declaracion_variables
 					declaracion_acciones
 					bloque_sentencias             */
 void programa(Globals g) : 
 { Token t1;
-  ASTNode acciones = null;
-  ASTNode sentencias = null; }
+  ASTNode acciones = null, sentencias = null;
+}
 {
   try { 
 	<tPROGRAMA> t1 = <tIDENTIFICADOR> ";"
 	{
 	  //TODO: Comprobar que no existe otro programa <TFIN >?
 	  g.setDireccionInicial();
-	  g.t.introducir_programa(t1.image, g.dir);
-	  g.ast.crearAST(t1.image);
 	}
 	declaracion_variables(g)
-	declaracion_acciones(g)
+	acciones = declaracion_acciones(g)
 	sentencias = bloque_sentencias(g)
 	{
-	    g.ast.insertar(sentencias);
 	    String etiqueta;
 	    GeneradorCodigo codigo = new GeneradorCodigo(t1.image);
 	    etiqueta = codigo.nueva_etiqueta();
@@ -170,7 +166,6 @@ void programa(Globals g) :
   }
 }
 
-
 /* declaracion_variables ::= (declaracion ";")* */
 void declaracion_variables(Globals g) : 
 {}
@@ -185,7 +180,6 @@ void declaracion_variables(Globals g) :
   }
 }
 
-
 /* declaracion ::= tipo_variables identificadores */
 void declaracion(Globals g) : 
 {Simbolo.TipoVariable tipoVar;}
@@ -199,9 +193,6 @@ void declaracion(Globals g) :
 	System.out.println(e.getMessage());       
   }
 }
-
-
-
 
 /* identificadores ::= < tIDENTIFICADOR > ( "," < tIDENTIFICADOR >)* */
 void identificadores(Globals g, Simbolo.TipoVariable tipoVar) : 
@@ -243,11 +234,39 @@ void identificadores(Globals g, Simbolo.TipoVariable tipoVar) :
 /******************************************** Acciones ********************************************/
 
 /* declaracion_acciones ::= (declaracion_accion)* */
-void declaracion_acciones(Globals g) : 
-{}
+ASTNode declaracion_acciones(Globals g) : 
+{
+  ASTNode accion = null, resul = null, aux = null;
+}
 {
   try { 
-    ( declaracion_accion(g) )*
+    (
+      accion = declaracion_accion(g)
+	{
+	  if(resul == null) {
+	    resul = accion;
+	  }
+	  else {
+	    // Si está en el primer nivel se enlacen al siguiente nodo
+	    // Si están en un nivel superior significa que son acciones anidadas en otras acciones
+	    // y se enlacen en el puntero ASTNode.cond
+	    aux = resul;
+	    if (g.nivel > 0) {
+			while(aux.getCond() != null){
+				aux = aux.getCond();
+			}
+			aux.setCond(accion);
+		}
+		else {
+			while(aux.getNext() != null){
+				aux = aux.getNext();
+			}
+			aux.setNext(accion);
+		}
+	  }
+	}
+    )*
+    { return resul; }
   }
   catch (Exception e)
   {
@@ -256,19 +275,23 @@ void declaracion_acciones(Globals g) :
   }
 }
 
-
 /* declaracion_accion ::= cabecera_accion ";"
 							declaracion_variables
 							declarracion_acciones
 							bloque sentencias	*/
-void declaracion_accion(Globals g) : 
-{}
+ASTNode declaracion_accion(Globals g) : 
+{
+  ASTNode cabecera = null,
+  		  acciones = null,
+          sentencias = null,
+  	      resul = null;
+}
 {
   try { 
-    cabecera_accion(g) ";"
+    cabecera = cabecera_accion(g) ";"
 	declaracion_variables(g) 
-	declaracion_acciones(g) 
-	bloque_sentencias(g)
+	acciones = declaracion_acciones(g) 
+	sentencias = bloque_sentencias(g)
 	{
 	  //Eliminamos variables del bloque y bajamos un nivel
 	  g.t.eliminar_variables(g.nivel);
@@ -276,6 +299,13 @@ void declaracion_accion(Globals g) :
 	  g.t.ocultar_parametros(g.nivel);
 	  g.t.eliminar_parametros_ocultos(g.nivel+1);
 	  g.nivel--;
+
+	  //Generamos rama del árbol AST ( raiz: nodo-accion ; izq: parametros de la accion ; der: bloque_sentencias)
+	  resul = cabecera;
+	  resul.setCond(acciones);
+	  resul.setRight(sentencias);
+	  return resul;
+	  
 	}
   }
   catch (Exception e)
@@ -286,10 +316,11 @@ void declaracion_accion(Globals g) :
 }
 
 /* cabecera_accion ::= < tACCION > < tIDENTIFICADOR > (parametros_formales)? */
-void cabecera_accion(Globals g) : 
+ASTNode cabecera_accion(Globals g) : 
 {
   Token t1;
   Simbolo s = null;
+  ASTNode resul = null;
  }
 {
   try { 
@@ -305,7 +336,9 @@ void cabecera_accion(Globals g) :
 	  g.nivel++;
 	}
 
-   (parametros_formales(g, s) )?
+   (resul = parametros_formales(g, s))?
+
+   { return resul;  }
   }
   catch (Exception e)
   {
@@ -315,11 +348,12 @@ void cabecera_accion(Globals g) :
 }
 
 /* parametros_formales ::= ( "(" parametros ")")? */
-void parametros_formales(Globals g, Simbolo s) : 
-{}
+ASTNode parametros_formales(Globals g, Simbolo s) : 
+{ASTNode params = null; }
 {
   try { 
-	 "(" (parametros(g, s))? ")"
+	 "(" (params = parametros(g, s))? ")"
+	 {	return params; }
   }
   catch (Exception e)
   {
@@ -329,34 +363,60 @@ void parametros_formales(Globals g, Simbolo s) :
 }
 
 /* lista_parametros ::= identificadores (";" paraemtros)? */
-void lista_parametros(Globals g, Simbolo s, Simbolo.TipoVariable tipoVar, Simbolo.ClaseParametro tipoParam) : 
-{Token t1, t2;}
+ASTNode lista_parametros(Globals g, Simbolo s_accion, Simbolo.TipoVariable tipoVar, Simbolo.ClaseParametro tipoParam) : 
+{Token t1, t2;
+ ASTNode params = null, aux = null;
+ ASTNode resul = new ASTNode("function",ASTNode.TipoNodo.FUN);
+}
 {
   try { 
     t1 = < tIDENTIFICADOR >
 	{
-	    s.add_param();
+	    s_accion.add_param(); //Aumento el contador de parametros de la accion 
 	  //TODO: Puede ser otro tipo de error
-		if ( g.t.buscar_simbolo(t1.image, g.nivel) != null) 
+		if (g.t.buscar_simbolo(t1.image, g.nivel) != null) { 
 		    miniLeng.error_semantico("Identificador duplicado", t1);
-		else { 
+		}
+		else {
 			g.t.introducir_parametro(t1.image, tipoVar, tipoParam, g.nivel, g.dir);
-			if ( s != null && s.esAccion())
-				s.introducir_parametro(t1.image, tipoVar, tipoParam, g.nivel);
+			if (s_accion != null && s_accion.esAccion()) { 
+				s_accion.introducir_parametro(t1.image, tipoVar, tipoParam, g.nivel);
+				resul.setLeft(new ASTNode(t1.image, tipoVar));
+			    resul.getLeft().setType(ASTNode.TipoNodo.VAR);
+		        resul.getLeft().setDir(g.dir);
+			}
+			g.dir++;
 		}
 	}
      ( "," t2 = < tIDENTIFICADOR >
 	{
-	  	s.add_param();
+	  	s_accion.add_param();
 		if ( g.t.buscar_simbolo(t2.image, g.nivel) != null) 
 		    miniLeng.error_semantico("Identificador duplicado", t2);
 		else { 
 			g.t.introducir_parametro(t2.image, tipoVar, tipoParam, g.nivel, g.dir);
-			if ( s != null && s.esAccion())
-				s.introducir_parametro(t2.image, tipoVar, tipoParam, g.nivel);
+			if ( s_accion != null && s_accion.esAccion()){
+				s_accion.introducir_parametro(t2.image, tipoVar, tipoParam, g.nivel);
+				aux = resul;
+	            while(aux.getLeft() != null) {
+			    	aux = aux.getLeft();
+	            }	  
+		        aux.setLeft(new ASTNode(t2.image, tipoVar));
+		        aux.getLeft().setType(ASTNode.TipoNodo.VAR);
+		        aux.getLeft().setDir(g.dir);
+		        aux = aux.getLeft();
+		        g.dir++;
+			}
 		}
 	}	
-     )* ( ";" parametros(g, s))?
+     )*
+
+     ( ";" params = parametros(g, s_accion))?
+    {
+      if(params != null)
+    	aux.setLeft(params);
+   	  return resul;
+    }
   }
   catch (Exception e)
   {
@@ -366,14 +426,16 @@ void lista_parametros(Globals g, Simbolo s, Simbolo.TipoVariable tipoVar, Simbol
 }
 
 /* parametros ::= clase_parametros tipo_variables lista_parametros */
-void parametros(Globals g, Simbolo s) : 
+ASTNode parametros(Globals g, Simbolo s) : 
 {
   Simbolo.TipoVariable tipoVar;
   Simbolo.ClaseParametro tipoParam;
+  ASTNode params = null;
  }
 {
   try { 
-    tipoParam = clase_parametros(g) tipoVar = tipo_variables(g) lista_parametros(g, s, tipoVar, tipoParam)
+    tipoParam = clase_parametros(g) tipoVar = tipo_variables(g) params = lista_parametros(g, s, tipoVar, tipoParam)
+    {  return params; }
   }
   catch (Exception e)
   {
@@ -383,12 +445,9 @@ void parametros(Globals g, Simbolo s) :
 }
 
 
-
-
 /***************************************************************************************************
 ***************************************************************************************************/
 /******************************************* Sentencias *******************************************/
-
 
 /* bloque_sentencias ::= < tPRINCIPIO > lista_sentencias < tFIN > */
 ASTNode bloque_sentencias(Globals g) : 
@@ -406,7 +465,6 @@ ASTNode bloque_sentencias(Globals g) :
 	System.out.println(e.getMessage());      
   }
 }
-
 
 /* lista_sentencias ::= ( sentencia )* */
 ASTNode lista_sentencias(Globals g) : 
@@ -451,8 +509,8 @@ ASTNode sentencia(Globals g) :
 		 | invocacion_accion(g, t)
 	 ]
 	| resul = mientras_que(g) 		{ return resul; }
-	| leer(g) ";"
-	| escribir(g) ";"
+	| resul = leer(g) ";"			{ return resul; }
+	| resul = escribir(g) ";" 		{ return resul; }			
 	| resul = seleccion(g) 			{ return resul;	}
 
 	
@@ -589,7 +647,10 @@ ASTNode seleccion(Globals g) :
      {
         //TODO: Comprobar codigo muerto
         ok=validar_tipo(r.tipo, Simbolo.TipoVariable.BOOLEANO);
-        if (ok) {
+        if ( ok && r.clase != Simbolo.ClaseParametro.VAR && r.valorBool == true  ) {
+			miniLeng.warning("Generacion de código muerto", token.beginLine);
+		}
+		else if (ok) {
 			nodoSeleccion = new ASTNode("if", ASTNode.TipoNodo.IF);
 			nodoSeleccion.setCond(r.nodoAST);
 		}
@@ -602,7 +663,7 @@ ASTNode seleccion(Globals g) :
 	(< tSI_NO >
 	{
 		// Comprobar que la sentencia no sea true y genere codigo muerto
-		if ( ok && r.valorBool == true ) {
+		if ( ok && r.clase != Simbolo.ClaseParametro.VAR && r.valorBool == true ) {
 			miniLeng.warning("Generacion de código muerto", token.beginLine);
 		}
 	}
@@ -621,12 +682,13 @@ ASTNode seleccion(Globals g) :
   }
 }
 
-/* leer ::= < tLEER > "(" lista_asinables ")" */
-void leer(Globals g) :
-{}
+/* leer ::= < tLEER > "(" lista_asignables ")" */
+ASTNode leer(Globals g) :
+{ ASTNode nodo_leer = null; }
 {
   try { 
-   <tLEER> "(" lista_asignables(g) ")"
+   <tLEER> "(" nodo_leer = lista_asignables(g) ")"
+   { return nodo_leer; }
   }
   catch (Exception e)
   {
@@ -636,11 +698,12 @@ void leer(Globals g) :
 }
 
 /* escribir ::= < tESCRIBIR > "(" lista_escribibles ")" */
-void escribir(Globals g) :
-{}
+ASTNode escribir(Globals g) :
+{ ASTNode resul = null; }
 {
   try { 
-   <tESCRIBIR> "(" lista_escribibles(g) ")"
+   <tESCRIBIR> "(" resul = lista_escribibles(g) ")"
+   { return resul; }
   }
   catch (Exception e)
   {
@@ -649,12 +712,57 @@ void escribir(Globals g) :
   }
 }
 
-/* lista_asinables ::= identificadores */
-void lista_asignables(Globals g) :
-{}
+/* lista_asignables ::= identificadores */
+ASTNode lista_asignables(Globals g) :
 {
-  try { 
-  	< tIDENTIFICADOR> ( "," < tIDENTIFICADOR> )*
+  Token t1, t2;
+  Simbolo s;
+  ASTNode aux = null, resul = new ASTNode("rd", ASTNode.TipoNodo.RD);
+}
+{
+  try {
+    // Estructura AST para operación de lectura:
+    // Se encadenan las variables en la rama derecha
+    //  1ª var - > right, 2ª var right.right ....
+  	t1 = < tIDENTIFICADOR>
+	{
+	   // Comprobar si existe en la tabla de simbolos
+	   if ( (s = g.t.buscar_simbolo(t1.image,g.nivel)) == null ) {
+	     miniLeng.error_semantico("Identificador desconocido", t1);
+	   }
+	   else if( s.getTipo() != Simbolo.TipoSimbolo.VARIABLE &&
+	   			( !s.esChar() && !s.esCadena() && !s.esEntero())) {
+		 miniLeng.error_semantico("Tipo de variable no válida en llamada a leer()", t1);
+	   }
+	   else {
+	     // Crea estructura AST
+		 resul.setRight(new ASTNode(t1.image, s.getVariable()));
+		 resul.getRight().setType(ASTNode.TipoNodo.VAR);
+		 resul.getRight().setDir(s.getDir());
+	   }
+	}
+  	( "," t2 = < tIDENTIFICADOR>
+	{
+	   // Comprobar si existe en la tabla de simbolos
+	   if ( (s = g.t.buscar_simbolo(t2.image,g.nivel)) == null ) {
+	     miniLeng.error_semantico("Identificador desconocido", t2);
+	   }
+	   else if( s.getTipo() != Simbolo.TipoSimbolo.VARIABLE &&
+	   			( !s.esChar() && !s.esCadena() && !s.esEntero())) {
+		 miniLeng.error_semantico("Tipo de variable no válida en llamada a leer()", t1);
+	   }
+	   else {
+	     aux = resul;
+	     while(aux.getRight() != null) {
+			aux = aux.getRight();
+	     }
+		 aux.setRight(new ASTNode(t2.image, s.getVariable()));
+		 aux.getRight().setType(ASTNode.TipoNodo.VAR);
+		 aux.getRight().setDir(s.getDir());
+	   }
+	}
+  	)*
+  	{ return resul; }
   }
   catch (Exception e)
   {
@@ -664,19 +772,76 @@ void lista_asignables(Globals g) :
 }
 
 /* lista_escribibles ::= (< tCONSTCAD > | < tCONSTCHAR >) ( "," (< tIDENTIFICADOR > | < tENTACAR >"("expresion")"))* */
-void lista_escribibles(Globals g) : 
-{  RegistroExpr r; }
+ASTNode lista_escribibles(Globals g) : 
+{  RegistroExpr r;
+   Token t;
+   Simbolo s;
+   boolean constCad = true;
+   ASTNode aux = null, resul = new ASTNode("wr", ASTNode.TipoNodo.WR);
+}
 {
-  try { 
-  (< tCONSTCAD > | < tCONSTCHAR >) ( "," (< tIDENTIFICADOR >  |  < tENTACAR > "(" r = expresion(g) ")" ) )*
+  try {
+    //< tENTACAR > "(" r = expresion(g) ")"
+   ( t = < tCONSTCAD > | t = < tCONSTCHAR > |  t = < tIDENTIFICADOR > { constCad = false; })
+	{
+		if (constCad) {
+			 resul.setRight(new ASTNode(t.image, Simbolo.TipoVariable.CADENA));
+			 resul.getRight().setType(ASTNode.TipoNodo.CONST);
+		}
+		else {
+		    if ( (s = g.t.buscar_simbolo(t.image,g.nivel)) == null ) {
+	           miniLeng.error_semantico("Identificador desconocido", t);
+	        }
+	        else if( s.getTipo() != Simbolo.TipoSimbolo.VARIABLE && (!s.esChar() && !s.esCadena())) {
+		      miniLeng.error_semantico("Tipo de variable no válida en llamada a escribir()", t);
+	        }
+	        else {
+	          resul.setRight(new ASTNode(t.image, s.getVariable()));
+			  resul.getRight().setType(ASTNode.TipoNodo.VAR);
+			  resul.getRight().setDir(s.getDir());
+	        }
+	     }
+	     constCad = true;
+	}
+   ( ","  ( t = < tCONSTCAD > | t = < tCONSTCHAR > |  t = < tIDENTIFICADOR > { constCad = false; })
+	{
+		if (constCad) {
+	         aux = resul;
+	         while(aux.getRight() != null) {
+			    aux = aux.getRight();
+	         }		  
+		     aux.setRight(new ASTNode(t.image, Simbolo.TipoVariable.CADENA));
+		     aux.getRight().setType(ASTNode.TipoNodo.CONST);
+		}
+		else {
+		    if ( (s = g.t.buscar_simbolo(t.image,g.nivel)) == null ) {
+	           miniLeng.error_semantico("Identificador desconocido", t);
+	        }
+	        else if( s.getTipo() != Simbolo.TipoSimbolo.VARIABLE && (!s.esChar() && !s.esCadena())) {
+		      miniLeng.error_semantico("Tipo de variable no válida en llamada a escribir()", t);
+	        }
+	        else {
+	             aux = resul;
+	             while(aux.getRight() != null) {
+			        aux = aux.getRight();
+	             }		  
+		         aux.setRight(new ASTNode(t.image, s.getVariable()));
+		         aux.getRight().setDir(s.getDir());
+		         aux.getRight().setType(ASTNode.TipoNodo.VAR);
+	        }
+	     }
+	     constCad = true;
+	}	
+   )*
+  {
+    return resul;
+  }
   }
   catch (Exception e) {
 	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
 	System.out.println(e.getMessage());     
   }
 }
-
-
 
 /* argumentos ::= ( "(" lista_expresiones ")" )? */
 void argumentos(Globals g, Simbolo s) : 
@@ -932,7 +1097,6 @@ RegistroExpr expresion_simple(Globals g) :
   }
 }
 
-
 /* termino ::= factor (operador multiplicativo factor)* */
 RegistroExpr termino(Globals g) : 
 {
@@ -1036,7 +1200,6 @@ RegistroExpr termino(Globals g) :
   }
 }
 
-
 RegistroExpr factor(Globals g) : 
 {
   Token t;
@@ -1123,6 +1286,8 @@ RegistroExpr factor(Globals g) :
    resul.valorString = t.image;
    resul.tipo = Simbolo.TipoVariable.CHAR;
    resul.nodoAST = new ASTNode(t.image);
+   resul.nodoAST.setType(ASTNode.TipoNodo.CONST);
+   resul.nodoAST.setTypeVar(Simbolo.TipoVariable.CADENA);
    return resul;
  }
  |  t = < tCONSTCAD >
@@ -1130,6 +1295,8 @@ RegistroExpr factor(Globals g) :
    resul.valorString = t.image;
    resul.tipo = Simbolo.TipoVariable.CADENA;
    resul.nodoAST = new ASTNode(t.image);
+   resul.nodoAST.setType(ASTNode.TipoNodo.CONST);
+   resul.nodoAST.setTypeVar(Simbolo.TipoVariable.CADENA);
    return resul;
  }
  |  t = < tCONSTENTERA >
@@ -1138,22 +1305,27 @@ RegistroExpr factor(Globals g) :
    resul.tipo = Simbolo.TipoVariable.ENTERO;
    resul.nodoAST = new ASTNode(resul.valorEnt);
    resul.nodoAST.setType(ASTNode.TipoNodo.CONST);
+   resul.nodoAST.setTypeVar(Simbolo.TipoVariable.ENTERO);
    return resul;
  }
  |  < tTRUE >
  {
    resul.valorBool = true;
    resul.tipo = Simbolo.TipoVariable.BOOLEANO;
-   // Se utiliza un 1 como entero para guardar una constante TRUE
+   // Se utiliza 1 como entero para guardar una constante TRUE
    resul.nodoAST = new ASTNode(1);
+   resul.nodoAST.setType(ASTNode.TipoNodo.CONST);
+   resul.nodoAST.setTypeVar(Simbolo.TipoVariable.BOOLEANO);
    return resul;
  }
  |  < tFALSE >
  {
    resul.valorBool = false;
    resul.tipo = Simbolo.TipoVariable.BOOLEANO;
-   // Se utiliza un 1 como entero para guardar una constante FALSE
-   resul.nodoAST = new ASTNode(-1);
+   // Se utiliza 0 como entero para guardar una constante FALSE
+   resul.nodoAST = new ASTNode(0);
+   resul.nodoAST.setType(ASTNode.TipoNodo.CONST);
+   resul.nodoAST.setTypeVar(Simbolo.TipoVariable.BOOLEANO);
    return resul;
  }
   }
@@ -1163,8 +1335,6 @@ RegistroExpr factor(Globals g) :
 	System.out.println(e.getMessage());   
   }
 }
-
-
 
 /***************************************************************************************************
 ***************************************************************************************************/
@@ -1201,7 +1371,6 @@ Simbolo.ClaseParametro clase_parametros(Globals g) :
   }
 }
 
-
 Simbolo.TipoOperador operador_relacional(Globals g) :
 {}
 {
@@ -1219,7 +1388,6 @@ Simbolo.TipoOperador operador_relacional(Globals g) :
 	System.out.println(e.getMessage());
   }
 }
-
 
 Simbolo.TipoOperador operador_aditivo(Globals g) :
 {}
@@ -1251,8 +1419,6 @@ Simbolo.TipoOperador operador_multiplicativo(Globals g) :
 	System.out.println(e.getMessage());
   }
 }
-
-
 
 /***************************************************************************************************
 ***************************************************************************************************/
