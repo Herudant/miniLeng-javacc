@@ -3,14 +3,16 @@ programa pruebas;
 	entero aux, d;
 	caracter pepe;
 	
-	accion foo(ref entero bar);
+	accion foo(ref entero bar; ref caracter pepo);
 	
-		accion foo1(ref entero pepe);
+		accion foo1(val entero pepito);
 		principio
-			bar := bar+1;
+			bar := bar+pepito;
+			pepe := pepo;
 		fin
 		
 	principio
+		escribir(pepe, pepo);
 		bar := 1;
 	fin
 	

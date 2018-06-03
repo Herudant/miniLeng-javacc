@@ -156,6 +156,9 @@ public class GeneradorCodigo {
 						writer.println("; direccion " + parametro.getName());
 						writer.println("\tSRF\t" + f + "\t" + o);
 						writer.println("\tDRF");
+						// Valor de un parametro por referencia
+						if(parametro.getTypeParam() == Simbolo.ClaseParametro.REF)
+							writer.println("\tDRF");
 						writer.println("\tWRT\t" + num);
 					}
 					parametro = parametro.getRight();
@@ -172,7 +175,7 @@ public class GeneradorCodigo {
 				 *				CSF
 				 */			
 				
-				this.escribir("; accion " + instr.getName() + ".");
+				writer.println("\n; accion " + instr.getName() + ".");
 				// Recuperar argumentos
 				ASTNode param = instr.getLeft();
 				while(param != null) {
@@ -186,11 +189,15 @@ public class GeneradorCodigo {
 				}
 				
 				// Codigo de la funcion
-				this.escribir(";comienzo accion " + instr.getName() + ".");
+				writer.println(";comienzo accion " + instr.getName() + ".");
 				this.escribir(this.nueva_etiqueta() + ":");    
 				this.escribir(instr.getRight());
 				
+				
+				
 				// Recuperar argumentos
+				writer.println("\tCSF");
+				
 				break;
 			default:
 				break;
@@ -219,7 +226,10 @@ public class GeneradorCodigo {
 				int o = node.getDir();
 				writer.println("; direccion " + node.getName());
 				writer.println("\tSRF\t" + f + "\t" + o);
-				writer.println("\tDRF");
+				writer.println("\tDRF");		
+				// Valor de un parametro por referencia
+				if(node.getTypeParam() == Simbolo.ClaseParametro.REF)
+					writer.println("\tDRF");
 				break;
 			case OP:
 				// Si es un operador escribimos su nemotecnico

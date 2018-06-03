@@ -152,9 +152,8 @@ void programa(Globals g) :
 	    codigo.escribir(";Programa " + t1.image + ".");
 	    codigo.escribir("\tENP " + etiqueta);
 
-
 		// Generar código de las acciones
-		codigo.escribir("\n;Acciones\n");
+		codigo.escribir("\n;Acciones");
 		codigo.escribir(acciones);
 
 	    // Generar código del programa principal		
@@ -380,6 +379,7 @@ ASTNode lista_parametros(Globals g, Simbolo s_accion, Simbolo.TipoVariable tipoV
 				s_accion.introducir_parametro(t1.image, tipoVar, tipoParam, g.nivel);
 				resul.setLeft(new ASTNode(t1.image, tipoVar));
 			    resul.getLeft().setType(ASTNode.TipoNodo.VAR);
+			    resul.getLeft().setTypeParam(tipoParam);
 		        resul.getLeft().setDir(g.dir);
 			}
 			g.dir++;
@@ -394,14 +394,14 @@ ASTNode lista_parametros(Globals g, Simbolo s_accion, Simbolo.TipoVariable tipoV
 			g.t.introducir_parametro(t2.image, tipoVar, tipoParam, g.nivel, g.dir);
 			if ( s_accion != null && s_accion.esAccion()){
 				s_accion.introducir_parametro(t2.image, tipoVar, tipoParam, g.nivel);
-				aux = resul;
-	            while(aux.getLeft() != null) {
-			    	aux = aux.getLeft();
-	            }	  
-		        aux.setLeft(new ASTNode(t2.image, tipoVar));
-		        aux.getLeft().setType(ASTNode.TipoNodo.VAR);
-		        aux.getLeft().setDir(g.dir);
-		        aux = aux.getLeft();
+
+				// Se introducen en el arbol AST de forma inversa para poder salvarse en el marco de pila
+				aux = resul.getLeft();
+		        resul.setLeft(new ASTNode(t2.image, tipoVar));
+		        resul.getLeft().setType(ASTNode.TipoNodo.VAR);
+		        resul.getLeft().setTypeParam(tipoParam);
+		        resul.getLeft().setDir(g.dir);
+		        resul.getLeft().setLeft(aux);
 		        g.dir++;
 			}
 		}
@@ -410,8 +410,12 @@ ASTNode lista_parametros(Globals g, Simbolo s_accion, Simbolo.TipoVariable tipoV
 
      ( ";" params = parametros(g, s_accion))?
     {
-      if(params != null)
-    	aux.setLeft(params);
+      // Encadenar el resto de parametros
+      if(params != null) {
+	      aux = resul.getLeft();
+	      resul.setLeft(params);
+	      resul.getLeft().setLeft(aux);
+  	  }
    	  return resul;
     }
   }
@@ -583,7 +587,7 @@ ASTNode invocacion_accion(Globals g, Token t) :
 {
   try { 
      {
-        //TODO: Realizar mas comprobaciones
+        //TODO: Realizar mas comprobaciones, buscar por tipo (puede ser una variable)
         // Comprobar que existe el identificador
         if ( (s = g.t.buscar_simbolo(t.image, g.nivel)) == null ){
             miniLeng.error_semantico("Identificador desconocido en la llamada a la accion", t);
@@ -803,6 +807,7 @@ ASTNode lista_escribibles(Globals g) :
 	          resul.setNivel(g.nivel);
 	          resul.setRight(new ASTNode(t.image, s.getVariable()));
 			  resul.getRight().setType(ASTNode.TipoNodo.VAR);
+			  resul.getRight().setTypeParam(s.getParametro());
 			  resul.getRight().setDir(s.getDir());
 	        }
 	     }
@@ -833,6 +838,7 @@ ASTNode lista_escribibles(Globals g) :
 		         aux.setRight(new ASTNode(t.image, s.getVariable()));
 		         aux.getRight().setDir(s.getDir());
 		         aux.getRight().setType(ASTNode.TipoNodo.VAR);
+		         aux.getRight().setTypeParam(s.getParametro());
 	        }
 	     }
 	     constCad = true;
@@ -878,6 +884,7 @@ ASTNode lista_expresiones(Globals g, Simbolo s) :
 {
   RegistroExpr r;
   int num_params = 0;
+  ArrayList<Simbolo> parametros = s.getLista_simbolos();
   ArrayList<RegistroExpr> params = new ArrayList<RegistroExpr>();
   ASTNode resul = new ASTNode();
 }
@@ -1288,6 +1295,8 @@ RegistroExpr factor(Globals g) :
      //resul.clase = s.getParametro();
      resul.nodoAST = new ASTNode(t.image, ASTNode.TipoNodo.VAR);
      resul.nodoAST.setDir(s.getDir());
+     resul.nodoAST.setNivel(s.getNivel());
+     resul.nodoAST.setTypeParam(s.getParametro());
    }
    return resul;
  }
