@@ -4,8 +4,20 @@ programa pruebas;
 	caracter pepe;
 	
 	accion foo(ref entero bar);
+	
+		accion foo1(ref entero pepe);
+		principio
+			bar := bar+1;
+		fin
+		
 	principio
 		bar := 1;
+	fin
+	
+	accion foo2(ref entero bar1, bar2);
+	principio
+		bar1 := 1;
+		bar2 := bar1;
 	fin
 principio
 	aux := 4 * 2 + aux;

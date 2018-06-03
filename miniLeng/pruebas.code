@@ -1,13 +1,62 @@
 ;Programa pruebas.
 	ENP L0
+
+;Acciones
+
+; accion foo.
+; direccion bar
+	SRF	0	3
+	ASGI
+;comienzo accion foo.
+L1:
+; Direccion bar
+	SRF	1	3
+	STC	1
+; Asignacion a bar
+	ASG
+; accion foo1.
+;comienzo accion foo1.
+L2:
+; Direccion bar
+	SRF	2	3
+; direccion bar
+	SRF	2	3
+	DRF
+	STC	1
+	PLUS
+; Asignacion a bar
+	ASG
+; accion foo2.
+; direccion bar1
+	SRF	0	3
+	ASGI
+; direccion bar2
+	SRF	0	4
+	ASGI
+;comienzo accion foo2.
+L3:
+; Direccion bar1
+	SRF	1	3
+	STC	1
+; Asignacion a bar1
+	ASG
+; Direccion bar2
+	SRF	1	4
+; direccion bar1
+	SRF	1	3
+	DRF
+; Asignacion a bar2
+	ASG
+
 ;Comienzo del programa pruebas.
+
 L0:
 ; Direccion aux
 	SRF	0	3
 	STC	2
 	STC	4
 	DIV
-; variable aux
+; direccion aux
 	SRF	0	3
 	DRF
 	PLUS
@@ -15,27 +64,27 @@ L0:
 	ASG
 ; Direccion aux
 	SRF	0	3
-; variable aux
+; direccion aux
 	SRF	0	3
 	DRF
 	STC	1
 	PLUS
 ; Asignacion a aux
 	ASG
-L1:
+L4:
 ; MQ
 ; Comprobar condicion
-; variable aux
+; direccion aux
 	SRF	0	3
 	DRF
 	STC	4
 ; condicion
 	NEQ
-	JMF	2
+	JMF	5
 ; Lista de sentencias
 ; Direccion aux
 	SRF	0	3
-; variable aux
+; direccion aux
 	SRF	0	3
 	DRF
 	STC	1
@@ -50,43 +99,43 @@ L1:
 ; Asignacion a aux
 	ASG
 ; Fin MQ
-L2:
+L5:
 ; SI
 ; Comprobar condicion
-; variable d
+; direccion d
 	SRF	0	4
 	DRF
 	STC	0
 ; condicion
 	LTE
-	JMF	3
+	JMF	6
 ; Lista de sentencias
 ; Direccion aux
 	SRF	0	3
 	STC	1
 ; Asignacion a aux
 	ASG
-	JMF	4
+	JMF	7
 ; SI_NO
-L3:
+L6:
 ; Direccion d
 	SRF	0	4
 	STC	1
 ; Asignacion a d
 	ASG
 ; Fin SI
-L4:
+L7:
 ; Leer
-; variable aux
+; direccion aux
 	SRF	0	3
 	RD	1
-; variable d
+; direccion d
 	SRF	0	4
 	RD	1
 ; Escribir
 	STC	"abc"
 	WRT	0
-; variable pepe
+; direccion pepe
 	SRF	0	5
 	DRF
 	WRT	0
@@ -95,5 +144,7 @@ L4:
 	STC	0
 ; Asignacion a pepe
 	ASG
+
 ;Fin de programa pruebas.
+
 	LVP

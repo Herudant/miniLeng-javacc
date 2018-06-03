@@ -145,16 +145,25 @@ void programa(Globals g) :
 	{
 	    String etiqueta;
 	    GeneradorCodigo codigo = new GeneradorCodigo(t1.image);
+
+	
+	    // Generar código del incio del programa
 	    etiqueta = codigo.nueva_etiqueta();
 	    codigo.escribir(";Programa " + t1.image + ".");
 	    codigo.escribir("\tENP " + etiqueta);
 
-	    codigo.escribir(";Comienzo del programa " + t1.image + ".");
 
+		// Generar código de las acciones
+		codigo.escribir("\n;Acciones\n");
+		codigo.escribir(acciones);
+
+	    // Generar código del programa principal		
+	    codigo.escribir("\n;Comienzo del programa " + t1.image + ".\n");
 	    codigo.escribir(etiqueta + ":");	    
 		codigo.escribir(sentencias);
 
-	    codigo.escribir(";Fin de programa " + t1.image + ".");
+		// Fin del programa
+	    codigo.escribir("\n;Fin de programa " + t1.image + ".\n");
 	    codigo.escribir("\tLVP");
 	    codigo.cerrar();		
 	}
@@ -247,22 +256,12 @@ ASTNode declaracion_acciones(Globals g) :
 	    resul = accion;
 	  }
 	  else {
-	    // Si está en el primer nivel se enlacen al siguiente nodo
-	    // Si están en un nivel superior significa que son acciones anidadas en otras acciones
-	    // y se enlacen en el puntero ASTNode.cond
+	    // Se anida en el punter ASTNode.next
 	    aux = resul;
-	    if (g.nivel > 0) {
-			while(aux.getCond() != null){
-				aux = aux.getCond();
-			}
-			aux.setCond(accion);
+		while(aux.getNext() != null){
+			aux = aux.getNext();
 		}
-		else {
-			while(aux.getNext() != null){
-				aux = aux.getNext();
-			}
-			aux.setNext(accion);
-		}
+		aux.setNext(accion);
 	  }
 	}
     )*
@@ -283,8 +282,7 @@ ASTNode declaracion_accion(Globals g) :
 {
   ASTNode cabecera = null,
   		  acciones = null,
-          sentencias = null,
-  	      resul = null;
+          sentencias = null;
 }
 {
   try { 
@@ -301,11 +299,10 @@ ASTNode declaracion_accion(Globals g) :
 	  g.nivel--;
 
 	  //Generamos rama del árbol AST ( raiz: nodo-accion ; izq: parametros de la accion ; der: bloque_sentencias)
-	  resul = cabecera;
-	  resul.setCond(acciones);
-	  resul.setRight(sentencias);
-	  return resul;
-	  
+	  cabecera.setNext(acciones);
+	  cabecera.setRight(sentencias);
+
+	  return cabecera;
 	}
   }
   catch (Exception e)
@@ -366,7 +363,7 @@ ASTNode parametros_formales(Globals g, Simbolo s) :
 ASTNode lista_parametros(Globals g, Simbolo s_accion, Simbolo.TipoVariable tipoVar, Simbolo.ClaseParametro tipoParam) : 
 {Token t1, t2;
  ASTNode params = null, aux = null;
- ASTNode resul = new ASTNode("function",ASTNode.TipoNodo.FUN);
+ ASTNode resul = new ASTNode(s_accion.getNombre(),ASTNode.TipoNodo.FUN);
 }
 {
   try { 
@@ -505,13 +502,13 @@ ASTNode sentencia(Globals g) :
   try { 
 	  t = < tIDENTIFICADOR >
 	 [ 
-		   resul = asignacion(g, t) { return resul;	}
-		 | invocacion_accion(g, t)
+		   resul = asignacion(g, t) 		{ return resul;	}
+		 | resul = invocacion_accion(g, t)  { return resul;	}
 	 ]
-	| resul = mientras_que(g) 		{ return resul; }
-	| resul = leer(g) ";"			{ return resul; }
-	| resul = escribir(g) ";" 		{ return resul; }			
-	| resul = seleccion(g) 			{ return resul;	}
+	| resul = mientras_que(g) 				{ return resul; }
+	| resul = leer(g) ";"					{ return resul; }
+	| resul = escribir(g) ";" 				{ return resul; }			
+	| resul = seleccion(g) 					{ return resul;	}
 
 	
   }
@@ -562,6 +559,7 @@ ASTNode asignacion(Globals g, Token t) :
             // Insertar nodo ASG en AST (Left: variable, Right: expresion)
 			node = new ASTNode();
 			node.setType(ASTNode.TipoNodo.ASG);
+			node.setNivel(g.nivel);
 			node.setLeft(new ASTNode(t.image, s.getDir()));
 			node.setRight(r.nodoAST);
         }
@@ -576,8 +574,12 @@ ASTNode asignacion(Globals g, Token t) :
 }
 
 /* invocacion_accion ::= argumentos ";" */
-void invocacion_accion(Globals g, Token t) :
-{ Simbolo s; boolean ok = false; }
+ASTNode invocacion_accion(Globals g, Token t) :
+{
+  Simbolo s;
+  boolean ok = false;
+  ASTNode resul = null;
+}
 {
   try { 
      {
@@ -590,12 +592,13 @@ void invocacion_accion(Globals g, Token t) :
             miniLeng.error_semantico("No se puede realizar una llamda a una accion sobre un parametro", t);
         }
      }
-	 (argumentos(g, s) { ok=true; })? ";"
+	 ( resul = argumentos(g, s) { ok=true; })? ";"
 	 {
 		// Compruebo los parametros de la invocacción en caso de llamarse sin parametros
       	if(!ok && s!= null && s.getNum_params() != 0) {
         	miniLeng.error_semantico("linea " + token.beginLine + "  -  Se esperaban " + s.getNum_params() + " parámetros al invocar a la accion " + s.getNombre());
     	}
+    	return resul;
      }
   }
   catch (Exception e)
@@ -735,6 +738,7 @@ ASTNode lista_asignables(Globals g) :
 		 miniLeng.error_semantico("Tipo de variable no válida en llamada a leer()", t1);
 	   }
 	   else {
+	     resul.setNivel(g.nivel);
 	     // Crea estructura AST
 		 resul.setRight(new ASTNode(t1.image, s.getVariable()));
 		 resul.getRight().setType(ASTNode.TipoNodo.VAR);
@@ -796,6 +800,7 @@ ASTNode lista_escribibles(Globals g) :
 		      miniLeng.error_semantico("Tipo de variable no válida en llamada a escribir()", t);
 	        }
 	        else {
+	          resul.setNivel(g.nivel);
 	          resul.setRight(new ASTNode(t.image, s.getVariable()));
 			  resul.getRight().setType(ASTNode.TipoNodo.VAR);
 			  resul.getRight().setDir(s.getDir());
@@ -844,16 +849,20 @@ ASTNode lista_escribibles(Globals g) :
 }
 
 /* argumentos ::= ( "(" lista_expresiones ")" )? */
-void argumentos(Globals g, Simbolo s) : 
-{boolean ok=false;}
+ASTNode argumentos(Globals g, Simbolo s) : 
+{
+  boolean ok=false;
+  ASTNode resul = null;
+}
 {
   try { 
-    "(" (lista_expresiones(g, s) { ok=true; })? ")"
+    "(" ( resul = lista_expresiones(g, s) { ok=true; })? ")"
     {
 		// Compruebo los parametros de la invocacción en caso de llamarse sin parametros
       	if(!ok && s != null && s.getNum_params() != 0) {
         	miniLeng.error_semantico("linea " + token.beginLine + "  -  Se esperaban " + s.getNum_params() + " parámetros al invocar a la accion " + s.getNombre());	
     	}
+    	return resul;
     }
     
   }
@@ -865,11 +874,12 @@ void argumentos(Globals g, Simbolo s) :
 }
 
 /* lista_expresiones ::= expresion ( "," expresion)* */
-void lista_expresiones(Globals g, Simbolo s) : 
+ASTNode lista_expresiones(Globals g, Simbolo s) : 
 {
   RegistroExpr r;
   int num_params = 0;
   ArrayList<RegistroExpr> params = new ArrayList<RegistroExpr>();
+  ASTNode resul = new ASTNode();
 }
 {
   try { 
@@ -894,7 +904,7 @@ void lista_expresiones(Globals g, Simbolo s) :
 				params.remove(0);
 			}
 		}
-
+		return resul;
     }
   }
   catch (Exception e)

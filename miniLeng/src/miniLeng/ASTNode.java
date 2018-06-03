@@ -1,5 +1,6 @@
 package miniLeng;
 
+import miniLeng.Simbolo.ClaseParametro;
 import miniLeng.Simbolo.TipoOperador;
 import miniLeng.Simbolo.TipoVariable;
 
@@ -9,27 +10,20 @@ public class ASTNode {
 	TipoNodo	type;
 	TipoOperador typeOp;
 	TipoVariable typeVar;
+	ClaseParametro typeParam;
 	String		name;
 	int			value;
 	int			dir;
+	int 		nivel;
 	ASTNode		cond;	// Solo se usa en los tipos WHILE e IF
 	ASTNode		left;
 	ASTNode		right;  
 	ASTNode		next;  // Indica la siguiente instruccion
 	
+
+
 	public enum TipoNodo {
 	   DSG , ACC, WHILE, IF, OP, ASG, FUN, RD, WR, VAR, COND, CONST
-	}
-	
-	
-	public ASTNode(TipoNodo type, String name, int value, ASTNode cond, ASTNode left, ASTNode right) {
-		super();
-		this.type = type;
-		this.name = name;
-		this.value = value;
-		this.cond = cond;
-		this.left = left;
-		this.right = right;
 	}
 	
 	public ASTNode(String name, TipoNodo type) {
@@ -77,9 +71,28 @@ public class ASTNode {
 		this.right = null;	
 		this.next = null;
 		this.dir = 0;
+		this.nivel = 0;
 		this.typeVar = null;
+		this.typeParam = null;
 	}
 	
+	
+	public ClaseParametro getTypeParam() {
+		return typeParam;
+	}
+
+	public void setTypeParam(ClaseParametro typeParam) {
+		this.typeParam = typeParam;
+	}
+	
+	public int getNivel() {
+		return nivel;
+	}
+
+	public void setNivel(int nivel) {
+		this.nivel = nivel;
+	}
+
 	public TipoVariable getTypeVar() {
 		return typeVar;
 	}

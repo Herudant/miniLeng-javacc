@@ -29,6 +29,7 @@ public class GeneradorCodigo {
 	
 	public void escribir(ASTNode tree) {
 		ASTNode instr = tree;
+		int f, o;
 		while(instr != null) {
 			switch (instr.getType()) {
 			case ASG:
@@ -42,11 +43,13 @@ public class GeneradorCodigo {
 				 * 				ASG
 				 */
 				ASTNode var = instr.getLeft();
+				f = instr.getNivel() - var.getNivel();
+				o = var.getDir();
 				writer.println("; Direccion " + var.getName());
-				writer.println("\tSRF\t" + 0 + "\t" + var.getDir());
+				writer.println("\tSRF\t" + f + "\t" + o);
 				
 				// Lectura operandos notacion polaca inversa
-				this.recorrido_profundidad(instr.getRight());
+				this.recorrido_profundidad(instr.getRight(), instr.getNivel());
 				
 				writer.println("; Asignacion a " + var.getName());
 				writer.println("\tASG");
@@ -67,7 +70,7 @@ public class GeneradorCodigo {
 				writer.println(this.nueva_etiqueta() + ":");
 				writer.println("; MQ");
 				writer.println("; Comprobar condicion");
-				this.recorrido_profundidad(instr.getCond());
+				this.recorrido_profundidad(instr.getCond(), instr.getDir());
 				writer.println("\tJMF\t" + (this.num_etiqueta+1));
 				writer.println("; Lista de sentencias");
 				this.escribir(instr.getRight());
@@ -92,7 +95,7 @@ public class GeneradorCodigo {
 				 */	
 				writer.println("; SI");
 				writer.println("; Comprobar condicion");
-				this.recorrido_profundidad(instr.getCond());
+				this.recorrido_profundidad(instr.getCond(), instr.getNivel());
 				writer.println("\tJMF\t" + (this.num_etiqueta+1));
 				writer.println("; Lista de sentencias");
 				this.escribir(instr.getLeft());
@@ -120,8 +123,10 @@ public class GeneradorCodigo {
 				while(variable != null) {
 					// Operacion RD sobre variable
 					String num = (variable.getTypeVar() == Simbolo.TipoVariable.CADENA | variable.getTypeVar() == Simbolo.TipoVariable.CHAR) ? "0" : "1";
-					writer.println("; variable " + variable.getName());
-					writer.println("\tSRF\t" + 0 + "\t" + variable.getDir());
+					f = instr.getNivel() - variable.getNivel();
+					o = variable.getDir();
+					writer.println("; direccion " + variable.getName());
+					writer.println("\tSRF\t" + f + "\t" + o);
 					writer.println("\tRD\t" + num);
 					variable = variable.getRight();
 				}
@@ -146,14 +151,47 @@ public class GeneradorCodigo {
 					else {
 						// Si es VAR : "SRF nivel dir" ; "DRF" ; WRT
 						String num = (parametro.getTypeVar() == Simbolo.TipoVariable.CADENA | parametro.getTypeVar() == Simbolo.TipoVariable.CHAR) ? "0" : "1";
-						writer.println("; variable " + parametro.getName());
-						writer.println("\tSRF\t" + 0 + "\t" + parametro.getDir());
+						f = instr.getNivel() - parametro.getNivel();
+						o = parametro.getDir();
+						writer.println("; direccion " + parametro.getName());
+						writer.println("\tSRF\t" + f + "\t" + o);
 						writer.println("\tDRF");
 						writer.println("\tWRT\t" + num);
 					}
 					parametro = parametro.getRight();
 				}
-				break;				
+				break;	
+			case FUN:
+				/* Pasos:	
+				 * 			; Accion R
+				 * 			; Recuperar argumentos R
+				 *			R: 
+				 *		
+				 *			; codigo de R
+				 *
+				 *				CSF
+				 */			
+				
+				this.escribir("; accion " + instr.getName() + ".");
+				// Recuperar argumentos
+				ASTNode param = instr.getLeft();
+				while(param != null) {
+					f = instr.getNivel() - param.getNivel();
+					o = param.getDir();
+					writer.println("; direccion " + param.getName());
+					writer.println("\tSRF\t" + f + "\t" + o);
+					writer.println("\tASGI");
+					
+					param = param.getLeft();
+				}
+				
+				// Codigo de la funcion
+				this.escribir(";comienzo accion " + instr.getName() + ".");
+				this.escribir(this.nueva_etiqueta() + ":");    
+				this.escribir(instr.getRight());
+				
+				// Recuperar argumentos
+				break;
 			default:
 				break;
 			}
@@ -161,11 +199,11 @@ public class GeneradorCodigo {
 		}
 	}
 	
-	private void recorrido_profundidad(ASTNode node) {
+	private void recorrido_profundidad(ASTNode node, int nivel) {
 		if (node != null) {
 			String msg = new String();
-			this.recorrido_profundidad(node.getRight());
-			this.recorrido_profundidad(node.getLeft());
+			this.recorrido_profundidad(node.getRight(), nivel);
+			this.recorrido_profundidad(node.getLeft(), nivel);
 			switch (node.getType()) {
 			case CONST:
 				// Si es CONST puede ser 
@@ -177,8 +215,10 @@ public class GeneradorCodigo {
 				break;
 			case VAR:
 				// Si es VAR : "SRF nivel dir" y "DRF"
-				writer.println("; variable " + node.getName());
-				writer.println("\tSRF\t" + 0 + "\t" + node.getDir());
+				int f = nivel - node.getNivel();
+				int o = node.getDir();
+				writer.println("; direccion " + node.getName());
+				writer.println("\tSRF\t" + f + "\t" + o);
 				writer.println("\tDRF");
 				break;
 			case OP:
