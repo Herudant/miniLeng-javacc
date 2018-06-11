@@ -13,6 +13,7 @@ public class Simbolo {
 	ClaseParametro		parametro;
 	ArrayList<Simbolo> 	lista_parametros;
 	String				nombre;
+	String 				etiqueta;
 	int					nivel;
 	boolean 			visible;
 	int 				dir;
@@ -39,6 +40,7 @@ public class Simbolo {
 		this.dir = dir;
 		this.num_params = 0;
 		this.lista_parametros = new ArrayList<Simbolo>();
+		this.etiqueta = "";
 	}
 	
 	/*************************************************************************/
@@ -98,15 +100,22 @@ public class Simbolo {
 	public void setNum_params(int num_params) {
 		this.num_params = num_params;
 	}
-	
+	public String getEtiqueta() {
+		return etiqueta;
+	}
+	public void setEtiqueta(String etiqueta) {
+		this.etiqueta = etiqueta;
+	}
+
+
 	/*************************************************************************/
 	/********************** Enumerados para atributos ************************/
 	/*************************************************************************/
 	public enum TipoSimbolo {
-	    PROGRAMA, VARIABLE, ACCION, PARAMETRO
+	    PROGRAMA, VARIABLE, ACCION, PARAMETRO, CONST, VAR_PARAM
 	}
 	public enum TipoOperador {
-	    SUMA, RESTA, OR, MUL, DIV, MOD, AND, LT, GT, LE, GE, EQ, NE
+	    SUMA, RESTA, OR, MUL, DIV, MOD, AND, LT, GT, LE, GE, EQ, NE, NOT
 	}
 	public enum TipoVariable {
 	    DESCONOCIDO, ENTERO, BOOLEANO, CHAR, CADENA

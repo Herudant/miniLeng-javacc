@@ -4,6 +4,7 @@
 options
 {
   static = true;
+  ignore_case = true;
 }
 
 PARSER_BEGIN(miniLeng)
@@ -38,8 +39,14 @@ public class miniLeng
 	    return;
 	  }
 	  */
-	  //file = "/Users/heru/git/miniLeng-javacc/miniLeng/src/pruebas4.txt";
-	  file = "/Users/heru/git/miniLeng/miniLeng-javacc/miniLeng/src/pruebas5.txt";
+	  //file = "/Users/heru/git/miniLeng/miniLeng-javacc/miniLeng/src/pruebas5.txt";
+	  file = "/Users/heru/git/miniLeng/miniLeng-javacc/miniLeng/programas/fib.ml";
+	  file = "/Users/heru/git/miniLeng/miniLeng-javacc/miniLeng/programas/nprimos1.ml";
+	  file = "/Users/heru/git/miniLeng/miniLeng-javacc/miniLeng/programas/adivinar1.ml";
+	  file = "/Users/heru/git/miniLeng/miniLeng-javacc/miniLeng/programas/nyn1.ml";
+	  file = "/Users/heru/git/miniLeng/miniLeng-javacc/miniLeng/programas/calendar1.ml";
+	  file = "/Users/heru/git/miniLeng/miniLeng-javacc/miniLeng/programas/mcd1.ml";
+	  //file = "/Users/heru/git/miniLeng/miniLeng-javacc/miniLeng/programas/mcd.ml";
 	  System.out.println(file);
 	  
 	  try {
@@ -65,41 +72,44 @@ public class miniLeng
 
   }
   /********** Tratamiento Errores **********************/
-  public static void tratarErrorSintactico(int line, int column, String msg_error) {
+  public static void tratarErrorSintactico(int line, int column, String msg_error, Globals g) {
 	System.out.println("ERROR SINTACTICO (<" + line + ", " + column + ">): Simbolo encontrado \"" + msg_error + "\"");
+	g.erroresSint++;
   }
 
-  public static void error_semantico(String msg_error) {
+  public static void error_semantico(String msg_error, Globals g) {
 	System.out.println("ERROR SEMANTICO : " + msg_error);
+	g.erroresSem++;
   }
-  public static void error_semantico(String msg_error, Token t) {
+  public static void error_semantico(String msg_error, Token t, Globals g) {
     int line = t.beginLine;
     int col = t.beginColumn;
     String id = t.image;
 	System.out.println("ERROR SEMANTICO (<" + line + ", " + col + ">): " + msg_error + ": \"" + id + "\"");
+	g.erroresSem++;	
   }
 
   public static void warning(String msg_error, int line) {
 	System.out.println("WARNING : linea " + line + " -- " + msg_error);
   }
   
-  public static boolean comparar_tipos(Simbolo.TipoVariable t1, Simbolo.TipoVariable t2, Simbolo.TipoVariable tipo, int verbose){
+  public static boolean comparar_tipos(Simbolo.TipoVariable t1, Simbolo.TipoVariable t2, Simbolo.TipoVariable tipo, int verbose, Globals g){
     boolean resul = true;
     if ( t1 != tipo && t2 != tipo )
     {
       resul = false;
       if (verbose==1) { 
-        miniLeng.error_semantico("linea " + token.beginLine + "  - Los operadorores deben ser " + tipo);
+        miniLeng.error_semantico("linea " + token.beginLine + "  - Los operadorores deben ser " + tipo, g);
       }      
     }
     return resul;
   }
 
-  public static boolean validar_tipo(Simbolo.TipoVariable t, Simbolo.TipoVariable tipo){
+  public static boolean validar_tipo(Simbolo.TipoVariable t, Simbolo.TipoVariable tipo, Globals g){
     boolean resul = true;
     if ( t != tipo  && t != Simbolo.TipoVariable.DESCONOCIDO)
     {
-        miniLeng.error_semantico("linea " + token.beginLine + "  -  El operador debe ser " + tipo);
+        miniLeng.error_semantico("linea " + token.beginLine + "  -  El operador debe ser " + tipo, g);
         resul=false;
     }
     return resul;
@@ -112,6 +122,11 @@ public class miniLeng
      root.setLeft(left);
      root.setRight(right);
   }
+
+  public static boolean rango_enteros(int n) {
+     return (n <= 1000 && n >= -1000) ? true : false;
+  }
+  
 }
 
   
@@ -130,6 +145,7 @@ void programa_completo(Globals g):
 					bloque_sentencias             */
 void programa(Globals g) : 
 { Token t1;
+  int num_vars = 0;
   ASTNode acciones = null, sentencias = null;
 }
 {
@@ -137,103 +153,117 @@ void programa(Globals g) :
 	<tPROGRAMA> t1 = <tIDENTIFICADOR> ";"
 	{
 	  //TODO: Comprobar que no existe otro programa <TFIN >?
+	  g.nombre_prog = t1.image;
 	  g.setDireccionInicial();
+	  g.generarCodigoPrograma(t1.image);
 	}
-	declaracion_variables(g)
+	num_vars = declaracion_variables(g)
+	{
+		g.t.introducir_programa(t1.image, 2 + num_vars);
+		g.num_vars_ultimo_nivel = num_vars;
+		g.OSF_s = 2 + num_vars;
+	}
 	acciones = declaracion_acciones(g)
 	sentencias = bloque_sentencias(g)
 	{
+	  if (g.erroresLex == 0 && g.erroresSem == 0 && g.erroresSint == 0) { 
 	    String etiqueta;
-	    GeneradorCodigo codigo = new GeneradorCodigo(t1.image);
-
-	
 	    // Generar código del incio del programa
-	    etiqueta = codigo.nueva_etiqueta();
-	    codigo.escribir(";Programa " + t1.image + ".");
-	    codigo.escribir("\tENP " + etiqueta);
+	    //etiqueta = codigo.nueva_etiqueta();
+	    g.codigo.escribir(";Programa " + t1.image + ".");
+	    g.codigo.escribir("\tENP L0");
 
 		// Generar código de las acciones
-		codigo.escribir("\n;Acciones");
-		codigo.escribir(acciones);
+		g.codigo.escribir("\n;Acciones");
+		g.codigo.escribir(acciones);
 
 	    // Generar código del programa principal		
-	    codigo.escribir("\n;Comienzo del programa " + t1.image + ".\n");
-	    codigo.escribir(etiqueta + ":");	    
-		codigo.escribir(sentencias);
+	    g.codigo.escribir("\n;Comienzo del programa " + t1.image + ".\n");
+	    g.codigo.escribir("L0:");	    
+		g.codigo.escribir(sentencias);
 
 		// Fin del programa
-	    codigo.escribir("\n;Fin de programa " + t1.image + ".\n");
-	    codigo.escribir("\tLVP");
-	    codigo.cerrar();		
+	    g.codigo.escribir("\n;Fin de programa " + t1.image + ".\n");
+	    g.codigo.escribir("\tLVP");
+	    g.codigo.cerrar();
+	  }	
 	}
   }
   catch (Exception e)
   {
-	miniLeng.tratarErrorSintactico(token.beginLine, token.beginColumn, token.image);
-	System.out.println(e.getMessage());    
+	miniLeng.tratarErrorSintactico(token.beginLine, token.beginColumn, token.image, g);
+	System.out.println(e.getMessage());   
   }
 }
 
 /* declaracion_variables ::= (declaracion ";")* */
-void declaracion_variables(Globals g) : 
-{}
+int declaracion_variables(Globals g) : 
+{ int ret = 0, aux = 0; }
 {
   try { 
-    (declaracion(g) ";")*
+    ( aux = declaracion(g) ";" { ret += aux; })*
+    { return ret; }
   }
   catch (Exception e)
   {
-	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
-	System.out.println(e.getMessage());      
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image, g);
+	System.out.println(e.getMessage());
+	return 0;
   }
 }
 
 /* declaracion ::= tipo_variables identificadores */
-void declaracion(Globals g) : 
-{Simbolo.TipoVariable tipoVar;}
+int declaracion(Globals g) : 
+{Simbolo.TipoVariable tipoVar; int ret = 0;}
 {
   try { 
-    tipoVar = tipo_variables(g) identificadores(g, tipoVar)
+    tipoVar = tipo_variables(g) ret = identificadores(g, tipoVar)
+    { return ret; }
   }
   catch (Exception e)
   {
-	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
-	System.out.println(e.getMessage());       
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image, g);
+	System.out.println(e.getMessage());
+	return 0;
   }
 }
 
 /* identificadores ::= < tIDENTIFICADOR > ( "," < tIDENTIFICADOR >)* */
-void identificadores(Globals g, Simbolo.TipoVariable tipoVar) : 
-{ Token t1,t2; Simbolo s; }
+int identificadores(Globals g, Simbolo.TipoVariable tipoVar) : 
+{ Token t1,t2; Simbolo s; int ret = 0; }
 {
   try { 
     t1 = < tIDENTIFICADOR >
 	{
 	  //TODO: Puede ser otro tipo de error
-	  s =  g.t.buscar_simbolo(t1.image, g.nivel);
+	  s =  g.t.buscar_simbolo(t1.image, g.nivel, Simbolo.TipoSimbolo.VAR_PARAM);
 		if ( s != null && s.esVisible() ) 
-		    miniLeng.error_semantico("Identificador duplicado", t1);
+		    miniLeng.error_semantico("Identificador duplicado", t1, g);
 		else { 
 			g.t.introducir_variable(t1.image, tipoVar, g.nivel, g.dir);
 			g.dir++;
+			ret++;
 		}
 	}
      ( "," t2 = < tIDENTIFICADOR>
 	{
-	  s =  g.t.buscar_simbolo(t2.image, g.nivel);
+	  s =  g.t.buscar_simbolo(t2.image, g.nivel, Simbolo.TipoSimbolo.VAR_PARAM);
 		if ( s != null && s.esVisible() ) 
-		    miniLeng.error_semantico("Identificador duplicado", t2);
+		    miniLeng.error_semantico("Identificador duplicado", t2, g);
 		else { 
 			g.t.introducir_variable(t2.image, tipoVar, g.nivel, g.dir);
 			g.dir++;
+			ret++;
 		}
 	}	
      )*
+     { return ret; }
   }
   catch (Exception e)
   {
-	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
-	System.out.println(e.getMessage());       
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image, g);
+	System.out.println(e.getMessage());
+	return 0;       
   }
 }
 
@@ -268,8 +298,9 @@ ASTNode declaracion_acciones(Globals g) :
   }
   catch (Exception e)
   {
-	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
-	System.out.println(e.getMessage());       
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image, g);
+	System.out.println(e.getMessage());
+	return null;        
   }
 }
 
@@ -279,14 +310,19 @@ ASTNode declaracion_acciones(Globals g) :
 							bloque sentencias	*/
 ASTNode declaracion_accion(Globals g) : 
 {
-  ASTNode cabecera = null,
-  		  acciones = null,
+  int num_vars = 0;
+  RegistroExpr cabecera = null;
+  ASTNode acciones = null,
           sentencias = null;
 }
 {
   try { 
     cabecera = cabecera_accion(g) ";"
-	declaracion_variables(g) 
+	num_vars = declaracion_variables(g)
+	{
+		g.OSF_s += num_vars;
+		cabecera.s.setDir(g.OSF_s);
+	}
 	acciones = declaracion_acciones(g) 
 	sentencias = bloque_sentencias(g)
 	{
@@ -294,29 +330,32 @@ ASTNode declaracion_accion(Globals g) :
 	  g.t.eliminar_variables(g.nivel);
 	  g.t.eliminar_acciones(g.nivel);
 	  g.t.ocultar_parametros(g.nivel);
-	  g.t.eliminar_parametros_ocultos(g.nivel+1);
+	  g.t.eliminar_parametros_ocultos(g.nivel);
 	  g.nivel--;
-
+	  g.OSF_s -= num_vars;
 	  //Generamos rama del árbol AST ( raiz: nodo-accion ; izq: parametros de la accion ; der: bloque_sentencias)
-	  cabecera.setNext(acciones);
-	  cabecera.setRight(sentencias);
-
-	  return cabecera;
+      if(cabecera.nodoAST != null) {
+    	  cabecera.nodoAST.setNext(acciones);
+    	  cabecera.nodoAST.setRight(sentencias);
+      }
+	  return cabecera.nodoAST;
 	}
   }
   catch (Exception e)
   {
-	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
-	System.out.println(e.getMessage());  
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image, g);
+	System.out.println(e.getMessage());
+	return null;   
   }
 }
 
 /* cabecera_accion ::= < tACCION > < tIDENTIFICADOR > (parametros_formales)? */
-ASTNode cabecera_accion(Globals g) : 
+RegistroExpr cabecera_accion(Globals g) : 
 {
   Token t1;
   Simbolo s = null;
-  ASTNode resul = null;
+  ASTNode resul = null, params = null;
+  RegistroExpr reg_resul = new RegistroExpr();
  }
 {
   try { 
@@ -324,22 +363,33 @@ ASTNode cabecera_accion(Globals g) :
     t1 = < tIDENTIFICADOR >
 	{
 	  //Introduce en la tabla la accion
-	  if ( (s = g.t.introducir_accion(t1.image,g.nivel,g.dir)) == null ) {
+	  
+	  if ( g.t.buscar_simbolo(t1.image, g.nivel, Simbolo.TipoSimbolo.VARIABLE) != null ) {
 		// Existe el simbolo en el mismo nivel
-		miniLeng.error_semantico("Identificador duplicado", t1);
+		miniLeng.error_semantico("Identificador duplicado", t1, g);
+	  }
+	  else{
+	    s = g.t.introducir_accion(t1.image,g.nivel,g.dir, g.codigo.nueva_etiqueta());
+	  	resul = new ASTNode(s.getEtiqueta(), s.getNivel(), ASTNode.TipoNodo.FUN);
 	  }
 	  g.setDireccionInicial();
 	  g.nivel++;
 	}
 
-   (resul = parametros_formales(g, s))?
+   (params = parametros_formales(g, s) { if(resul != null) resul.setLeft(params); })?
 
-   { return resul;  }
+   {
+	 reg_resul.s = s;
+	 reg_resul.nodoAST = resul;
+     return reg_resul;
+
+     }
   }
   catch (Exception e)
   {
-	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
-	System.out.println(e.getMessage());    
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image, g);
+	System.out.println(e.getMessage());
+	return null;     
   }
 }
 
@@ -353,55 +403,79 @@ ASTNode parametros_formales(Globals g, Simbolo s) :
   }
   catch (Exception e)
   {
-	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
-	System.out.println(e.getMessage());  
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image, g);
+	System.out.println(e.getMessage());
+	return null;   
   }
 }
 
 /* lista_parametros ::= identificadores (";" paraemtros)? */
 ASTNode lista_parametros(Globals g, Simbolo s_accion, Simbolo.TipoVariable tipoVar, Simbolo.ClaseParametro tipoParam) : 
 {Token t1, t2;
- ASTNode params = null, aux = null;
- ASTNode resul = new ASTNode(s_accion.getNombre(),ASTNode.TipoNodo.FUN);
+ int n = 0;
+ Simbolo s = null;
+ ASTNode params = null, aux = null, resul = null;
 }
 {
   try { 
     t1 = < tIDENTIFICADOR >
 	{
-	    s_accion.add_param(); //Aumento el contador de parametros de la accion 
+	     //Aumento el contador de parametros de la accion 
 	  //TODO: Puede ser otro tipo de error
-		if (g.t.buscar_simbolo(t1.image, g.nivel) != null) { 
-		    miniLeng.error_semantico("Identificador duplicado", t1);
+		if (g.t.buscar_simbolo(t1.image, g.nivel, Simbolo.TipoSimbolo.VAR_PARAM) != null) { 
+		    miniLeng.error_semantico("Identificador duplicado", t1, g);
+		    if ( s_accion != null ) {
+		      s_accion.add_param();
+		      g.t.introducir_parametro(t1.image, Simbolo.TipoVariable.DESCONOCIDO, tipoParam, g.nivel, g.dir);
+		      g.dir++;
+		    }
 		}
 		else {
-			g.t.introducir_parametro(t1.image, tipoVar, tipoParam, g.nivel, g.dir);
-			if (s_accion != null && s_accion.esAccion()) { 
+			s = g.t.introducir_parametro(t1.image, tipoVar, tipoParam, g.nivel, g.dir);
+			//s.setClaseSimbolo(Simbolo.ClaseSimbolo.PARAMETRO);
+			if (s_accion != null && s_accion.esAccion()) {
+			    s_accion.add_param();
 				s_accion.introducir_parametro(t1.image, tipoVar, tipoParam, g.nivel);
-				resul.setLeft(new ASTNode(t1.image, tipoVar));
-			    resul.getLeft().setType(ASTNode.TipoNodo.VAR);
-			    resul.getLeft().setTypeParam(tipoParam);
-		        resul.getLeft().setDir(g.dir);
+				resul = new ASTNode(t1.image, g.nivel, tipoVar);
+			    resul.setType(ASTNode.TipoNodo.VAR);
+			    resul.setTypeParam(tipoParam);
+		        resul.setDir(g.dir);
+
+		        // Sumo a dir del simbolo para hacer la llamada OSF
+				n = s_accion.getDir() + ((tipoParam == Simbolo.ClaseParametro.REF) ? 1 : 2);
+		        s_accion.setDir(n);
 			}
 			g.dir++;
 		}
 	}
      ( "," t2 = < tIDENTIFICADOR >
 	{
-	  	s_accion.add_param();
-		if ( g.t.buscar_simbolo(t2.image, g.nivel) != null) 
-		    miniLeng.error_semantico("Identificador duplicado", t2);
+	  	
+		if ( g.t.buscar_simbolo(t2.image, g.nivel, Simbolo.TipoSimbolo.VAR_PARAM) != null) { 
+		    miniLeng.error_semantico("Identificador duplicado", t2, g);
+		    if ( s_accion != null ) {
+		      s_accion.add_param();
+		      g.t.introducir_parametro(t2.image, Simbolo.TipoVariable.DESCONOCIDO, tipoParam, g.nivel, g.dir);
+		      g.dir++;
+		    }
+		}
 		else { 
-			g.t.introducir_parametro(t2.image, tipoVar, tipoParam, g.nivel, g.dir);
+			s = g.t.introducir_parametro(t2.image, tipoVar, tipoParam, g.nivel, g.dir);
+			//s.setClaseSimbolo(Simbolo.ClaseSimbolo.PARAMETRO);
 			if ( s_accion != null && s_accion.esAccion()){
+			    s_accion.add_param();
 				s_accion.introducir_parametro(t2.image, tipoVar, tipoParam, g.nivel);
-
+			
 				// Se introducen en el arbol AST de forma inversa para poder salvarse en el marco de pila
-				aux = resul.getLeft();
-		        resul.setLeft(new ASTNode(t2.image, tipoVar));
-		        resul.getLeft().setType(ASTNode.TipoNodo.VAR);
-		        resul.getLeft().setTypeParam(tipoParam);
-		        resul.getLeft().setDir(g.dir);
-		        resul.getLeft().setLeft(aux);
+				aux = resul;
+		        resul = new ASTNode(t2.image, g.nivel, tipoVar);
+		        resul.setType(ASTNode.TipoNodo.VAR);
+		        resul.setTypeParam(tipoParam);
+		        resul.setDir(g.dir);
+		        resul.setLeft(aux);
+		        // Sumo a dir del simbolo para hacer la llamada OSF
+		        n = s_accion.getDir() + ((tipoParam == Simbolo.ClaseParametro.REF) ? 1 : 2);
+		        s_accion.setDir(n);
 		        g.dir++;
 			}
 		}
@@ -411,18 +485,23 @@ ASTNode lista_parametros(Globals g, Simbolo s_accion, Simbolo.TipoVariable tipoV
      ( ";" params = parametros(g, s_accion))?
     {
       // Encadenar el resto de parametros
-      if(params != null) {
-	      aux = resul.getLeft();
-	      resul.setLeft(params);
-	      resul.getLeft().setLeft(aux);
+      if(s_accion != null ) {
+          if(params != null) {
+            aux = resul;
+		    resul = params;
+		    resul.setLeft(aux);
+	      }
+	      resul.setValue(s_accion.getDir());
   	  }
+
    	  return resul;
     }
   }
   catch (Exception e)
   {
-	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
-	System.out.println(e.getMessage());    
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image, g);
+	System.out.println(e.getMessage());
+	return null;     
   }
 }
 
@@ -440,8 +519,10 @@ ASTNode parametros(Globals g, Simbolo s) :
   }
   catch (Exception e)
   {
-	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
-	System.out.println(e.getMessage());     
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image, g);
+	System.out.println(e.getMessage());
+	return null; 
+	return null;    
   }
 }
 
@@ -462,8 +543,9 @@ ASTNode bloque_sentencias(Globals g) :
   }
   catch (Exception e)
   {
-	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
-	System.out.println(e.getMessage());      
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image, g);
+	System.out.println(e.getMessage());
+	return null;       
   }
 }
 
@@ -471,29 +553,41 @@ ASTNode bloque_sentencias(Globals g) :
 ASTNode lista_sentencias(Globals g) : 
 { ASTNode resul = new ASTNode(), aux;
   ArrayList<ASTNode> sentencias = new ArrayList<ASTNode>();
+  boolean ok = true;
 }
 {
   try { 
     ( aux = sentencia(g)
 	{
 		//Generacion de código
-		sentencias.add(aux);
+		if(aux == null) {
+		    ok = false;
+		}
+		else { 
+			sentencias.add(aux);
+		}
 	}
     )*
     {
-      aux = resul;
-      for(ASTNode sentencia : sentencias) {
-		aux.setNext(sentencia);
-		aux=sentencia;
+      if(ok) { 
+	      aux = resul;
+	      for(ASTNode sentencia : sentencias) {
+			aux.setNext(sentencia);
+			aux=sentencia;
+	      }
+	      resul = resul.getNext();
       }
-      
-      return resul.getNext();
+      else {
+          resul = null;
+      }
+      return resul;
     }
   }
   catch (Exception e)
   {
-	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
-	System.out.println(e.getMessage());    
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image, g);
+	System.out.println(e.getMessage());
+	return null;     
   }
 }
 
@@ -514,12 +608,15 @@ ASTNode sentencia(Globals g) :
 	| resul = escribir(g) ";" 				{ return resul; }			
 	| resul = seleccion(g) 					{ return resul;	}
 
-	
+	{
+	  return resul;
+	}
   }
   catch (Exception e)
   {
-	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
-	System.out.println(e.getMessage());     
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image, g);
+	System.out.println(e.getMessage());
+	return null;      
   }
 }
 
@@ -536,15 +633,15 @@ ASTNode asignacion(Globals g, Token t) :
   try { 
      < tOPAS >
      {
-        //TODO: Realizar mas comprobaciones
+        //TODO: Realizar mas comprobaciones, comprobar que es una variable
         // Comprobar que existe el identificador
-        if ( (s = g.t.buscar_simbolo(t.image, g.nivel)) == null ){
-            miniLeng.error_semantico("Identificador desconocido en la parte izquierda de la asignacion", t);
+        if ( (s = g.t.buscar_simbolo(t.image, Simbolo.TipoSimbolo.VAR_PARAM)) == null ){
+            miniLeng.error_semantico("Identificador desconocido en la parte izquierda de la asignacion", t, g);
             tipo = Simbolo.TipoVariable.DESCONOCIDO;
             ok = false;
         }
         else if (s.esParametro() && s.esValor()){
-            miniLeng.error_semantico("No se permote realizar una asignacion a un parametro pasado como valor", t);
+            miniLeng.error_semantico("No se permote realizar una asignacion a un parametro pasado como valor", t, g);
             tipo = Simbolo.TipoVariable.DESCONOCIDO;
             ok = false;
         }
@@ -555,16 +652,17 @@ ASTNode asignacion(Globals g, Token t) :
      r = expresion(g) ";"
      {
         //TODO: Realizar mas comprobaciones
-        if ( ok && (r.tipo != tipo) && !comparar_tipos(r.tipo, tipo, Simbolo.TipoVariable.DESCONOCIDO,0))
+        if ( ok && (r.tipoVar != tipo) && !comparar_tipos(r.tipoVar, tipo, Simbolo.TipoVariable.DESCONOCIDO,0, g))
         {
-            miniLeng.error_semantico("Tipos incompatibles en la asignacion", t);
+            miniLeng.error_semantico("Tipos incompatibles en la asignacion", t, g);
         }
-        else {
+        else if (ok) {
             // Insertar nodo ASG en AST (Left: variable, Right: expresion)
 			node = new ASTNode();
 			node.setType(ASTNode.TipoNodo.ASG);
 			node.setNivel(g.nivel);
-			node.setLeft(new ASTNode(t.image, s.getDir()));
+			node.setLeft(new ASTNode(t.image, s.getNivel(), s.getDir()));
+			node.getLeft().setTypeParam(s.getParametro());
 			node.setRight(r.nodoAST);
         }
         return node;
@@ -572,8 +670,9 @@ ASTNode asignacion(Globals g, Token t) :
   }
   catch (Exception e)
   {
-	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
-	System.out.println(e.getMessage());  
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image, g);
+	System.out.println(e.getMessage());
+	return null;   
   }
 }
 
@@ -581,34 +680,49 @@ ASTNode asignacion(Globals g, Token t) :
 ASTNode invocacion_accion(Globals g, Token t) :
 {
   Simbolo s;
-  boolean ok = false;
-  ASTNode resul = null;
+  boolean ok = true, args = false;
+  ASTNode resul = null, argsAST = null;
 }
 {
   try { 
      {
         //TODO: Realizar mas comprobaciones, buscar por tipo (puede ser una variable)
         // Comprobar que existe el identificador
-        if ( (s = g.t.buscar_simbolo(t.image, g.nivel)) == null ){
-            miniLeng.error_semantico("Identificador desconocido en la llamada a la accion", t);
+        if ( (s = g.t.buscar_simbolo(t.image, Simbolo.TipoSimbolo.ACCION)) == null ){
+            miniLeng.error_semantico("Identificador desconocido en la llamada a la accion", t, g);
+            ok = false;
         }
         else if (!s.esAccion()){
-            miniLeng.error_semantico("No se puede realizar una llamda a una accion sobre un parametro", t);
+            miniLeng.error_semantico("No se puede realizar una llamda a una accion sobre un parametro", t, g);
+            ok = false;
         }
+        else {
+            resul = new ASTNode(s.getNombre(), g.nivel, ASTNode.TipoNodo.INVOCACION);
+            resul.setCond(new ASTNode(s.getEtiqueta(), g.OSF_s));
+            resul.getCond().setNivel(s.getNivel());
+       }
      }
-	 ( resul = argumentos(g, s) { ok=true; })? ";"
+	 ( argsAST = argumentos(g, s) { args=true; })? ";"
 	 {
 		// Compruebo los parametros de la invocacción en caso de llamarse sin parametros
-      	if(!ok && s!= null && s.getNum_params() != 0) {
-        	miniLeng.error_semantico("linea " + token.beginLine + "  -  Se esperaban " + s.getNum_params() + " parámetros al invocar a la accion " + s.getNombre());
+      	if(!args && s!= null && s.getNum_params() != 0) {
+        	miniLeng.error_semantico("linea " + token.beginLine + "  -  Se esperaban " + s.getNum_params() + " parámetros al invocar a la accion " + s.getNombre(), g);
     	}
+    	else if (args && ok){
+
+    	  //invertir argumentos para crear estructura de pila
+			resul.setLeft(argsAST);
+			resul.getCond().setValue(s.getDir());
+    	}
+    	
     	return resul;
      }
   }
   catch (Exception e)
   {
-	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
-	System.out.println(e.getMessage());      
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image, g);
+	System.out.println(e.getMessage());
+	return null;       
   }
 }
 
@@ -622,16 +736,17 @@ ASTNode mientras_que(Globals g) :
     < tMQ > r = expresion(g)
      {
         //TODO: Comprobar codigo muerto
-        ok = validar_tipo(r.tipo, Simbolo.TipoVariable.BOOLEANO);
-        if ( ok && r.clase != Simbolo.ClaseParametro.VAR && r.valorBool == true  ) {
+        ok = validar_tipo(r.tipoVar, Simbolo.TipoVariable.BOOLEANO, g);
+        if ( ok && r.tipoSimb == Simbolo.TipoSimbolo.CONST && r.valorBool == true  ) {
 			miniLeng.warning("Generacion de código muerto", token.beginLine);
 		}
 		else if (ok) {
-			nodoWhile = new ASTNode("while", ASTNode.TipoNodo.WHILE);
+			nodoWhile = new ASTNode("while", g.nivel, ASTNode.TipoNodo.WHILE);
 			nodoWhile.setCond(r.nodoAST);
 		}
      }
-    sentencias = lista_sentencias(g) < tFMQ >
+    sentencias = lista_sentencias(g)
+    < tFMQ >
     {
 		nodoWhile.setRight(sentencias);
 		return nodoWhile;
@@ -639,8 +754,9 @@ ASTNode mientras_que(Globals g) :
   }
   catch (Exception e)
   {
-	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
-	System.out.println(e.getMessage());    
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image, g);
+	System.out.println(e.getMessage());
+	return null;     
   }
 }
 
@@ -653,12 +769,12 @@ ASTNode seleccion(Globals g) :
 	 < tSI > r = expresion(g)
      {
         //TODO: Comprobar codigo muerto
-        ok=validar_tipo(r.tipo, Simbolo.TipoVariable.BOOLEANO);
-        if ( ok && r.clase != Simbolo.ClaseParametro.VAR && r.valorBool == true  ) {
+        ok=validar_tipo(r.tipoVar, Simbolo.TipoVariable.BOOLEANO, g);
+        if ( ok && r.tipoSimb == Simbolo.TipoSimbolo.CONST && r.valorBool == true  ) {
 			miniLeng.warning("Generacion de código muerto", token.beginLine);
 		}
 		else if (ok) {
-			nodoSeleccion = new ASTNode("if", ASTNode.TipoNodo.IF);
+			nodoSeleccion = new ASTNode("if", g.nivel, ASTNode.TipoNodo.IF);
 			nodoSeleccion.setCond(r.nodoAST);
 		}
      }
@@ -670,7 +786,7 @@ ASTNode seleccion(Globals g) :
 	(< tSI_NO >
 	{
 		// Comprobar que la sentencia no sea true y genere codigo muerto
-		if ( ok && r.clase != Simbolo.ClaseParametro.VAR && r.valorBool == true ) {
+		if ( ok && r.tipoSimb == Simbolo.TipoSimbolo.CONST && r.valorBool == true ) {
 			miniLeng.warning("Generacion de código muerto", token.beginLine);
 		}
 	}
@@ -678,14 +794,17 @@ ASTNode seleccion(Globals g) :
 	)?  
 	< tFSI >
 	{
+	   if (ok) { 
 		nodoSeleccion.setRight(sentenciasR);
-		return nodoSeleccion;
+	   }
+	   return nodoSeleccion;
     }
   }
   catch (Exception e)
   {
-	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
-	System.out.println(e.getMessage()); 
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image, g);
+	System.out.println(e.getMessage());
+	return null;  
   }
 }
 
@@ -699,8 +818,9 @@ ASTNode leer(Globals g) :
   }
   catch (Exception e)
   {
-	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
-	System.out.println(e.getMessage());    
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image, g);
+	System.out.println(e.getMessage());
+	return null;     
   }
 }
 
@@ -714,8 +834,9 @@ ASTNode escribir(Globals g) :
   }
   catch (Exception e)
   {
-	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
-	System.out.println(e.getMessage());     
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image, g);
+	System.out.println(e.getMessage());
+	return null;      
   }
 }
 
@@ -724,7 +845,7 @@ ASTNode lista_asignables(Globals g) :
 {
   Token t1, t2;
   Simbolo s;
-  ASTNode aux = null, resul = new ASTNode("rd", ASTNode.TipoNodo.RD);
+  ASTNode aux = null, resul = new ASTNode("rd", g.nivel, ASTNode.TipoNodo.RD);
 }
 {
   try {
@@ -734,39 +855,49 @@ ASTNode lista_asignables(Globals g) :
   	t1 = < tIDENTIFICADOR>
 	{
 	   // Comprobar si existe en la tabla de simbolos
-	   if ( (s = g.t.buscar_simbolo(t1.image,g.nivel)) == null ) {
-	     miniLeng.error_semantico("Identificador desconocido", t1);
+	   if ( (s = g.t.buscar_simbolo(t1.image, Simbolo.TipoSimbolo.VAR_PARAM)) == null ) {
+	     miniLeng.error_semantico("Identificador desconocido", t1, g);
 	   }
-	   else if( s.getTipo() != Simbolo.TipoSimbolo.VARIABLE &&
-	   			( !s.esChar() && !s.esCadena() && !s.esEntero())) {
-		 miniLeng.error_semantico("Tipo de variable no válida en llamada a leer()", t1);
+	   else if( s.getTipo() != Simbolo.TipoSimbolo.VARIABLE 
+	   			&& s.getVariable() != Simbolo.TipoVariable.DESCONOCIDO
+	   			&& ( !s.esChar() && !s.esCadena() && !s.esEntero())) {
+		 miniLeng.error_semantico("Tipo de variable no válida en llamada a leer()", t1, g);
+	   }
+	   else if ( s.esVariable() && s.esValor()){
+	   	miniLeng.error_semantico("No se pueda usar una variable por valor en la operacion leer", t1, g);
 	   }
 	   else {
 	     resul.setNivel(g.nivel);
 	     // Crea estructura AST
-		 resul.setRight(new ASTNode(t1.image, s.getVariable()));
+		 resul.setRight(new ASTNode(t1.image,s.getNivel(), s.getVariable()));
 		 resul.getRight().setType(ASTNode.TipoNodo.VAR);
 		 resul.getRight().setDir(s.getDir());
+		 resul.getRight().setTypeParam(s.getParametro());
 	   }
 	}
   	( "," t2 = < tIDENTIFICADOR>
 	{
 	   // Comprobar si existe en la tabla de simbolos
 	   if ( (s = g.t.buscar_simbolo(t2.image,g.nivel)) == null ) {
-	     miniLeng.error_semantico("Identificador desconocido", t2);
+	     miniLeng.error_semantico("Identificador desconocido", t2, g);
 	   }
-	   else if( s.getTipo() != Simbolo.TipoSimbolo.VARIABLE &&
-	   			( !s.esChar() && !s.esCadena() && !s.esEntero())) {
-		 miniLeng.error_semantico("Tipo de variable no válida en llamada a leer()", t1);
+	   else if( s.getTipo() != Simbolo.TipoSimbolo.VARIABLE 
+	   			&& s.getVariable() != Simbolo.TipoVariable.DESCONOCIDO
+	   			&& ( !s.esChar() && !s.esCadena() && !s.esEntero())) {
+		 miniLeng.error_semantico("Tipo de variable no válida en llamada a leer()", t1, g);
+	   }
+	   else if ( s.esVariable() && s.esValor()){
+	   	miniLeng.error_semantico("No se pueda usar una variable por valor en la operacion leer", t2, g);
 	   }
 	   else {
 	     aux = resul;
 	     while(aux.getRight() != null) {
 			aux = aux.getRight();
 	     }
-		 aux.setRight(new ASTNode(t2.image, s.getVariable()));
+		 aux.setRight(new ASTNode(t2.image, s.getNivel(), s.getVariable()));
 		 aux.getRight().setType(ASTNode.TipoNodo.VAR);
-		 aux.getRight().setDir(s.getDir());
+		 aux.getRight().setTypeParam(s.getParametro());
+		 aux.getRight().setDir(s.getDir()); 
 	   }
 	}
   	)*
@@ -774,74 +905,99 @@ ASTNode lista_asignables(Globals g) :
   }
   catch (Exception e)
   {
-	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
-	System.out.println(e.getMessage());      
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image, g);
+	System.out.println(e.getMessage());
+	return null;       
   }
 }
 
 /* lista_escribibles ::= (< tCONSTCAD > | < tCONSTCHAR >) ( "," (< tIDENTIFICADOR > | < tENTACAR >"("expresion")"))* */
 ASTNode lista_escribibles(Globals g) : 
-{  RegistroExpr r;
-   Token t;
+{  RegistroExpr r = null;
+   Token t = null;
    Simbolo s;
-   boolean constCad = true;
-   ASTNode aux = null, resul = new ASTNode("wr", ASTNode.TipoNodo.WR);
+   boolean constCad = false, entCar = false;
+   ASTNode aux = null, resul = new ASTNode("wr", g.nivel, ASTNode.TipoNodo.WR);
 }
 {
   try {
     //< tENTACAR > "(" r = expresion(g) ")"
-   ( t = < tCONSTCAD > | t = < tCONSTCHAR > |  t = < tIDENTIFICADOR > { constCad = false; })
+    ( t = < tCONSTCAD >  { constCad = true; }
+   	|  t = < tCONSTCHAR >  { constCad = true; }
+   	|  t = < tIDENTIFICADOR >
+   	|  < tENTACAR > "(" r = expresion(g) ")" { entCar = true; }
+   	)
 	{
 		if (constCad) {
-			 resul.setRight(new ASTNode(t.image, Simbolo.TipoVariable.CADENA));
+			 resul.setRight(new ASTNode(t.image, g.nivel, Simbolo.TipoVariable.CADENA));
 			 resul.getRight().setType(ASTNode.TipoNodo.CONST);
 		}
+		else if (entCar) {
+		  if(r.tipoVar != Simbolo.TipoVariable.ENTERO ) {
+			miniLeng.error_semantico("---", g);
+		  }
+		  else {
+		    //r.nodoAST.setType(ASTNode.TipoNodo.CONST);
+		    //r.nodoAST.setTypeVar(Simbolo.TipoVariable.CADENA);
+	        //resul.setRight(r.nodoAST);
+
+	        resul.setRight(new ASTNode("entcar", g.nivel, ASTNode.TipoNodo.ENTCAR));
+	        resul.getRight().setTypeVar(Simbolo.TipoVariable.CADENA);
+			resul.getRight().setLeft(r.nodoAST);
+	      }
+		}
 		else {
-		    if ( (s = g.t.buscar_simbolo(t.image,g.nivel)) == null ) {
-	           miniLeng.error_semantico("Identificador desconocido", t);
+		    if ( (s = g.t.buscar_simbolo(t.image,Simbolo.TipoSimbolo.VAR_PARAM)) == null ) {
+	           miniLeng.error_semantico("Identificador desconocido", t, g);
 	        }
-	        else if( s.getTipo() != Simbolo.TipoSimbolo.VARIABLE && (!s.esChar() && !s.esCadena())) {
-		      miniLeng.error_semantico("Tipo de variable no válida en llamada a escribir()", t);
+	        else if(!s.esChar() && !s.esCadena() && !s.esEntero()) {
+		      miniLeng.error_semantico("Tipo de variable no válida en llamada a escribir", t, g);
 	        }
 	        else {
 	          resul.setNivel(g.nivel);
-	          resul.setRight(new ASTNode(t.image, s.getVariable()));
+	          resul.setRight(new ASTNode(t.image, s.getNivel(), s.getVariable()));
 			  resul.getRight().setType(ASTNode.TipoNodo.VAR);
 			  resul.getRight().setTypeParam(s.getParametro());
 			  resul.getRight().setDir(s.getDir());
 	        }
 	     }
-	     constCad = true;
+	     aux = resul.getRight();
+	     constCad = false; entCar = false;
 	}
-   ( ","  ( t = < tCONSTCAD > | t = < tCONSTCHAR > |  t = < tIDENTIFICADOR > { constCad = false; })
+   ( ","  
+   	( t = < tCONSTCAD > { constCad = true; }
+   	|  t = < tCONSTCHAR >  { constCad = true; }
+   	|  t = < tIDENTIFICADOR > 
+   	|  < tENTACAR > "(" r = expresion(g) ")" { entCar = true; }
+    )
 	{
 		if (constCad) {
-	         aux = resul;
-	         while(aux.getRight() != null) {
-			    aux = aux.getRight();
-	         }		  
-		     aux.setRight(new ASTNode(t.image, Simbolo.TipoVariable.CADENA));
+		     aux.setRight(new ASTNode(t.image, g.nivel, Simbolo.TipoVariable.CADENA));
 		     aux.getRight().setType(ASTNode.TipoNodo.CONST);
+		     aux = aux.getRight();
+		}
+		else if (entCar) {
+		  	aux.setRight(new ASTNode("entcar", g.nivel, ASTNode.TipoNodo.ENTCAR));
+	        aux.getRight().setTypeVar(Simbolo.TipoVariable.CADENA);
+			aux.getRight().setLeft(r.nodoAST);
+	        aux = aux.getRight();
 		}
 		else {
-		    if ( (s = g.t.buscar_simbolo(t.image,g.nivel)) == null ) {
-	           miniLeng.error_semantico("Identificador desconocido", t);
+		    if ( (s = g.t.buscar_simbolo(t.image,Simbolo.TipoSimbolo.VAR_PARAM)) == null ) {
+	           miniLeng.error_semantico("Identificador desconocido", t, g);
 	        }
-	        else if( s.getTipo() != Simbolo.TipoSimbolo.VARIABLE && (!s.esChar() && !s.esCadena())) {
-		      miniLeng.error_semantico("Tipo de variable no válida en llamada a escribir()", t);
+	        else if(!s.esChar() && !s.esCadena() && !s.esEntero()) {
+		      miniLeng.error_semantico("Tipo de variable no válida en llamada a escribir", t, g);
 	        }
-	        else {
-	             aux = resul;
-	             while(aux.getRight() != null) {
-			        aux = aux.getRight();
-	             }		  
-		         aux.setRight(new ASTNode(t.image, s.getVariable()));
+	        else {	  
+		         aux.setRight(new ASTNode(t.image, g.nivel, s.getVariable()));
 		         aux.getRight().setDir(s.getDir());
 		         aux.getRight().setType(ASTNode.TipoNodo.VAR);
 		         aux.getRight().setTypeParam(s.getParametro());
+		         aux = aux.getRight();
 	        }
 	     }
-	     constCad = true;
+	     constCad = false; entCar = false;
 	}	
    )*
   {
@@ -849,8 +1005,9 @@ ASTNode lista_escribibles(Globals g) :
   }
   }
   catch (Exception e) {
-	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
-	System.out.println(e.getMessage());     
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image, g);
+	System.out.println(e.getMessage());
+	return null;      
   }
 }
 
@@ -866,7 +1023,8 @@ ASTNode argumentos(Globals g, Simbolo s) :
     {
 		// Compruebo los parametros de la invocacción en caso de llamarse sin parametros
       	if(!ok && s != null && s.getNum_params() != 0) {
-        	miniLeng.error_semantico("linea " + token.beginLine + "  -  Se esperaban " + s.getNum_params() + " parámetros al invocar a la accion " + s.getNombre());	
+        	miniLeng.error_semantico("linea " + token.beginLine + "  -  Se esperaban " + s.getNum_params() + " parámetros al invocar a la accion " + s.getNombre(), g);
+        	resul = null;
     	}
     	return resul;
     }
@@ -874,8 +1032,9 @@ ASTNode argumentos(Globals g, Simbolo s) :
   }
   catch (Exception e)
   {
-	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
-	System.out.println(e.getMessage());    
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image, g);
+	System.out.println(e.getMessage());
+	return null;     
   }
 }
 
@@ -884,31 +1043,78 @@ ASTNode lista_expresiones(Globals g, Simbolo s) :
 {
   RegistroExpr r;
   int num_params = 0;
-  ArrayList<Simbolo> parametros = s.getLista_simbolos();
-  ArrayList<RegistroExpr> params = new ArrayList<RegistroExpr>();
-  ASTNode resul = new ASTNode();
+  boolean ok = true;
+  ArrayList<Simbolo> parametros = null;
+  ASTNode aux = null, resul = null;
 }
 {
   try { 
-    r = expresion(g) { num_params++; params.add(r); }
-    ( "," r = expresion(g) { num_params++; params.add(r);  })*
+    r = expresion(g)
     {
-		// Comprobar que los parametros de llamada a la funcion coindicen con los de la tabla
-		if (s.getNum_params() != num_params) {
-			miniLeng.error_semantico("El número de parámetros de llamada a la función " + s.getNombre() + " no coindice");
+      	if (s != null) {
+      	    parametros = s.getLista_simbolos();
+	    	num_params++;
+	    	if(num_params > parametros.size()) {
+				miniLeng.error_semantico("El número de parámetros de llamada a la función " + s.getNombre() + " no coindice", g);
+				ok = false;
+	     	}
+	    	else if(!miniLeng.validar_tipo(r.tipoVar, parametros.get(num_params-1).getVariable(), g)) {
+				miniLeng.error_semantico("Los tipos en la llamada a la función " + s.getNombre() + " no coindicen", g);
+				ok = false;
+			}
+			else if (r.clase == Simbolo.ClaseParametro.VAL && parametros.get(num_params-1).esValor() ) {
+				miniLeng.error_semantico("No se puede pasar un parámetro por valor como referencia en la invocación a la accion", g);
+				ok = false;
+			}
+			else {
+				r.nodoAST.setTypeParam(parametros.get(num_params-1).getParametro());
+				resul = r.nodoAST;
+				resul.setTypeParam(parametros.get(num_params-1).getParametro());
+			}
 		}
-		else{
-			// Comprobar cada tipo
-			for(Simbolo accion_param : s.getLista_simbolos()) {
-
-			  	r = params.get(0);
-			  	if (r.clase == Simbolo.ClaseParametro.VAL && accion_param.esValor() ) {
-			  	  miniLeng.error_semantico("No se puede pasar un parámetro por valor como referencia en la invocación a la accion");
-			  	}
-				if(!miniLeng.validar_tipo(r.tipo, accion_param.getVariable())) {
-				  break;
-				}
-				params.remove(0);
+    }
+    ( "," r = expresion(g)
+    {
+        if ( ok && s != null) {
+	    	num_params++;
+	    	if(num_params > parametros.size()) {
+				miniLeng.error_semantico("El número de parámetros de llamada a la función " + s.getNombre() + " no coindice", g);
+				ok = false;
+	     	}
+	    	else if(!miniLeng.validar_tipo(r.tipoVar, parametros.get(num_params-1).getVariable(), g)) {
+				miniLeng.error_semantico("Los tipos en la llamada a la función " + s.getNombre() + " no coindicen", g);
+				ok = false;
+			}
+			else if (r.clase == Simbolo.ClaseParametro.VAL && parametros.get(num_params-1).esValor() ) {
+				miniLeng.error_semantico("No se puede pasar un parámetro por valor como referencia en la invocación a la accion", g);
+				ok = false;
+			}
+			else {
+				r.nodoAST.setTypeParam(parametros.get(num_params-1).getParametro());
+				aux = resul;
+				resul = r.nodoAST;
+				resul.setTypeParam(parametros.get(num_params-1).getParametro());
+				resul.setLeft(aux);
+				//aux = resul;
+				//while(aux.getLeft() != null){
+					//aux = aux.getLeft();
+				//}
+				//aux.setLeft(r.nodoAST);
+				
+			}
+		}
+    }
+    )*
+    {
+        if ( ok && s != null ) { 
+	        // Añadimos a Cond un nodo con los datos de la accion (etiqueta, num parametros y nivel)
+	        // Se añade siempre al inicio, dejando la primera expresion al final
+	      	resul.setCond(new ASTNode(s.getEtiqueta(), s.getDir()));
+	      	resul.getCond().setNivel(s.getNivel());
+			// Comprobar que los parametros de llamada a la funcion coindicen con los de la tabla
+			if (s.getNum_params() != num_params) {
+				miniLeng.error_semantico("El número de parámetros de llamada a la función " + s.getNombre() + " no coindice", g);
+				resul = null;
 			}
 		}
 		return resul;
@@ -916,47 +1122,44 @@ ASTNode lista_expresiones(Globals g, Simbolo s) :
   }
   catch (Exception e)
   {
-	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
-	System.out.println(e.getMessage());     
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image, g);
+	System.out.println(e.getMessage());
+	return null;      
   }
 }
 
 /* expresion ::= expresion_simple | (operador_relacional expresion_simple)* */
 RegistroExpr expresion(Globals g) : 
-{ RegistroExpr r1,r2 = null;
-  Simbolo.TipoOperador op;
+{ 
+  RegistroExpr r1 = null, r2=null;
   RegistroExpr resul = new RegistroExpr();
-  Boolean ok;
+  ASTNode aux = null;
+  Simbolo.TipoOperador op;
+  Boolean ok, optimizar = false, anidar = false;
 }
 {
-  try { 
+  try {
+    {  resul.nodoAST = new ASTNode("op", g.nivel);  }
 	r1 = expresion_simple(g)
 	(op =operador_relacional(g)
 	 r2 = expresion_simple(g)
 	{
-		if((r1.tipo != r2.tipo) && !comparar_tipos(r1.tipo,r2.tipo, Simbolo.TipoVariable.DESCONOCIDO,0)) {
-		    miniLeng.error_semantico("Los operandos deben ser del mismo tipo");
-		    resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
+	  	// Analisis semantico:
+	  	ok = true;
+		if((r1.tipoVar != r2.tipoVar) && !comparar_tipos(r1.tipoVar,r2.tipoVar, Simbolo.TipoVariable.DESCONOCIDO,0, g)) {
+		    miniLeng.error_semantico("Los operandos deben ser del mismo tipo", token, g);
+		    resul.tipoVar = Simbolo.TipoVariable.DESCONOCIDO;
 		}
 		else {
-		  	if (r1.clase == Simbolo.ClaseParametro.VAR || r1.clase == Simbolo.ClaseParametro.VAR ) { 
-		    	resul.clase = Simbolo.ClaseParametro.VAR;
-			}
-			else {
-			    resul.clase = Simbolo.ClaseParametro.CONST;
-			}
-		    resul.tipo = Simbolo.TipoVariable.BOOLEANO;
-		    //Generacion de código
-			resul.nodoAST = new ASTNode();
-       		miniLeng.createSubTreeAST(resul.nodoAST, r2.nodoAST, r1.nodoAST, ASTNode.TipoNodo.COND,op);
-			
-		    // Análisis semántico
-		    switch (r1.tipo) {
+		    resul.tipoVar = Simbolo.TipoVariable.BOOLEANO;
+		    // Optimización en caso de constantes
+		    switch (r1.tipoVar) {
 				case ENTERO:
-					ok = validar_tipo(r2.tipo, Simbolo.TipoVariable.ENTERO);
+					ok = validar_tipo(r2.tipoVar, Simbolo.TipoVariable.ENTERO, g);
 					if ( !ok )
-						resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
-					else {
+						resul.tipoVar = Simbolo.TipoVariable.DESCONOCIDO;
+					else if (r1.tipoSimb == Simbolo.TipoSimbolo.CONST && r2.tipoSimb == Simbolo.TipoSimbolo.CONST) {
+						optimizar = true;
 					    switch (op) {
                    			case GT:
                         		resul.valorBool = r1.valorEnt > r2.valorEnt;
@@ -982,10 +1185,11 @@ RegistroExpr expresion(Globals g) :
               		}
 					break;
 				case CADENA:
-					ok = validar_tipo(r2.tipo, Simbolo.TipoVariable.CADENA);
+					ok = validar_tipo(r2.tipoVar, Simbolo.TipoVariable.CADENA, g);
 					if ( !ok )
-						resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
-					else {
+						resul.tipoVar = Simbolo.TipoVariable.DESCONOCIDO;
+					else if (r1.tipoSimb == Simbolo.TipoSimbolo.CONST && r2.tipoSimb == Simbolo.TipoSimbolo.CONST) {
+						optimizar = true;
 					    switch (op) {
              	    		case EQ:
                          		resul.valorBool = r1.valorString.equals(r2.valorString);
@@ -994,16 +1198,17 @@ RegistroExpr expresion(Globals g) :
                         		resul.valorBool = !r1.valorString.equals(r2.valorString);
             					break;
             	    		default:
-            	    		    miniLeng.error_semantico("No se puede utilizar el operador " + op + " sobre una cadena");
+            	    		    miniLeng.error_semantico("No se puede utilizar el operador " + op + " sobre una cadena", g);
             		    		break;
                 		}
               		}
 					break;
 				case BOOLEANO:
-					ok = validar_tipo(r2.tipo, Simbolo.TipoVariable.BOOLEANO);
+					ok = validar_tipo(r2.tipoVar, Simbolo.TipoVariable.BOOLEANO, g);
 					if ( !ok )
-						resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
-					else {
+						resul.tipoVar = Simbolo.TipoVariable.DESCONOCIDO;
+					else if (r1.tipoSimb == Simbolo.TipoSimbolo.CONST && r2.tipoSimb == Simbolo.TipoSimbolo.CONST) {
+						optimizar = true;
 					    switch (op) {
              	    		case EQ:
                          		resul.valorBool = r1.valorBool == r2.valorBool;
@@ -1012,17 +1217,29 @@ RegistroExpr expresion(Globals g) :
                         		resul.valorBool = r1.valorBool != r2.valorBool;
             					break;
             	    		default:
-            	    		    miniLeng.error_semantico("No se puede utilizar la operador " + op + " sobre un booleano");
+            	    		    miniLeng.error_semantico("No se puede utilizar la operador " + op + " sobre un booleano", g);
             		    		break;
                 		}
               		}				
 					break;
 				case DESCONOCIDO:
-					resul.tipo = Simbolo.TipoVariable.DESCONOCIDO; 
+					resul.tipoVar = Simbolo.TipoVariable.DESCONOCIDO; 
 				default: // DESCONOCIDO
 					break;
 		    }
 		}
+  	  	if (ok && !optimizar) {
+  	  	  if(!anidar){
+  	  	  	miniLeng.createSubTreeAST(resul.nodoAST, r1.nodoAST, r2.nodoAST, ASTNode.TipoNodo.OP,op);
+  	  	  	aux = resul.nodoAST;
+  	  	  	anidar = true;
+  	  	  }
+  	  	  else{
+  	  	    resul.nodoAST = new ASTNode("op", g.nivel);
+  	  	  	miniLeng.createSubTreeAST(resul.nodoAST, aux, r2.nodoAST, ASTNode.TipoNodo.OP,op);
+			aux = resul.nodoAST;
+  	  	  }  	  
+  	  	}
 	}
 	)*
 	{
@@ -1034,70 +1251,104 @@ RegistroExpr expresion(Globals g) :
   }
   catch (Exception e)
   {
-	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
-	System.out.println(e.getMessage());       
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image, g);
+	System.out.println(e.getMessage());
+	return null;        
   }
 }
 
 /* expresion_simple ::= termino (operador_aditivo termino)* */
 RegistroExpr expresion_simple(Globals g) : 
 {
-  RegistroExpr r1, r2=null;
+  RegistroExpr r1 = null, r2=null;
   RegistroExpr resul = new RegistroExpr();
+  ASTNode aux = null;
   Simbolo.TipoOperador op;
-  Boolean ok;
+  Boolean ok = false, optimizar = false, anidar = false;
 }
 {
-  try { 
+  try {
+	{  resul.nodoAST = new ASTNode("op", g.nivel);  }
 	r1 = termino(g)
 	( op = operador_aditivo(g)
 	  r2 = termino(g)
 	{
-	  ok = true;
-	  //TODO: Comproboar overflow/underflow
-	  switch (op) {
-		case SUMA:
-		    ok = validar_tipo(r1.tipo, Simbolo.TipoVariable.ENTERO)
-		        && validar_tipo(r2.tipo, Simbolo.TipoVariable.ENTERO);
-		    if ( ok && comparar_tipos(r1.tipo,r2.tipo,Simbolo.TipoVariable.ENTERO,1))
-            {
-                resul.tipo = Simbolo.TipoVariable.ENTERO;
-                resul.valorEnt = r1.valorEnt + r2.valorEnt;
-            }
-            else {
-                resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
-            }
-			break;
-		case RESTA:
-		    ok = validar_tipo(r1.tipo, Simbolo.TipoVariable.ENTERO)
-		        && validar_tipo(r2.tipo, Simbolo.TipoVariable.ENTERO);
-		    if ( ok && comparar_tipos(r1.tipo,r2.tipo,Simbolo.TipoVariable.ENTERO,1))
-            {
-                resul.tipo = Simbolo.TipoVariable.ENTERO;
-                resul.valorEnt = r1.valorEnt - r2.valorEnt;
-            }
-            else {
-                resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
-            }
-			break;
-		case OR:
-		    ok = validar_tipo(r1.tipo, Simbolo.TipoVariable.BOOLEANO)
-		        && validar_tipo(r2.tipo, Simbolo.TipoVariable.BOOLEANO);
-		    if ( ok && comparar_tipos(r1.tipo,r2.tipo,Simbolo.TipoVariable.BOOLEANO,1))
-            {
-                resul.tipo = Simbolo.TipoVariable.BOOLEANO;
-                resul.valorBool = r1.valorBool | r2.valorBool;
-            }
-            else {
-                resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
-            }
-			break;
-		default:
-			break;
-	   }
-	   // Generación de código
-	   resul.nodoAST = new ASTNode();
-       miniLeng.createSubTreeAST(resul.nodoAST, r2.nodoAST, r1.nodoAST, ASTNode.TipoNodo.OP,op);
+	  if ( op == Simbolo.TipoOperador.OR ) {
+			ok = validar_tipo(r1.tipoVar, Simbolo.TipoVariable.BOOLEANO, g)
+		        && validar_tipo(r2.tipoVar, Simbolo.TipoVariable.BOOLEANO, g);
+		    if (!ok) {
+                miniLeng.error_semantico("Incompatibilidad de tipos en la operacion", token, g);
+                resul.tipoVar = Simbolo.TipoVariable.DESCONOCIDO;				
+		    }
+		    else {
+		        resul.tipoVar = Simbolo.TipoVariable.BOOLEANO;
+		      // Si son constantes optimizo realizando la operacion
+				if(r1.tipoSimb == Simbolo.TipoSimbolo.CONST && r2.tipoSimb == Simbolo.TipoSimbolo.CONST) {
+				    optimizar = true;
+                	resul.valorBool = r1.valorBool | r2.valorBool;
+                	resul.nodoAST = new ASTNode("bool", ((resul.valorBool) ? 1 : 0), ASTNode.TipoNodo.CONST);
+					resul.nodoAST.setTypeVar(Simbolo.TipoVariable.BOOLEANO);
+				}
+				else if(r1.tipoVar == Simbolo.TipoVariable.DESCONOCIDO
+						|| r2.tipoVar == Simbolo.TipoVariable.DESCONOCIDO)
+				{
+				  resul.tipoVar = Simbolo.TipoVariable.DESCONOCIDO;
+				} 
+		    }
+  	  	}
+  	  	else {
+		    ok = validar_tipo(r1.tipoVar, Simbolo.TipoVariable.ENTERO, g)
+		        && validar_tipo(r2.tipoVar, Simbolo.TipoVariable.ENTERO, g);
+		    if (!ok) {
+                miniLeng.error_semantico("Incompatibilidad de tipos en la operacion", token, g);
+                resul.tipoVar = Simbolo.TipoVariable.DESCONOCIDO;				
+		    }
+		    else {
+		        resul.tipoVar = Simbolo.TipoVariable.ENTERO;
+
+		        // Si son constantes compruebo valores en rango y posibles errores de division o modulo por 0.
+		        // Optimizar ejecutando la operacion
+				if(r1.tipoSimb == Simbolo.TipoSimbolo.CONST && r2.tipoSimb == Simbolo.TipoSimbolo.CONST) {
+				    optimizar = true;
+				    if (!miniLeng.rango_enteros(r1.valorEnt) || !miniLeng.rango_enteros(r2.valorEnt)) {
+                		miniLeng.error_semantico("Valor fuera de rango", token, g);
+                		resul.tipoVar = Simbolo.TipoVariable.DESCONOCIDO;
+                	}
+                	else { 
+	                	switch (op) {
+						case SUMA:
+					        resul.valorEnt = r1.valorEnt + r2.valorEnt;
+							break;
+						case RESTA:
+					        resul.valorEnt = r1.valorEnt + r2.valorEnt;
+						    break;
+						default:
+							break;
+					    }
+						resul.nodoAST = new ASTNode("ent", resul.valorEnt, ASTNode.TipoNodo.CONST);
+						resul.nodoAST.setTypeVar(resul.tipoVar);
+					}
+				}
+				else if(r1.tipoVar == Simbolo.TipoVariable.DESCONOCIDO
+						|| r2.tipoVar == Simbolo.TipoVariable.DESCONOCIDO)
+				{
+				  resul.tipoVar = Simbolo.TipoVariable.DESCONOCIDO;
+				}
+		    }
+  	  	}
+
+  	  	if (ok && !optimizar) {
+  	  	  if(!anidar){
+  	  	  	miniLeng.createSubTreeAST(resul.nodoAST, r1.nodoAST, r2.nodoAST, ASTNode.TipoNodo.OP,op);
+  	  	  	aux = resul.nodoAST;
+  	  	  	anidar = true;
+  	  	  }
+  	  	  else{
+  	  	    resul.nodoAST = new ASTNode("op", g.nivel);
+  	  	  	miniLeng.createSubTreeAST(resul.nodoAST, aux, r2.nodoAST, ASTNode.TipoNodo.OP,op);
+			aux = resul.nodoAST;
+  	  	  }  	  
+  	  	}
 	}
 	)*
 	{
@@ -1109,97 +1360,135 @@ RegistroExpr expresion_simple(Globals g) :
   }
   catch (Exception e)
   {
-	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
-	System.out.println(e.getMessage());      
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image, g);
+	System.out.println(e.getMessage());
+	return null;       
   }
 }
 
 /* termino ::= factor (operador multiplicativo factor)* */
 RegistroExpr termino(Globals g) : 
 {
-  RegistroExpr r1, r2=null;
+  RegistroExpr r1 = null, r2=null;
   RegistroExpr resul = new RegistroExpr();
+  ASTNode aux = null, ultimo = null;
   Simbolo.TipoOperador op;
-  Boolean ok;
+  Boolean ok, optimizar = false, anidar = false;
 
 }
 {
-  try { 
+  try {
+    {  resul.nodoAST = new ASTNode("op", g.nivel);  }
     r1 = factor(g)
     ( op = operador_multiplicativo(g)
       r2 = factor(g)
 {
-	  //TODO: Comproboar overflow/underflow
-	  switch (op) {
-		case MUL:
-		    ok = validar_tipo(r1.tipo, Simbolo.TipoVariable.ENTERO)
-		        && validar_tipo(r2.tipo, Simbolo.TipoVariable.ENTERO);
-		    if ( ok && comparar_tipos(r1.tipo,r2.tipo,Simbolo.TipoVariable.ENTERO,1))
-            {
-                resul.tipo = Simbolo.TipoVariable.ENTERO;
-                resul.valorEnt = r1.valorEnt * r2.valorEnt;
-            }
-            else {
-                resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
-            }
-			break;
-		case DIV:
-		    ok = validar_tipo(r1.tipo, Simbolo.TipoVariable.ENTERO)
-		        && validar_tipo(r2.tipo, Simbolo.TipoVariable.ENTERO);
-		    //TODO: COMPROBAR DIVISION POR 0
-		    if ( ok && comparar_tipos(r1.tipo,r2.tipo,Simbolo.TipoVariable.ENTERO,1))
-            {
-                if ( r2.valorEnt == 0 ) {
-                    miniLeng.error_semantico("Division por 0", token);
-                    resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
-                }
-                else{
-                    resul.tipo = Simbolo.TipoVariable.ENTERO;
-                    resul.valorEnt = r1.valorEnt / r2.valorEnt;
-                }
-            }
-            else {
-                resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
-            }
-			break;
-		case MOD:
-		    ok = validar_tipo(r1.tipo, Simbolo.TipoVariable.ENTERO)
-		        && validar_tipo(r2.tipo, Simbolo.TipoVariable.ENTERO);
-            //TODO: COMPROBAR MOD POR 0
-		    if ( ok && comparar_tipos(r1.tipo,r2.tipo,Simbolo.TipoVariable.ENTERO,1))
-            {
-                if ( r2.valorEnt == 0 ) {
-                    miniLeng.error_semantico("Operacion modulo por 0");
-                    resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
-                }
-                else{
-                    resul.tipo = Simbolo.TipoVariable.ENTERO;
-                    resul.valorEnt = r1.valorEnt / r2.valorEnt;
-                }
-            }
-            else {
-                resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
-            }
-			break;
-		case AND:
-		    ok = validar_tipo(r1.tipo, Simbolo.TipoVariable.BOOLEANO)
-		        && validar_tipo(r2.tipo, Simbolo.TipoVariable.BOOLEANO);
-		    if ( ok && comparar_tipos(r1.tipo,r2.tipo,Simbolo.TipoVariable.BOOLEANO,1))
-            {
-                resul.tipo = Simbolo.TipoVariable.BOOLEANO;
-                resul.valorBool = r1.valorBool & r2.valorBool;
-            }
-            else {
-                resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
-            }
-			break;
-		default:
-			break;
-	   }
-	   
-       // Generacion de codigo
-       resul.nodoAST = new ASTNode();
-       miniLeng.createSubTreeAST(resul.nodoAST, r1.nodoAST, r2.nodoAST, ASTNode.TipoNodo.OP,op);
+  	  // Analisis semantico
+  	  // Comprobar que son del mismo tipo MUL/DIV/MOD (entero o desconocido) AND (bool)
+  	  // Generacion de codigo
+       
+       
+
+		if ( op == Simbolo.TipoOperador.AND ) {
+			ok = validar_tipo(r1.tipoVar, Simbolo.TipoVariable.BOOLEANO, g)
+		        && validar_tipo(r2.tipoVar, Simbolo.TipoVariable.BOOLEANO, g);
+		    if (!ok) {
+                miniLeng.error_semantico("Incompatibilidad de tipos en la operacion", token, g);
+                resul.tipoVar = Simbolo.TipoVariable.DESCONOCIDO;				
+		    }
+		    else {
+		        resul.tipoVar = Simbolo.TipoVariable.BOOLEANO;
+		      // Si son constantes optimizo realizando la operacion
+				if(r1.tipoSimb == Simbolo.TipoSimbolo.CONST && r2.tipoSimb == Simbolo.TipoSimbolo.CONST) {
+				    optimizar = true;
+                	resul.valorBool = r1.valorBool & r2.valorBool;
+                	resul.nodoAST = new ASTNode("bool", ((resul.valorBool) ? 1 : 0), ASTNode.TipoNodo.CONST);
+					resul.nodoAST.setTypeVar(Simbolo.TipoVariable.BOOLEANO);
+				}
+				else if(r1.tipoVar == Simbolo.TipoVariable.DESCONOCIDO
+						|| r2.tipoVar == Simbolo.TipoVariable.DESCONOCIDO)
+				{
+				  resul.tipoVar = Simbolo.TipoVariable.DESCONOCIDO;
+				} 
+		    }
+  	  	}
+  	  	else {
+		    ok = validar_tipo(r1.tipoVar, Simbolo.TipoVariable.ENTERO, g)
+		        && validar_tipo(r2.tipoVar, Simbolo.TipoVariable.ENTERO, g);
+		    if (!ok) {
+                miniLeng.error_semantico("Incompatibilidad de tipos en la operacion", token, g);
+                resul.tipoVar = Simbolo.TipoVariable.DESCONOCIDO;				
+		    }
+		    else {
+		        resul.tipoVar = Simbolo.TipoVariable.ENTERO;
+
+		        // Si son constantes compruebo valores en rango y posibles errores de division o modulo por 0.
+		        // Optimizar ejecutando la operacion
+				if(r1.tipoSimb == Simbolo.TipoSimbolo.CONST && r2.tipoSimb == Simbolo.TipoSimbolo.CONST) {
+				    optimizar = true;
+				    if (!miniLeng.rango_enteros(r1.valorEnt) || !miniLeng.rango_enteros(r2.valorEnt)) {
+                		miniLeng.error_semantico("Valor fuera de rango", token, g);
+                		resul.tipoVar = Simbolo.TipoVariable.DESCONOCIDO;
+                	}
+                	else { 
+	                	switch (op) {
+						case MUL:
+					        resul.valorEnt = r1.valorEnt * r2.valorEnt;
+							break;
+						case DIV:
+					        if ( r2.valorEnt == 0 ) {
+					            miniLeng.error_semantico("Division por 0", token, g);
+					            resul.tipoVar = Simbolo.TipoVariable.DESCONOCIDO;
+					        }
+					   		else{
+					            resul.valorEnt = r1.valorEnt / r2.valorEnt;
+					   		}
+						    break;
+					    case MOD:
+				            if ( r2.valorEnt == 0 ) {
+				                miniLeng.error_semantico("Operacion modulo por 0", token, g);
+				                resul.tipoVar = Simbolo.TipoVariable.DESCONOCIDO;
+				            }
+				            else{
+				                resul.valorEnt = r1.valorEnt % r2.valorEnt;
+				            }
+							break;
+						default:
+							break;
+					    }
+						resul.nodoAST = new ASTNode("ent", resul.valorEnt, ASTNode.TipoNodo.CONST);
+						resul.nodoAST.setTypeVar(resul.tipoVar);
+					}
+				}
+				else if(r2.tipoSimb == Simbolo.TipoSimbolo.CONST && r2.valorEnt == 0 && op == Simbolo.TipoOperador.DIV ) {
+						miniLeng.error_semantico("Division por 0", token, g);
+					    resul.tipoVar = Simbolo.TipoVariable.DESCONOCIDO;
+				}
+				else if (r2.tipoSimb == Simbolo.TipoSimbolo.CONST && r2.valorEnt == 0 && op == Simbolo.TipoOperador.MOD) {
+					miniLeng.error_semantico("Operacion modulo por 0", token, g);
+				    resul.tipoVar = Simbolo.TipoVariable.DESCONOCIDO;
+				}
+				else if(r1.tipoVar == Simbolo.TipoVariable.DESCONOCIDO
+						|| r2.tipoVar == Simbolo.TipoVariable.DESCONOCIDO)
+				{
+				  resul.tipoVar = Simbolo.TipoVariable.DESCONOCIDO;
+				}
+		    }
+  	  	}
+
+  	  	
+  	  	if (ok && !optimizar) {
+  	  	  if(!anidar){
+  	  	  	miniLeng.createSubTreeAST(resul.nodoAST, r1.nodoAST, r2.nodoAST, ASTNode.TipoNodo.OP,op);
+  	  	  	aux = resul.nodoAST;
+  	  	  	anidar = true;
+  	  	  }
+  	  	  else{
+  	  	    resul.nodoAST = new ASTNode("op", g.nivel);
+  	  	  	miniLeng.createSubTreeAST(resul.nodoAST, aux, r2.nodoAST, ASTNode.TipoNodo.OP,op);
+			aux = resul.nodoAST;
+  	  	  }  	  
+  	  	}
 	}
 
     )*
@@ -1212,8 +1501,9 @@ RegistroExpr termino(Globals g) :
   }
   catch (Exception e)
   {
-	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
-	System.out.println(e.getMessage());   
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image, g);
+	System.out.println(e.getMessage());
+	return null;    
   }
 }
 
@@ -1229,26 +1519,30 @@ RegistroExpr factor(Globals g) :
     "-" r1 = factor(g)
   {
     // Comprobar si es del tipo ENTERO o DESCONOCIDO
-	if ( (r1.tipo != Simbolo.TipoVariable.ENTERO)
-	     && (r1.tipo != Simbolo.TipoVariable.DESCONOCIDO)) {
-      miniLeng.error_semantico("Tipo incompatible, se esperaba entero");
-      resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
+	if ( (r1.tipoVar != Simbolo.TipoVariable.ENTERO)
+	     && (r1.tipoVar != Simbolo.TipoVariable.DESCONOCIDO)) {
+      miniLeng.error_semantico("Tipo incompatible, se esperaba entero", g);
+      resul.tipoVar = Simbolo.TipoVariable.DESCONOCIDO;
     }
     else {
-      resul.tipo = Simbolo.TipoVariable.ENTERO;
+      // TODO: MARCAR NEGADO
+      resul.tipoVar = Simbolo.TipoVariable.ENTERO;
+      resul.nodoAST = r1.nodoAST;
     }
     return resul;
   }
  |  < tNOT > r1 = factor(g)
  {
     // Comprobar si es del tipo BOOL o DESCONOCIDO
-	if ( (r1.tipo != Simbolo.TipoVariable.BOOLEANO)
-	     && (r1.tipo != Simbolo.TipoVariable.DESCONOCIDO)) {
-      miniLeng.error_semantico("Tipo incompatible, se esperaba booleano");
-      resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
+	if ( (r1.tipoVar != Simbolo.TipoVariable.BOOLEANO)
+	     && (r1.tipoVar != Simbolo.TipoVariable.DESCONOCIDO)) {
+      miniLeng.error_semantico("Tipo incompatible, se esperaba booleano", g);
+      resul.tipoVar = Simbolo.TipoVariable.DESCONOCIDO;
     }
     else {
-      resul.tipo = Simbolo.TipoVariable.BOOLEANO;
+      resul.tipoVar = Simbolo.TipoVariable.BOOLEANO;
+      resul.nodoAST = r1.nodoAST;
+      resul.nodoAST.setNegar_valor(true);
     }
     return resul;
  }
@@ -1259,99 +1553,121 @@ RegistroExpr factor(Globals g) :
  |  < tENTACAR > "(" r1 = expresion(g) ")"
  {
     // Comprobar si es del tipo ENTERO o DESCONOCIDO
-	if ( (r1.tipo != Simbolo.TipoVariable.ENTERO)
-	     && (r1.tipo != Simbolo.TipoVariable.DESCONOCIDO)) {
-      miniLeng.error_semantico("La expresion no se puede convertir en un carácter válido");
-      resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
+	if ( (r1.tipoVar != Simbolo.TipoVariable.ENTERO)
+	     && (r1.tipoVar != Simbolo.TipoVariable.DESCONOCIDO)) {
+      miniLeng.error_semantico("La expresion no se puede convertir en un carácter válido", token,  g);
+      resul.tipoVar = Simbolo.TipoVariable.DESCONOCIDO;
+    }
+    else if ( r1.tipoSimb == Simbolo.TipoSimbolo.CONST && (r1.valorEnt > 126 || r1.valorEnt < 1)) {
+	  miniLeng.error_semantico("La operacion ENTACAR debe recibir un parámetro del tipo entero comprendido entre 1 y 126", token, g);
     }
     else {
-      resul.tipo = Simbolo.TipoVariable.CHAR;
+      resul.nodoAST = new ASTNode("entcar", g.nivel, ASTNode.TipoNodo.ENTCAR);
+	  resul.nodoAST.setTypeVar(Simbolo.TipoVariable.CADENA);
+	  resul.nodoAST.setRight(r1.nodoAST);
+      resul.tipoVar = Simbolo.TipoVariable.CHAR;
     }
     return resul;
  }
  |  < tCARAENT > "(" r1 = expresion(g) ")"
  {
     // Comprobar si es del tipo CHAR o DESCONOCIDO
-	if ( (r1.tipo != Simbolo.TipoVariable.CHAR)
-	     && (r1.tipo != Simbolo.TipoVariable.DESCONOCIDO)) {
-      miniLeng.error_semantico("La expresion no se puede convertir en un valor válido");
-      resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
+	if ( (r1.tipoVar != Simbolo.TipoVariable.CHAR) && (r1.tipoVar != Simbolo.TipoVariable.CADENA)
+	     && (r1.tipoVar != Simbolo.TipoVariable.DESCONOCIDO)) {
+      miniLeng.error_semantico("La expresion no se puede convertir en un valor válido", token, g);
+      resul.tipoVar = Simbolo.TipoVariable.DESCONOCIDO;
     }
     else {
-      resul.tipo = Simbolo.TipoVariable.CHAR;
+      resul.tipoVar = Simbolo.TipoVariable.ENTERO;
+      resul.nodoAST = r1.nodoAST;
     }
     return resul;
  }
  |  t = < tIDENTIFICADOR >
  {
    // Comprobar si existe en la tabla de simbolos
-   if ( (s = g.t.buscar_simbolo(t.image,g.nivel)) == null ) {
-     miniLeng.error_semantico("Identificador desconocido", t);
-     resul.tipo = Simbolo.TipoVariable.DESCONOCIDO;
+   if ( (s = g.t.buscar_simbolo(t.image, Simbolo.TipoSimbolo.VAR_PARAM)) == null ) {
+   	 // Introducir como desconocido
+   	 g.t.introducir_variable(t.image,Simbolo.TipoVariable.DESCONOCIDO,g.nivel,g.dir);
+     miniLeng.error_semantico("Identificador desconocido", t, g);
+     resul.tipoVar = Simbolo.TipoVariable.DESCONOCIDO;
    }
    else {
-     resul.tipo = s.getVariable();
+     if( (s = g.t.buscar_simbolo(t.image, Simbolo.TipoSimbolo.PARAMETRO)) == null) {
+		s = g.t.buscar_simbolo(t.image, Simbolo.TipoSimbolo.VARIABLE);
+     }
+     resul.tipoVar = s.getVariable();
      resul.clase = (s.getParametro() != null) ? s.getParametro() : Simbolo.ClaseParametro.VAR;
      //resul.clase = s.getParametro();
-     resul.nodoAST = new ASTNode(t.image, ASTNode.TipoNodo.VAR);
+     resul.nodoAST = new ASTNode(t.image, s.getNivel(), ASTNode.TipoNodo.VAR);
      resul.nodoAST.setDir(s.getDir());
-     resul.nodoAST.setNivel(s.getNivel());
      resul.nodoAST.setTypeParam(s.getParametro());
    }
    return resul;
  }
  |  t = < tCONSTCHAR >
  {
-   resul.valorString = t.image;
-   resul.tipo = Simbolo.TipoVariable.CHAR;
-   resul.nodoAST = new ASTNode(t.image);
-   resul.nodoAST.setType(ASTNode.TipoNodo.CONST);
-   resul.nodoAST.setTypeVar(Simbolo.TipoVariable.CADENA);
+   if(t.image.length() > 3) {
+       miniLeng.error_semantico("No se puede utilizar cadenas en expresiones", t, g);
+   }
+   else { 
+	   resul.valorString = t.image;
+	   resul.nodoAST = new ASTNode(t.image, g.nivel, ASTNode.TipoNodo.CONST);
+	   resul.nodoAST.setTypeVar(Simbolo.TipoVariable.CHAR);
+	   resul.nodoAST.setValue((int)(t.image.charAt(1)));
+   }
+   resul.tipoVar = Simbolo.TipoVariable.CHAR;
    return resul;
  }
- |  t = < tCONSTCAD >
+  |  t = < tCONSTCAD >
  {
-   resul.valorString = t.image;
-   resul.tipo = Simbolo.TipoVariable.CADENA;
-   resul.nodoAST = new ASTNode(t.image);
-   resul.nodoAST.setType(ASTNode.TipoNodo.CONST);
-   resul.nodoAST.setTypeVar(Simbolo.TipoVariable.CADENA);
+   if(t.image.length() > 3) {
+       miniLeng.error_semantico("No se puede utilizar cadenas en expresiones", t, g);
+   }
+   else { 
+	   resul.valorString = t.image;
+	   resul.nodoAST = new ASTNode(t.image, g.nivel, ASTNode.TipoNodo.CONST);
+	   resul.nodoAST.setTypeVar(Simbolo.TipoVariable.CHAR);
+	   resul.nodoAST.setValue((int)(t.image.charAt(1)));
+   }
+   resul.tipoVar = Simbolo.TipoVariable.CHAR;
    return resul;
  }
  |  t = < tCONSTENTERA >
  {
    resul.valorEnt = Integer.parseInt(t.image);
-   resul.tipo = Simbolo.TipoVariable.ENTERO;
-   resul.nodoAST = new ASTNode(resul.valorEnt);
-   resul.nodoAST.setType(ASTNode.TipoNodo.CONST);
+   resul.tipoVar = Simbolo.TipoVariable.ENTERO;
+   resul.nodoAST = new ASTNode("ent", g.nivel, ASTNode.TipoNodo.CONST);
+   resul.nodoAST.setValue(resul.valorEnt);
    resul.nodoAST.setTypeVar(Simbolo.TipoVariable.ENTERO);
    return resul;
  }
  |  < tTRUE >
  {
    resul.valorBool = true;
-   resul.tipo = Simbolo.TipoVariable.BOOLEANO;
+   resul.tipoVar = Simbolo.TipoVariable.BOOLEANO;
    // Se utiliza 1 como entero para guardar una constante TRUE
-   resul.nodoAST = new ASTNode(1);
-   resul.nodoAST.setType(ASTNode.TipoNodo.CONST);
-   resul.nodoAST.setTypeVar(Simbolo.TipoVariable.BOOLEANO);
+   resul.nodoAST = new ASTNode("bool", g.nivel, ASTNode.TipoNodo.CONST);
+   resul.nodoAST.setValue(1);
+   resul.nodoAST.setTypeVar(Simbolo.TipoVariable.ENTERO);
    return resul;
  }
  |  < tFALSE >
  {
    resul.valorBool = false;
-   resul.tipo = Simbolo.TipoVariable.BOOLEANO;
+   resul.tipoVar = Simbolo.TipoVariable.BOOLEANO;
    // Se utiliza 0 como entero para guardar una constante FALSE
-   resul.nodoAST = new ASTNode(0);
-   resul.nodoAST.setType(ASTNode.TipoNodo.CONST);
-   resul.nodoAST.setTypeVar(Simbolo.TipoVariable.BOOLEANO);
+   resul.nodoAST = new ASTNode("bool",g.nivel, ASTNode.TipoNodo.CONST);
+   resul.nodoAST.setValue(0);
+   resul.nodoAST.setTypeVar(Simbolo.TipoVariable.ENTERO);
    return resul;
  }
   }
   catch (Exception e)
   {
-	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
-	System.out.println(e.getMessage());   
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image, g);
+	System.out.println(e.getMessage());
+	return null;    
   }
 }
 
@@ -1365,13 +1681,14 @@ Simbolo.TipoVariable tipo_variables(Globals g) :
 {
   try {
     < tENTERO >    { return Simbolo.TipoVariable.ENTERO; }
-|   < tCARACTER >  { return Simbolo.TipoVariable.CADENA; }
+|   < tCARACTER >  { return Simbolo.TipoVariable.CHAR; }
 |   < tBOOLEANO >  { return Simbolo.TipoVariable.BOOLEANO; }
   }
   catch (Exception e)
   {
-	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image, g);
 	System.out.println(e.getMessage());
+	return null; 
   }
 }
 
@@ -1385,8 +1702,9 @@ Simbolo.ClaseParametro clase_parametros(Globals g) :
   }
   catch (Exception e)
   {
-	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image, g);
 	System.out.println(e.getMessage());
+	return null; 
   }
 }
 
@@ -1403,8 +1721,9 @@ Simbolo.TipoOperador operador_relacional(Globals g) :
   }
   catch (Exception e)
   {
-	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image, g);
 	System.out.println(e.getMessage());
+	return null; 
   }
 }
 
@@ -1418,8 +1737,9 @@ Simbolo.TipoOperador operador_aditivo(Globals g) :
   }
   catch (Exception e)
   {
-	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image, g);
 	System.out.println(e.getMessage());
+	return null; 
   }
 }
 
@@ -1434,8 +1754,9 @@ Simbolo.TipoOperador operador_multiplicativo(Globals g) :
   }
   catch (Exception e)
   {
-	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image);
+	miniLeng.tratarErrorSintactico(token.next.beginLine, token.next.beginColumn, token.next.image, g);
 	System.out.println(e.getMessage());
+	return null; 
   }
 }
 
@@ -1468,14 +1789,14 @@ TOKEN : /*  Reservadas */
 | 	< tAND: "and" >
 | 	< tOR: "or" >
 | 	< tNOT: "not" >
-| 	< tPRINCIPIO : "principio" > 
-| 	< tFIN: "fin" > 
-| 	< tSI: "si" >
+| 	< tPRINCIPIO : "Principio" > 
+| 	< tFIN: "Fin" > 
+| 	< tSI: "Si" >
 | 	< tENT: "ent" >
-| 	< tSI_NO : "si_no" >
-| 	< tFSI: "fsi" >
-| 	< tMQ: "mq" >
-| 	< tFMQ: "fmq" >
+| 	< tSI_NO : "Si_no" >
+| 	< tFSI: "FSi" >
+| 	< tMQ: "Mq" >
+| 	< tFMQ: "FMq" >
 | 	< tESCRIBIR : "escribir" >
 | 	< tLEER: "leer" >
 | 	< tMOD: "mod" >
@@ -1483,8 +1804,8 @@ TOKEN : /*  Reservadas */
 | 	< tENTERO: "entero" >
 | 	< tBOOLEANO: "booleano" >
 | 	< tCARACTER : "caracter" >
-| 	< tTRUE: "true" >
-| 	< tFALSE: "false" >
+| 	< tTRUE: "TRUE" >
+| 	< tFALSE: "FALSE" >
 | 	< tENTACAR: "entacar" >
 | 	< tCARAENT: "caraent" >
 | 	< tACCION: "accion" >
@@ -1510,8 +1831,8 @@ TOKEN :   /* Digits */
 TOKEN : {
  < tIDENTIFICADOR: <LETTER> ((<LETTER> | <DIGIT>)* (["A"-"Z","a"-"z","0"-"9"]) )? >
 | < #LETTER: ["A"-"Z","_","a"-"z"] >
-| < tCONSTCHAR : "\'"  (~["\'","\\","\n","\r"] |  "\\" ["n","t","b","r","f","\\","\'","\""])*  "\'" >
-| < tCONSTCAD  : "\""  (~["\'","\\","\n","\r"] |  "\\" ["n","t","b","r","f","\\","\'","\""])*  "\"" >
+| < tCONSTCHAR : "\'"  (~["\'","\\","\n","\r","="] |  "\\" ["n","t","b","r","f","\\"])*  "\'" >
+| < tCONSTCAD  : "\""  (~["\"","\\","\n","\r","="] |  "\\" ["n","t","b","r","f","\\"])*  "\"" >
 }
 
 

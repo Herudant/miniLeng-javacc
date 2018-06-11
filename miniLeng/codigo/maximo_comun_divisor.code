@@ -1,0 +1,274 @@
+;Programa maximo_comun_divisor.
+	ENP L0
+
+;Acciones
+
+; accion L1.
+;comienzo accion L1.
+L1:
+; Direccion d
+	SRF	1	4
+	STC	0
+; Asignacion a d
+	ASG
+L3:
+; MQ
+; Comprobar condicion
+; direccion d
+	SRF	1	4
+	DRF
+	STC	0
+	LTE
+; Salir del bucle si se evalua falso
+	JMF	L4
+; Lista de sentencias
+; Escribir "Escribe un numero: "
+	STC	69
+	WRT	0
+	STC	115
+	WRT	0
+	STC	99
+	WRT	0
+	STC	114
+	WRT	0
+	STC	105
+	WRT	0
+	STC	98
+	WRT	0
+	STC	101
+	WRT	0
+	STC	32
+	WRT	0
+	STC	117
+	WRT	0
+	STC	110
+	WRT	0
+	STC	32
+	WRT	0
+	STC	110
+	WRT	0
+	STC	117
+	WRT	0
+	STC	109
+	WRT	0
+	STC	101
+	WRT	0
+	STC	114
+	WRT	0
+	STC	111
+	WRT	0
+	STC	58
+	WRT	0
+	STC	32
+	WRT	0
+; Leer
+; direccion d
+	SRF	1	4
+	RD	1
+; SI
+; Comprobar condicion
+; direccion d
+	SRF	1	4
+	DRF
+	STC	0
+	LTE
+	JMF	L5
+; Lista de sentencias
+; Escribir "El numero debe ser postivo."
+	STC	69
+	WRT	0
+	STC	108
+	WRT	0
+	STC	32
+	WRT	0
+	STC	110
+	WRT	0
+	STC	117
+	WRT	0
+	STC	109
+	WRT	0
+	STC	101
+	WRT	0
+	STC	114
+	WRT	0
+	STC	111
+	WRT	0
+	STC	32
+	WRT	0
+	STC	100
+	WRT	0
+	STC	101
+	WRT	0
+	STC	98
+	WRT	0
+	STC	101
+	WRT	0
+	STC	32
+	WRT	0
+	STC	115
+	WRT	0
+	STC	101
+	WRT	0
+	STC	114
+	WRT	0
+	STC	32
+	WRT	0
+	STC	112
+	WRT	0
+	STC	111
+	WRT	0
+	STC	115
+	WRT	0
+	STC	116
+	WRT	0
+	STC	105
+	WRT	0
+	STC	118
+	WRT	0
+	STC	111
+	WRT	0
+	STC	46
+	WRT	0
+; Escribir entcar
+	STC	13
+	WRT	0
+; Escribir entcar
+	STC	10
+	WRT	0
+; Fin SI
+L5:
+; Fin de la iteración. Saltar a la cabecera del bucle.
+; Fin MQ
+	JMP	L3
+L4:
+;Fin de la acción / función
+	CSF
+
+; accion L2.
+;comienzo accion L2.
+L2:
+; Direccion r
+	SRF	0	3
+; direccion a
+	SRF	1	5
+	DRF
+; direccion b
+	SRF	1	6
+	DRF
+	MOD
+; Asignacion a r
+	ASG
+L6:
+; MQ
+; Comprobar condicion
+; direccion r
+	SRF	0	3
+	DRF
+	STC	0
+	NEQ
+; Salir del bucle si se evalua falso
+	JMF	L7
+; Lista de sentencias
+; Direccion a
+	SRF	1	5
+; direccion b
+	SRF	1	6
+	DRF
+; Asignacion a a
+	ASG
+; Direccion b
+	SRF	1	6
+; direccion r
+	SRF	0	3
+	DRF
+; Asignacion a b
+	ASG
+; Direccion r
+	SRF	0	3
+; direccion a
+	SRF	1	5
+	DRF
+; direccion b
+	SRF	1	6
+	DRF
+	MOD
+; Asignacion a r
+	ASG
+; Fin de la iteración. Saltar a la cabecera del bucle.
+; Fin MQ
+	JMP	L6
+L7:
+; Direccion m
+	SRF	1	3
+; direccion b
+	SRF	1	6
+	DRF
+; Asignacion a m
+	ASG
+;Fin de la acción / función
+	CSF
+
+;Comienzo del programa maximo_comun_divisor.
+
+L0:
+
+; invocacion accion dato.
+	OSF 6  0 L1
+; Direccion a
+	SRF	0	5
+; direccion d
+	SRF	0	4
+	DRF
+; Asignacion a a
+	ASG
+
+; invocacion accion dato.
+	OSF 6  0 L1
+; Direccion b
+	SRF	0	6
+; direccion d
+	SRF	0	4
+	DRF
+; Asignacion a b
+	ASG
+
+; invocacion accion mcd.
+	OSF 6  0 L2
+; Escribir "El MCD es: "
+	STC	69
+	WRT	0
+	STC	108
+	WRT	0
+	STC	32
+	WRT	0
+	STC	77
+	WRT	0
+	STC	67
+	WRT	0
+	STC	68
+	WRT	0
+	STC	32
+	WRT	0
+	STC	101
+	WRT	0
+	STC	115
+	WRT	0
+	STC	58
+	WRT	0
+	STC	32
+	WRT	0
+; Escribir entcar
+; direccion m
+	SRF	0	3
+	DRF
+	WRT	0
+; Escribir entcar
+	STC	13
+	WRT	0
+; Escribir entcar
+	STC	10
+	WRT	0
+
+;Fin de programa maximo_comun_divisor.
+
+	LVP

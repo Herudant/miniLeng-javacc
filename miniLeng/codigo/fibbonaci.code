@@ -1,0 +1,316 @@
+;Programa fibbonaci.
+	ENP L0
+
+;Acciones
+
+; accion L1.
+;comienzo accion L1.
+L1:
+; Escribir entcar
+	STC	13
+	WRT	0
+; Escribir entcar
+	STC	10
+	WRT	0
+;Fin de la acción / función
+	CSF
+
+; accion L2.
+;comienzo accion L2.
+L2:
+; direccion dato
+	SRF	0	3
+	ASGI
+; Direccion dato
+	SRF	0	3
+	DRF
+	STC	0
+; Asignacion a dato
+	ASG
+; Direccion correcto
+	SRF	0	4
+	STC	0
+; Asignacion a correcto
+	ASG
+L5:
+; MQ
+; Comprobar condicion
+; direccion correcto
+	SRF	0	4
+	DRF
+	NGB
+; Salir del bucle si se evalua falso
+	JMF	L6
+; Lista de sentencias
+
+; invocacion accion pedir_dato.
+	OSF 5  0 L3
+; Direccion correcto
+	SRF	0	4
+; direccion dato
+	SRF	0	3
+	DRF
+	DRF
+	STC	0
+	GT
+; Asignacion a correcto
+	ASG
+; SI
+; Comprobar condicion
+; direccion correcto
+	SRF	0	4
+	DRF
+	NGB
+	JMF	L7
+; Lista de sentencias
+; Escribir "El numero debe ser postivo."
+	STC	69
+	WRT	0
+	STC	108
+	WRT	0
+	STC	32
+	WRT	0
+	STC	110
+	WRT	0
+	STC	117
+	WRT	0
+	STC	109
+	WRT	0
+	STC	101
+	WRT	0
+	STC	114
+	WRT	0
+	STC	111
+	WRT	0
+	STC	32
+	WRT	0
+	STC	100
+	WRT	0
+	STC	101
+	WRT	0
+	STC	98
+	WRT	0
+	STC	101
+	WRT	0
+	STC	32
+	WRT	0
+	STC	115
+	WRT	0
+	STC	101
+	WRT	0
+	STC	114
+	WRT	0
+	STC	32
+	WRT	0
+	STC	112
+	WRT	0
+	STC	111
+	WRT	0
+	STC	115
+	WRT	0
+	STC	116
+	WRT	0
+	STC	105
+	WRT	0
+	STC	118
+	WRT	0
+	STC	111
+	WRT	0
+	STC	46
+	WRT	0
+
+; invocacion accion cambiar_de_linea.
+	OSF 5  1 L1
+; Fin SI
+L7:
+; Fin de la iteración. Saltar a la cabecera del bucle.
+; Fin MQ
+	JMP	L5
+L6:
+;Fin de la acción / función
+	CSF
+
+; accion L3.
+;comienzo accion L3.
+L3:
+; Escribir "Escribe un numero: "
+	STC	69
+	WRT	0
+	STC	115
+	WRT	0
+	STC	99
+	WRT	0
+	STC	114
+	WRT	0
+	STC	105
+	WRT	0
+	STC	98
+	WRT	0
+	STC	101
+	WRT	0
+	STC	32
+	WRT	0
+	STC	117
+	WRT	0
+	STC	110
+	WRT	0
+	STC	32
+	WRT	0
+	STC	110
+	WRT	0
+	STC	117
+	WRT	0
+	STC	109
+	WRT	0
+	STC	101
+	WRT	0
+	STC	114
+	WRT	0
+	STC	111
+	WRT	0
+	STC	58
+	WRT	0
+	STC	32
+	WRT	0
+; Leer
+; direccion dato
+	SRF	1	3
+	DRF
+	RD	1
+;Fin de la acción / función
+	CSF
+
+; accion L4.
+;comienzo accion L4.
+L4:
+; direccion r
+	SRF	0	4
+	ASGI
+; direccion n
+	SRF	0	3
+	ASGI
+; SI
+; Comprobar condicion
+; direccion n
+	SRF	0	3
+	DRF
+	STC	1
+	GT
+	JMF	L8
+; Lista de sentencias
+
+; invocacion accion fib.
+; direccion n
+	SRF	0	3
+	DRF
+	STC	1
+	SBT
+; direccion r1
+	SRF	0	5
+	OSF 6  1 L4
+
+; invocacion accion fib.
+; direccion n
+	SRF	0	3
+	DRF
+	STC	2
+	SBT
+; direccion r2
+	SRF	0	6
+	OSF 6  1 L4
+; Direccion r
+	SRF	0	4
+	DRF
+; direccion r1
+	SRF	0	5
+	DRF
+; direccion r2
+	SRF	0	6
+	DRF
+	PLUS
+; Asignacion a r
+	ASG
+	JMP	L9
+; SI_NO
+L8:
+; Direccion r
+	SRF	0	4
+	DRF
+; direccion n
+	SRF	0	3
+	DRF
+; Asignacion a r
+	ASG
+	JMP	L9
+; Fin SI
+L9:
+;Fin de la acción / función
+	CSF
+
+;Comienzo del programa fibbonaci.
+
+L0:
+
+; invocacion accion dato.
+; direccion n
+	SRF	0	3
+	OSF 5  0 L2
+
+; invocacion accion fib.
+; direccion n
+	SRF	0	3
+	DRF
+; direccion r
+	SRF	0	4
+	OSF 6  0 L4
+; Escribir "Fibbonaci("
+	STC	70
+	WRT	0
+	STC	105
+	WRT	0
+	STC	98
+	WRT	0
+	STC	98
+	WRT	0
+	STC	111
+	WRT	0
+	STC	110
+	WRT	0
+	STC	97
+	WRT	0
+	STC	99
+	WRT	0
+	STC	105
+	WRT	0
+	STC	40
+	WRT	0
+; Escribir n
+; direccion n
+	SRF	0	3
+	DRF
+	WRT	1
+; Escribir ") es: "
+	STC	41
+	WRT	0
+	STC	32
+	WRT	0
+	STC	101
+	WRT	0
+	STC	115
+	WRT	0
+	STC	58
+	WRT	0
+	STC	32
+	WRT	0
+; Escribir r
+; direccion r
+	SRF	0	4
+	DRF
+	WRT	1
+
+; invocacion accion cambiar_de_linea.
+	OSF 4  0 L1
+
+;Fin de programa fibbonaci.
+
+	LVP

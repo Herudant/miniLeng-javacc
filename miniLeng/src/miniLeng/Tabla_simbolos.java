@@ -1,6 +1,7 @@
 package miniLeng;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
@@ -110,6 +111,32 @@ public class Tabla_simbolos {
 		return ret;
 	}
 
+	public Simbolo buscar_simbolo(String nombre, Simbolo.TipoSimbolo tipoSimb)   {  //throws SimboloNoEncontradoException
+		Simbolo ret = null;
+		int h = hash_function(nombre);
+		if(table.get(h) != null) {
+			int max_nivel = -1;
+			// Busco en la lista enlazada el simbolo de mayor nivel 
+			for (Simbolo s : table.get(h)) {
+				if (s.getNombre().equals(nombre) && s.getNivel() > max_nivel) {
+					if ( tipoSimb == Simbolo.TipoSimbolo.VAR_PARAM) {
+						if ( s.getTipo() == Simbolo.TipoSimbolo.VARIABLE 
+							|| s.getTipo() == Simbolo.TipoSimbolo.PARAMETRO ) 
+						{
+							max_nivel = s.getNivel();
+							ret = s;
+						}
+					}
+					else if ( s.getTipo() == tipoSimb) {
+						max_nivel = s.getNivel();
+						ret = s;
+					}
+				}
+			}
+		}
+		return ret;
+	}
+	
 	/* Busca el simbolo que coincida con el nombre y nivel de los parámetros */
 	public Simbolo buscar_simbolo(String nombre, int nivel)   {  //throws SimboloNoEncontradoException
 		Simbolo ret = null;
@@ -119,6 +146,32 @@ public class Tabla_simbolos {
 			for(int i=nivel; i >= 0 ; i--) {
 				for (Simbolo s : table.get(h)) {
 					if (s.getNombre().equals(nombre) && s.getNivel() == i) {
+						ret = s;
+						break;
+					}
+				}
+			}
+		}
+		return ret;
+	}
+
+	
+	public Simbolo buscar_simbolo(String nombre, int nivel, Simbolo.TipoSimbolo tipoSimb)   {  //throws SimboloNoEncontradoException
+		Simbolo ret = null;
+		int h = hash_function(nombre);
+		if(table.get(h) != null) {
+			// Busco en la lista enlazada el simbolo de mayor nivel 
+			for (Simbolo s : table.get(h)) {
+				if (s.getNombre().equals(nombre)  && s.getNivel() == nivel) {
+					if ( tipoSimb == Simbolo.TipoSimbolo.VAR_PARAM) {
+						if ( s.getTipo() == Simbolo.TipoSimbolo.VARIABLE 
+							|| s.getTipo() == Simbolo.TipoSimbolo.PARAMETRO ) 
+						{
+							ret = s;
+							break;
+						}
+					}
+					else if ( s.getTipo() == tipoSimb) {
 						ret = s;
 						break;
 					}
@@ -161,7 +214,7 @@ public class Tabla_simbolos {
 										int nivel, int dir)
 	{
 		
-		Simbolo esta = buscar_simbolo(nombre, nivel);
+		Simbolo esta = buscar_simbolo(nombre, nivel, Simbolo.TipoSimbolo.VAR_PARAM);
 		if (esta != null) 
 			return null;	
 		else {
@@ -183,9 +236,9 @@ public class Tabla_simbolos {
 	** devuelve NULL. De lo contrario, introduce un símbolo ACCION con los datos
 	** de los argumentos.
 	**********************************************************************/
-	public Simbolo introducir_accion (String 	nombre, 	int nivel, int dir){
+	public Simbolo introducir_accion (String nombre, int nivel, int dir, String etiqueta){
 		
-		Simbolo esta = buscar_simbolo(nombre, nivel);
+		Simbolo esta = buscar_simbolo(nombre, Simbolo.TipoSimbolo.ACCION);
 		if (esta != null) { 
 			return null;
 		}
@@ -197,6 +250,7 @@ public class Tabla_simbolos {
 									nombre,				 	// Nombre
 									nivel,					// Nivel
 									dir	);					// Dir
+			s.setEtiqueta(etiqueta);
 			addLinkedList(nombre, s);
 			return s;
 		}
@@ -214,7 +268,9 @@ public class Tabla_simbolos {
 										ClaseParametro	parametro, 
 										int nivel, int dir) 
 	{
-		Simbolo esta = buscar_simbolo(nombre, nivel);
+		Simbolo esta = buscar_simbolo(nombre, Simbolo.TipoSimbolo.PARAMETRO);
+		
+		
 		if (esta != null) { 
 			return null;
 		}
@@ -251,15 +307,18 @@ public class Tabla_simbolos {
 	** Elimina de la tabla todas las variables que sean	del nivel del argumento. 
 	** NO ELIMINA PARÁMETROS.
 	**********************************************************************/
-	public void eliminar_variables(int nivel) {
-		for (LinkedList<Simbolo> ls : table) {
-			if (ls != null) {
-				for ( Simbolo s : ls) {
-					if(s.esVariable() && s.getNivel() == nivel) {
-						ls.remove(s);
-					}	
+	public void eliminar_variables(int nivel) {		
+		Iterator<LinkedList<Simbolo>> i = table.iterator();
+		while (i.hasNext()) {
+			LinkedList<Simbolo> l = i.next();
+			Iterator<Simbolo> simb = l.iterator();
+			while (simb.hasNext()) {
+				Simbolo s = simb.next();
+				if(s.esVariable() && s.getNivel() == nivel) {
+					simb.remove();
 				}
 			}
+
 		}
 	}
 
@@ -286,12 +345,15 @@ public class Tabla_simbolos {
 	** DEBEN SER ELIMINAODS TAMBIEN PARA MANTENER LA COHERENCIA DE LA TABLA.
 	**********************************************************************/
 	public void eliminar_parametros_ocultos(int 	nivel)	{
-		// TODO:LOS PROCEDIMIENTOS Y FUNCIONES DONDE ESTABAN DECLARADOS....
-		for (LinkedList<Simbolo> ls : table) {
-			for ( Simbolo s : ls) {
+		Iterator<LinkedList<Simbolo>> i = table.iterator();
+		while (i.hasNext()) {
+			LinkedList<Simbolo> l = i.next();
+			Iterator<Simbolo> simb = l.iterator();
+			while (simb.hasNext()) {
+				Simbolo s = simb.next();
 				if(s.esParametro() && s.getNivel() == nivel && !s.esVisible()) {
-					ls.remove(s);
-				}	
+					simb.remove();
+				}
 			}
 		}
 	}
@@ -303,12 +365,15 @@ public class Tabla_simbolos {
 	** COHERENCIA DE LA TABLA.
 	**********************************************************************/
 	public void eliminar_acciones(int nivel)	{
-		// TODO:LOS PROCEDIMIENTOS Y FUNCIONES DONDE ESTABAN DECLARADOS....
-		for (LinkedList<Simbolo> ls : table) {
-			for ( Simbolo s : ls) {
+		Iterator<LinkedList<Simbolo>> i = table.iterator();
+		while (i.hasNext()) {
+			LinkedList<Simbolo> l = i.next();
+			Iterator<Simbolo> simb = l.iterator();
+			while (simb.hasNext()) {
+				Simbolo s = simb.next();
 				if(s.esAccion() && s.getNivel() == nivel) {
-					ls.remove(s);
-				}	
+					simb.remove();
+				}
 			}
 		}
 	}

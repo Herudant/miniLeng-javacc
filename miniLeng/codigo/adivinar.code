@@ -1,0 +1,547 @@
+;Programa adivinar.
+	ENP L0
+
+;Acciones
+
+; accion L1.
+;comienzo accion L1.
+L1:
+; Direccion c
+	SRF	0	3
+	STC	" "
+; Asignacion a c
+	ASG
+L3:
+; MQ
+; Comprobar condicion
+; direccion c
+	SRF	0	3
+	DRF
+	STC	"S"
+	NEQ
+; direccion c
+	SRF	0	3
+	DRF
+	STC	"N"
+	NEQ
+	AND
+; Salir del bucle si se evalua falso
+	JMF	L4
+; Lista de sentencias
+; Escribir "(S/N)?"
+	STC	40
+	WRT	0
+	STC	83
+	WRT	0
+	STC	47
+	WRT	0
+	STC	78
+	WRT	0
+	STC	41
+	WRT	0
+	STC	63
+	WRT	0
+; Leer
+; direccion c
+	SRF	0	3
+	RD	0
+; direccion ln
+	SRF	0	4
+	RD	0
+; Fin de la iteración. Saltar a la cabecera del bucle.
+; Fin MQ
+	JMP	L3
+L4:
+; Direccion respuesta
+	SRF	1	3
+; direccion c
+	SRF	0	3
+	DRF
+; Asignacion a respuesta
+	ASG
+;Fin de la acción / función
+	CSF
+
+; accion L2.
+;comienzo accion L2.
+L2:
+; Direccion c
+	SRF	0	3
+	STC	" "
+; Asignacion a c
+	ASG
+L5:
+; MQ
+; Comprobar condicion
+; direccion c
+	SRF	0	3
+	DRF
+	STC	"A"
+	LT
+; direccion c
+	SRF	0	3
+	DRF
+	STC	"Z"
+	GT
+	OR
+; Salir del bucle si se evalua falso
+	JMF	L6
+; Lista de sentencias
+; Escribir "letra:"
+	STC	108
+	WRT	0
+	STC	101
+	WRT	0
+	STC	116
+	WRT	0
+	STC	114
+	WRT	0
+	STC	97
+	WRT	0
+	STC	58
+	WRT	0
+; Leer
+; direccion c
+	SRF	0	3
+	RD	0
+; direccion ln
+	SRF	0	4
+	RD	0
+; Fin de la iteración. Saltar a la cabecera del bucle.
+; Fin MQ
+	JMP	L5
+L6:
+; Direccion respuesta
+	SRF	1	3
+; direccion c
+	SRF	0	3
+	DRF
+; Asignacion a respuesta
+	ASG
+;Fin de la acción / función
+	CSF
+
+;Comienzo del programa adivinar.
+
+L0:
+; Escribir "Piensa en una letra e intentare adivinarla."
+	STC	80
+	WRT	0
+	STC	105
+	WRT	0
+	STC	101
+	WRT	0
+	STC	110
+	WRT	0
+	STC	115
+	WRT	0
+	STC	97
+	WRT	0
+	STC	32
+	WRT	0
+	STC	101
+	WRT	0
+	STC	110
+	WRT	0
+	STC	32
+	WRT	0
+	STC	117
+	WRT	0
+	STC	110
+	WRT	0
+	STC	97
+	WRT	0
+	STC	32
+	WRT	0
+	STC	108
+	WRT	0
+	STC	101
+	WRT	0
+	STC	116
+	WRT	0
+	STC	114
+	WRT	0
+	STC	97
+	WRT	0
+	STC	32
+	WRT	0
+	STC	101
+	WRT	0
+	STC	32
+	WRT	0
+	STC	105
+	WRT	0
+	STC	110
+	WRT	0
+	STC	116
+	WRT	0
+	STC	101
+	WRT	0
+	STC	110
+	WRT	0
+	STC	116
+	WRT	0
+	STC	97
+	WRT	0
+	STC	114
+	WRT	0
+	STC	101
+	WRT	0
+	STC	32
+	WRT	0
+	STC	97
+	WRT	0
+	STC	100
+	WRT	0
+	STC	105
+	WRT	0
+	STC	118
+	WRT	0
+	STC	105
+	WRT	0
+	STC	110
+	WRT	0
+	STC	97
+	WRT	0
+	STC	114
+	WRT	0
+	STC	108
+	WRT	0
+	STC	97
+	WRT	0
+	STC	46
+	WRT	0
+; Escribir entcar
+	STC	13
+	WRT	0
+; Escribir entcar
+	STC	10
+	WRT	0
+; Escribir "Listo?"
+	STC	76
+	WRT	0
+	STC	105
+	WRT	0
+	STC	115
+	WRT	0
+	STC	116
+	WRT	0
+	STC	111
+	WRT	0
+	STC	63
+	WRT	0
+
+; invocacion accion siono.
+	OSF 9  0 L1
+; Direccion min
+	SRF	0	5
+	STC	"A"
+; Asignacion a min
+	ASG
+; Direccion max
+	SRF	0	6
+	STC	"Z"
+; Asignacion a max
+	ASG
+; Direccion headivinado
+	SRF	0	7
+	STC	0
+; Asignacion a headivinado
+	ASG
+L7:
+; MQ
+; Comprobar condicion
+; direccion min
+	SRF	0	5
+	DRF
+; direccion max
+	SRF	0	6
+	DRF
+	NEQ
+; direccion headivinado
+	SRF	0	7
+	DRF
+	NGB
+	AND
+; Salir del bucle si se evalua falso
+	JMF	L8
+; Lista de sentencias
+; Direccion letra
+	SRF	0	4
+; direccion min
+	SRF	0	5
+	DRF
+; direccion max
+	SRF	0	6
+	DRF
+	PLUS
+	STC	2
+	DIV
+; Asignacion a letra
+	ASG
+; Escribir "("
+	STC	40
+	WRT	0
+; Escribir min
+; direccion min
+	SRF	0	5
+	DRF
+	WRT	0
+; Escribir ","
+	STC	44
+	WRT	0
+; Escribir max
+; direccion max
+	SRF	0	6
+	DRF
+	WRT	0
+; Escribir ")"
+	STC	41
+	WRT	0
+; Escribir ": has pensado en la letra "
+	STC	58
+	WRT	0
+	STC	32
+	WRT	0
+	STC	104
+	WRT	0
+	STC	97
+	WRT	0
+	STC	115
+	WRT	0
+	STC	32
+	WRT	0
+	STC	112
+	WRT	0
+	STC	101
+	WRT	0
+	STC	110
+	WRT	0
+	STC	115
+	WRT	0
+	STC	97
+	WRT	0
+	STC	100
+	WRT	0
+	STC	111
+	WRT	0
+	STC	32
+	WRT	0
+	STC	101
+	WRT	0
+	STC	110
+	WRT	0
+	STC	32
+	WRT	0
+	STC	108
+	WRT	0
+	STC	97
+	WRT	0
+	STC	32
+	WRT	0
+	STC	108
+	WRT	0
+	STC	101
+	WRT	0
+	STC	116
+	WRT	0
+	STC	114
+	WRT	0
+	STC	97
+	WRT	0
+	STC	32
+	WRT	0
+; Escribir letra
+; direccion letra
+	SRF	0	4
+	DRF
+	WRT	0
+; Escribir "?"
+	STC	63
+	WRT	0
+
+; invocacion accion siono.
+	OSF 9  0 L1
+; SI
+; Comprobar condicion
+; direccion respuesta
+	SRF	0	3
+	DRF
+	STC	"N"
+	EQ
+	JMF	L9
+; Lista de sentencias
+; Escribir "La letra que has pensado es mayor?"
+	STC	76
+	WRT	0
+	STC	97
+	WRT	0
+	STC	32
+	WRT	0
+	STC	108
+	WRT	0
+	STC	101
+	WRT	0
+	STC	116
+	WRT	0
+	STC	114
+	WRT	0
+	STC	97
+	WRT	0
+	STC	32
+	WRT	0
+	STC	113
+	WRT	0
+	STC	117
+	WRT	0
+	STC	101
+	WRT	0
+	STC	32
+	WRT	0
+	STC	104
+	WRT	0
+	STC	97
+	WRT	0
+	STC	115
+	WRT	0
+	STC	32
+	WRT	0
+	STC	112
+	WRT	0
+	STC	101
+	WRT	0
+	STC	110
+	WRT	0
+	STC	115
+	WRT	0
+	STC	97
+	WRT	0
+	STC	100
+	WRT	0
+	STC	111
+	WRT	0
+	STC	32
+	WRT	0
+	STC	101
+	WRT	0
+	STC	115
+	WRT	0
+	STC	32
+	WRT	0
+	STC	109
+	WRT	0
+	STC	97
+	WRT	0
+	STC	121
+	WRT	0
+	STC	111
+	WRT	0
+	STC	114
+	WRT	0
+	STC	63
+	WRT	0
+
+; invocacion accion siono.
+	OSF 9  0 L1
+; SI
+; Comprobar condicion
+; direccion respuesta
+	SRF	0	3
+	DRF
+	STC	"S"
+	EQ
+	JMF	L10
+; Lista de sentencias
+; Direccion min
+	SRF	0	5
+; direccion letra
+	SRF	0	4
+	DRF
+	STC	1
+	PLUS
+; Asignacion a min
+	ASG
+	JMP	L11
+; SI_NO
+L10:
+; Direccion max
+	SRF	0	6
+; direccion letra
+	SRF	0	4
+	DRF
+	STC	1
+	SBT
+; Asignacion a max
+	ASG
+; Fin SI
+L11:
+	JMP	L12
+; SI_NO
+L9:
+; Direccion headivinado
+	SRF	0	7
+	STC	1
+; Asignacion a headivinado
+	ASG
+; Fin SI
+L12:
+; Fin de la iteración. Saltar a la cabecera del bucle.
+; Fin MQ
+	JMP	L7
+L8:
+; SI
+; Comprobar condicion
+; direccion headivinado
+	SRF	0	7
+	DRF
+	NGB
+	JMF	L13
+; Lista de sentencias
+; Escribir "La letra es la "
+	STC	76
+	WRT	0
+	STC	97
+	WRT	0
+	STC	32
+	WRT	0
+	STC	108
+	WRT	0
+	STC	101
+	WRT	0
+	STC	116
+	WRT	0
+	STC	114
+	WRT	0
+	STC	97
+	WRT	0
+	STC	32
+	WRT	0
+	STC	101
+	WRT	0
+	STC	115
+	WRT	0
+	STC	32
+	WRT	0
+	STC	108
+	WRT	0
+	STC	97
+	WRT	0
+	STC	32
+	WRT	0
+; Escribir min
+; direccion min
+	SRF	0	5
+	DRF
+	WRT	0
+; Escribir entcar
+	STC	13
+	WRT	0
+; Escribir entcar
+	STC	10
+	WRT	0
+; Fin SI
+L13:
+
+;Fin de programa adivinar.
+
+	LVP

@@ -1,0 +1,223 @@
+;Programa noventa_y_nueve.
+	ENP L0
+
+;Acciones
+
+;Comienzo del programa noventa_y_nueve.
+
+L0:
+; Direccion n
+	SRF	0	5
+	STC	0
+; Asignacion a n
+	ASG
+L1:
+; MQ
+; Comprobar condicion
+; direccion n
+	SRF	0	5
+	DRF
+	STC	0
+	LTE
+; direccion n
+	SRF	0	5
+	DRF
+	STC	100
+	GTE
+	OR
+; direccion n
+	SRF	0	5
+	DRF
+	STC	10
+	DIV
+; direccion n
+	SRF	0	5
+	DRF
+	STC	10
+	MOD
+	EQ
+	OR
+; Salir del bucle si se evalua falso
+	JMF	L2
+; Lista de sentencias
+; Escribir "n: "
+	STC	110
+	WRT	0
+	STC	58
+	WRT	0
+	STC	32
+	WRT	0
+; Leer
+; direccion n
+	SRF	0	5
+	RD	1
+; Fin de la iteración. Saltar a la cabecera del bucle.
+; Fin MQ
+	JMP	L1
+L2:
+; Escribir n
+; direccion n
+	SRF	0	5
+	DRF
+	WRT	1
+; Escribir " se convierte en "
+	STC	32
+	WRT	0
+	STC	115
+	WRT	0
+	STC	101
+	WRT	0
+	STC	32
+	WRT	0
+	STC	99
+	WRT	0
+	STC	111
+	WRT	0
+	STC	110
+	WRT	0
+	STC	118
+	WRT	0
+	STC	105
+	WRT	0
+	STC	101
+	WRT	0
+	STC	114
+	WRT	0
+	STC	116
+	WRT	0
+	STC	101
+	WRT	0
+	STC	32
+	WRT	0
+	STC	101
+	WRT	0
+	STC	110
+	WRT	0
+	STC	32
+	WRT	0
+; Direccion x
+	SRF	0	3
+; direccion n
+	SRF	0	5
+	DRF
+	STC	10
+	DIV
+; Asignacion a x
+	ASG
+; Direccion y
+	SRF	0	4
+; direccion n
+	SRF	0	5
+	DRF
+	STC	10
+	MOD
+; Asignacion a y
+	ASG
+; Direccion m
+	SRF	0	6
+	STC	10
+; direccion y
+	SRF	0	4
+	DRF
+	TMS
+; direccion x
+	SRF	0	3
+	DRF
+	PLUS
+; Asignacion a m
+	ASG
+; SI
+; Comprobar condicion
+; direccion n
+	SRF	0	5
+	DRF
+; direccion m
+	SRF	0	6
+	DRF
+	GT
+	JMF	L3
+; Lista de sentencias
+; Direccion n
+	SRF	0	5
+; direccion n
+	SRF	0	5
+	DRF
+; direccion m
+	SRF	0	6
+	DRF
+	SBT
+; Asignacion a n
+	ASG
+	JMP	L4
+; SI_NO
+L3:
+; Direccion n
+	SRF	0	5
+; direccion m
+	SRF	0	6
+	DRF
+; direccion n
+	SRF	0	5
+	DRF
+	SBT
+; Asignacion a n
+	ASG
+; Fin SI
+L4:
+; Direccion x
+	SRF	0	3
+; direccion n
+	SRF	0	5
+	DRF
+	STC	10
+	DIV
+; Asignacion a x
+	ASG
+; Direccion y
+	SRF	0	4
+; direccion n
+	SRF	0	5
+	DRF
+	STC	10
+	MOD
+; Asignacion a y
+	ASG
+; Direccion m
+	SRF	0	6
+	STC	10
+; direccion y
+	SRF	0	4
+	DRF
+	TMS
+; direccion x
+	SRF	0	3
+	DRF
+	PLUS
+; Asignacion a m
+	ASG
+; Direccion n
+	SRF	0	5
+; direccion m
+	SRF	0	6
+	DRF
+; direccion n
+	SRF	0	5
+	DRF
+	PLUS
+; Asignacion a n
+	ASG
+; Escribir n
+; direccion n
+	SRF	0	5
+	DRF
+	WRT	1
+; Escribir entcar
+	STC	13
+	WRT	0
+; Escribir entcar
+	STC	10
+	WRT	0
+
+;Fin de programa noventa_y_nueve.
+
+	LVP

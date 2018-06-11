@@ -1,0 +1,16 @@
+    Accion a1 tiene mismo nombre que una variable del mismo nivel 
+    Var no definida en a1
+    Parametros repetidos.
+    2 Errores, a1 debe ser var o param y en expresion lo mismo (ESTE FALLO COMPRUEBA LA VISIBILIDAD)
+    4 Errores:3 No se puede usar cadena en operandos y un parametros de distinto tipo
+    Faltan parametros en la invocacion a la accion
+    Accion no definida
+    En el lado derecho de asignacion hay una cadena
+    Tipos incompatibles en expresion (Op 1 debe ser entero)
+    ENTACAR debe recibir entero
+    Tipos incompatibles en asignacion
+    Variable no definida (HOMBRE)
+    ID debe ser parametro o variable (DATO)
+    ID no declarado (de nuevo hombre)
+    Se le pasa expresion compuesta a param por ref
+    Accion no definida.

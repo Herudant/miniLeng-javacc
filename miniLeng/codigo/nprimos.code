@@ -1,0 +1,153 @@
+;Programa nprimos.
+	ENP L0
+
+;Acciones
+
+; accion L1.
+;comienzo accion L1.
+L1:
+; Direccion j
+	SRF	0	3
+	STC	2
+; Asignacion a j
+	ASG
+; Direccion divisible
+	SRF	0	4
+	STC	0
+; Asignacion a divisible
+	ASG
+L2:
+; MQ
+; Comprobar condicion
+; direccion j
+	SRF	0	3
+	DRF
+; direccion i
+	SRF	1	4
+	DRF
+	STC	2
+	DIV
+	LT
+; direccion divisible
+	SRF	0	4
+	DRF
+	NGB
+	AND
+; Salir del bucle si se evalua falso
+	JMF	L3
+; Lista de sentencias
+; Direccion divisible
+	SRF	0	4
+; direccion i
+	SRF	1	4
+	DRF
+; direccion j
+	SRF	0	3
+	DRF
+	MOD
+	STC	0
+	EQ
+; Asignacion a divisible
+	ASG
+; Direccion j
+	SRF	0	3
+; direccion j
+	SRF	0	3
+	DRF
+	STC	1
+	PLUS
+; Asignacion a j
+	ASG
+; Fin de la iteración. Saltar a la cabecera del bucle.
+; Fin MQ
+	JMP	L2
+L3:
+; SI
+; Comprobar condicion
+; direccion divisible
+	SRF	0	4
+	DRF
+	NGB
+	JMF	L4
+; Lista de sentencias
+; Escribir i
+; direccion i
+	SRF	1	4
+	DRF
+	WRT	1
+; Escribir "es primo."
+	STC	101
+	WRT	0
+	STC	115
+	WRT	0
+	STC	32
+	WRT	0
+	STC	112
+	WRT	0
+	STC	114
+	WRT	0
+	STC	105
+	WRT	0
+	STC	109
+	WRT	0
+	STC	111
+	WRT	0
+	STC	46
+	WRT	0
+; Escribir entcar
+	STC	13
+	WRT	0
+; Escribir entcar
+	STC	10
+	WRT	0
+; Fin SI
+L4:
+;Fin de la acción / función
+	CSF
+
+;Comienzo del programa nprimos.
+
+L0:
+; Direccion n
+	SRF	0	3
+	STC	100
+; Asignacion a n
+	ASG
+; Direccion i
+	SRF	0	4
+	STC	2
+; Asignacion a i
+	ASG
+L5:
+; MQ
+; Comprobar condicion
+; direccion i
+	SRF	0	4
+	DRF
+; direccion n
+	SRF	0	3
+	DRF
+	LTE
+; Salir del bucle si se evalua falso
+	JMF	L6
+; Lista de sentencias
+
+; invocacion accion es_primo.
+	OSF 4  0 L1
+; Direccion i
+	SRF	0	4
+; direccion i
+	SRF	0	4
+	DRF
+	STC	1
+	PLUS
+; Asignacion a i
+	ASG
+; Fin de la iteración. Saltar a la cabecera del bucle.
+; Fin MQ
+	JMP	L5
+L6:
+
+;Fin de programa nprimos.
+
+	LVP
