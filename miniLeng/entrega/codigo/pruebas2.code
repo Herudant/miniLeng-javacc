@@ -1,0 +1,420 @@
+;Programa pruebas2.
+	ENP L0
+
+;Acciones
+
+;Comienzo del programa pruebas2.
+
+L0:
+; Direccion i
+	SRF	0	3
+	STC	7
+; Asignacion a i
+	ASG
+; Direccion j
+	SRF	0	4
+; direccion i
+	SRF	0	3
+	DRF
+	STC	2
+	TMS
+	STC	4
+	PLUS
+	STC	2
+	SBT
+; Asignacion a j
+	ASG
+; Direccion k
+	SRF	0	5
+	STC	3
+; direccion i
+	SRF	0	3
+	DRF
+	TMS
+	STC	2
+; direccion j
+	SRF	0	4
+	DRF
+	SBT
+	PLUS
+; Asignacion a k
+	ASG
+; Escribir "i:"
+	STC	105
+	WRT	0
+	STC	58
+	WRT	0
+; Escribir entcar
+; direccion i
+	SRF	0	3
+	DRF
+	WRT	1
+; Escribir "  j:"
+	STC	32
+	WRT	0
+	STC	32
+	WRT	0
+	STC	106
+	WRT	0
+	STC	58
+	WRT	0
+; Escribir entcar
+; direccion j
+	SRF	0	4
+	DRF
+	WRT	1
+; Escribir "  k:"
+	STC	32
+	WRT	0
+	STC	32
+	WRT	0
+	STC	107
+	WRT	0
+	STC	58
+	WRT	0
+; Escribir entcar
+; direccion k
+	SRF	0	5
+	DRF
+	WRT	1
+; Escribir 10
+	STC	10
+	WRT	0
+; Escribir 13
+	STC	13
+	WRT	0
+; Direccion a
+	SRF	0	6
+	STC	"a"
+; Asignacion a a
+	ASG
+; Direccion b
+	SRF	0	7
+	STC	"b"
+; Asignacion a b
+	ASG
+; Direccion c
+	SRF	0	8
+	STC	"a"
+; Asignacion a c
+	ASG
+; Direccion foo
+	SRF	0	9
+; direccion a
+	SRF	0	6
+	DRF
+; direccion b
+	SRF	0	7
+	DRF
+	EQ
+; Asignacion a foo
+	ASG
+; Direccion bar
+	SRF	0	10
+; direccion a
+	SRF	0	6
+	DRF
+; direccion c
+	SRF	0	8
+	DRF
+	EQ
+; Asignacion a bar
+	ASG
+; Escribir "a:"
+	STC	97
+	WRT	0
+	STC	58
+	WRT	0
+; Escribir a
+; direccion a
+	SRF	0	6
+	DRF
+	WRT	0
+; Escribir "  b:"
+	STC	32
+	WRT	0
+	STC	32
+	WRT	0
+	STC	98
+	WRT	0
+	STC	58
+	WRT	0
+; Escribir b
+; direccion b
+	SRF	0	7
+	DRF
+	WRT	0
+; Escribir "  c:"
+	STC	32
+	WRT	0
+	STC	32
+	WRT	0
+	STC	99
+	WRT	0
+	STC	58
+	WRT	0
+; Escribir 10
+	STC	10
+	WRT	0
+; Escribir 13
+	STC	13
+	WRT	0
+; Escribir "j > k?  "
+	STC	106
+	WRT	0
+	STC	32
+	WRT	0
+	STC	62
+	WRT	0
+	STC	32
+	WRT	0
+	STC	107
+	WRT	0
+	STC	63
+	WRT	0
+	STC	32
+	WRT	0
+	STC	32
+	WRT	0
+; SI
+; Comprobar condicion
+; direccion j
+	SRF	0	4
+	DRF
+	STC	3
+; direccion i
+	SRF	0	3
+	DRF
+	TMS
+	STC	2
+; direccion j
+	SRF	0	4
+	DRF
+	SBT
+	PLUS
+	GT
+	JMF	L1
+; Lista de sentencias
+; Escribir "Cierto"
+	STC	67
+	WRT	0
+	STC	105
+	WRT	0
+	STC	101
+	WRT	0
+	STC	114
+	WRT	0
+	STC	116
+	WRT	0
+	STC	111
+	WRT	0
+; Escribir 10
+	STC	10
+	WRT	0
+; Escribir 13
+	STC	13
+	WRT	0
+	JMP	L2
+; SI_NO
+L1:
+; Escribir "Falso"
+	STC	70
+	WRT	0
+	STC	97
+	WRT	0
+	STC	108
+	WRT	0
+	STC	115
+	WRT	0
+	STC	111
+	WRT	0
+; Escribir 10
+	STC	10
+	WRT	0
+; Escribir 13
+	STC	13
+	WRT	0
+; Fin SI
+L2:
+; SI
+; Comprobar condicion
+	STC	1
+	JMF	L3
+; Lista de sentencias
+; Escribir "Siempre entro aqui"
+	STC	83
+	WRT	0
+	STC	105
+	WRT	0
+	STC	101
+	WRT	0
+	STC	109
+	WRT	0
+	STC	112
+	WRT	0
+	STC	114
+	WRT	0
+	STC	101
+	WRT	0
+	STC	32
+	WRT	0
+	STC	101
+	WRT	0
+	STC	110
+	WRT	0
+	STC	116
+	WRT	0
+	STC	114
+	WRT	0
+	STC	111
+	WRT	0
+	STC	32
+	WRT	0
+	STC	97
+	WRT	0
+	STC	113
+	WRT	0
+	STC	117
+	WRT	0
+	STC	105
+	WRT	0
+; SI
+; Comprobar condicion
+	STC	0
+	STC	2
+	LT
+	JMF	L4
+; Lista de sentencias
+; Escribir "    Tambien entro aqui"
+	STC	32
+	WRT	0
+	STC	32
+	WRT	0
+	STC	32
+	WRT	0
+	STC	32
+	WRT	0
+	STC	84
+	WRT	0
+	STC	97
+	WRT	0
+	STC	109
+	WRT	0
+	STC	98
+	WRT	0
+	STC	105
+	WRT	0
+	STC	101
+	WRT	0
+	STC	110
+	WRT	0
+	STC	32
+	WRT	0
+	STC	101
+	WRT	0
+	STC	110
+	WRT	0
+	STC	116
+	WRT	0
+	STC	114
+	WRT	0
+	STC	111
+	WRT	0
+	STC	32
+	WRT	0
+	STC	97
+	WRT	0
+	STC	113
+	WRT	0
+	STC	117
+	WRT	0
+	STC	105
+	WRT	0
+L4:
+	JMP	L5
+; SI_NO
+L3:
+; Escribir "Nunca entro aqui"
+	STC	78
+	WRT	0
+	STC	117
+	WRT	0
+	STC	110
+	WRT	0
+	STC	99
+	WRT	0
+	STC	97
+	WRT	0
+	STC	32
+	WRT	0
+	STC	101
+	WRT	0
+	STC	110
+	WRT	0
+	STC	116
+	WRT	0
+	STC	114
+	WRT	0
+	STC	111
+	WRT	0
+	STC	32
+	WRT	0
+	STC	97
+	WRT	0
+	STC	113
+	WRT	0
+	STC	117
+	WRT	0
+	STC	105
+	WRT	0
+; Fin SI
+L5:
+; Direccion i
+	SRF	0	3
+	STC	0
+; Asignacion a i
+	ASG
+L6:
+; MQ
+; Comprobar condicion
+; direccion i
+	SRF	0	3
+	DRF
+	STC	5
+	LT
+; Salir del bucle si se evalua falso
+	JMF	L7
+; Lista de sentencias
+; Escribir "i:"
+	STC	105
+	WRT	0
+	STC	58
+	WRT	0
+; Escribir entcar
+; direccion i
+	SRF	0	3
+	DRF
+	WRT	1
+; Escribir 10
+	STC	10
+	WRT	0
+; Escribir 13
+	STC	13
+	WRT	0
+; Direccion i
+	SRF	0	3
+; direccion i
+	SRF	0	3
+	DRF
+	STC	1
+	PLUS
+; Asignacion a i
+	ASG
+; Fin de la iteración. Saltar a la cabecera del bucle.
+; Fin MQ
+	JMP	L6
+L7:
+
+;Fin de programa pruebas2.
+
+	LVP

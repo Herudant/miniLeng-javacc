@@ -34,15 +34,6 @@ public class miniLeng
 	    return;
 	  }
 
-	  //file = "/Users/heru/git/miniLeng/miniLeng-javacc/miniLeng/programas/fib.ml";
-	  //file = "/Users/heru/git/miniLeng/miniLeng-javacc/miniLeng/programas/nprimos1.ml";
-	  //file = "/Users/heru/git/miniLeng/miniLeng-javacc/miniLeng/programas/adivinar1.ml";
-	  //file = "/Users/heru/git/miniLeng/miniLeng-javacc/miniLeng/programas/nyn1.ml";
-	  //file = "/Users/heru/git/miniLeng/miniLeng-javacc/miniLeng/programas/calendar1.ml";
-	  //file = "/Users/heru/git/miniLeng/miniLeng-javacc/miniLeng/programas/mcd1.ml";
-	  //file = "/Users/heru/git/miniLeng/miniLeng-javacc/miniLeng/programas/mcd.ml";
-	  //file = "/Users/heru/git/miniLeng/miniLeng-javacc/miniLeng/programas/pruebas1.ml";
-
 	  System.out.println(file);
 	  try {
 	    parser = new miniLeng(new FileInputStream(file));

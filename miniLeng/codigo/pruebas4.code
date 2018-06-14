@@ -1,0 +1,262 @@
+;Programa pruebas4.
+	ENP L0
+
+;Acciones
+
+;Comienzo del programa pruebas4.
+
+L0:
+; Escribir "i: "
+	STC	105
+	WRT	0
+	STC	58
+	WRT	0
+	STC	32
+	WRT	0
+; Leer
+; direccion i
+	SRF	0	3
+	RD	1
+; Escribir 10
+	STC	10
+	WRT	0
+; Escribir 13
+	STC	13
+	WRT	0
+; Escribir "i:"
+	STC	105
+	WRT	0
+	STC	58
+	WRT	0
+; Escribir entcar
+; direccion i
+	SRF	0	3
+	DRF
+	WRT	1
+; Escribir 10
+	STC	10
+	WRT	0
+; Escribir 13
+	STC	13
+	WRT	0
+; Escribir "j k:"
+	STC	106
+	WRT	0
+	STC	32
+	WRT	0
+	STC	107
+	WRT	0
+	STC	58
+	WRT	0
+; Leer
+; direccion j
+	SRF	0	4
+	RD	1
+; direccion k
+	SRF	0	5
+	RD	1
+; Escribir 10
+	STC	10
+	WRT	0
+; Escribir 13
+	STC	13
+	WRT	0
+; Escribir "j:"
+	STC	106
+	WRT	0
+	STC	58
+	WRT	0
+; Escribir entcar
+; direccion j
+	SRF	0	4
+	DRF
+	WRT	1
+; Escribir "  k:"
+	STC	32
+	WRT	0
+	STC	32
+	WRT	0
+	STC	107
+	WRT	0
+	STC	58
+	WRT	0
+; Escribir entcar
+; direccion k
+	SRF	0	5
+	DRF
+	WRT	1
+; Escribir 10
+	STC	10
+	WRT	0
+; Escribir 13
+	STC	13
+	WRT	0
+; Direccion b
+	SRF	0	7
+; direccion i
+	SRF	0	3
+	DRF
+; Asignacion a b
+	ASG
+; Escribir "b=i: "
+	STC	98
+	WRT	0
+	STC	61
+	WRT	0
+	STC	105
+	WRT	0
+	STC	58
+	WRT	0
+	STC	32
+	WRT	0
+; Escribir b
+; direccion b
+	SRF	0	7
+	DRF
+	WRT	0
+; Escribir 10
+	STC	10
+	WRT	0
+; Escribir 13
+	STC	13
+	WRT	0
+; SI
+; Comprobar condicion
+; direccion b
+	SRF	0	7
+	DRF
+; direccion i
+	SRF	0	3
+	DRF
+	EQ
+	JMF	L1
+; Lista de sentencias
+; Escribir "correcto"
+	STC	99
+	WRT	0
+	STC	111
+	WRT	0
+	STC	114
+	WRT	0
+	STC	114
+	WRT	0
+	STC	101
+	WRT	0
+	STC	99
+	WRT	0
+	STC	116
+	WRT	0
+	STC	111
+	WRT	0
+; Escribir 10
+	STC	10
+	WRT	0
+; Escribir 13
+	STC	13
+	WRT	0
+L1:
+; Direccion a
+	SRF	0	6
+	STC	" "
+; Asignacion a a
+	ASG
+; Escribir "a:"
+	STC	97
+	WRT	0
+	STC	58
+	WRT	0
+; Leer
+; direccion a
+	SRF	0	6
+	RD	0
+; direccion ln
+	SRF	0	9
+	RD	0
+; Escribir 10
+	STC	10
+	WRT	0
+; Escribir 13
+	STC	13
+	WRT	0
+; Escribir "a:  "
+	STC	97
+	WRT	0
+	STC	58
+	WRT	0
+	STC	32
+	WRT	0
+	STC	32
+	WRT	0
+; Escribir a
+; direccion a
+	SRF	0	6
+	DRF
+	WRT	0
+; Direccion k
+	SRF	0	5
+; direccion a
+	SRF	0	6
+	DRF
+; Asignacion a k
+	ASG
+; Escribir "k=a: "
+	STC	107
+	WRT	0
+	STC	61
+	WRT	0
+	STC	97
+	WRT	0
+	STC	58
+	WRT	0
+	STC	32
+	WRT	0
+; Escribir k
+; direccion k
+	SRF	0	5
+	DRF
+	WRT	1
+; Escribir 10
+	STC	10
+	WRT	0
+; Escribir 13
+	STC	13
+	WRT	0
+; SI
+; Comprobar condicion
+; direccion k
+	SRF	0	5
+	DRF
+; direccion a
+	SRF	0	6
+	DRF
+	EQ
+	JMF	L2
+; Lista de sentencias
+; Escribir "correcto"
+	STC	99
+	WRT	0
+	STC	111
+	WRT	0
+	STC	114
+	WRT	0
+	STC	114
+	WRT	0
+	STC	101
+	WRT	0
+	STC	99
+	WRT	0
+	STC	116
+	WRT	0
+	STC	111
+	WRT	0
+; Escribir 10
+	STC	10
+	WRT	0
+; Escribir 13
+	STC	13
+	WRT	0
+L2:
+
+;Fin de programa pruebas4.
+
+	LVP

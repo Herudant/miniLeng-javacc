@@ -1,0 +1,742 @@
+;Programa calendario.
+	ENP L0
+
+;Acciones
+
+; accion L1.
+;comienzo accion L1.
+L1:
+; Direccion anho
+	SRF	1	4
+; direccion anho
+	SRF	1	4
+	DRF
+	STC	1900
+	SBT
+; Asignacion a anho
+	ASG
+; Direccion cuatro
+	SRF	0	6
+; direccion anho
+	SRF	1	4
+	DRF
+	STC	4
+	MOD
+	STC	0
+	EQ
+; direccion anho
+	SRF	1	4
+	DRF
+	STC	100
+	MOD
+	STC	0
+	NEQ
+	AND
+; Asignacion a cuatro
+	ASG
+; Direccion cien
+	SRF	0	5
+; direccion anho
+	SRF	1	4
+	DRF
+	STC	400
+	MOD
+	STC	0
+	EQ
+; Asignacion a cien
+	ASG
+; Direccion bisiestos_validos
+	SRF	0	4
+; direccion cuatro
+	SRF	0	6
+	DRF
+; direccion cien
+	SRF	0	5
+	DRF
+	OR
+; Asignacion a bisiestos_validos
+	ASG
+; Direccion bisiestos
+	SRF	0	3
+; direccion anho
+	SRF	1	4
+	DRF
+	STC	4
+	DIV
+; Asignacion a bisiestos
+	ASG
+; SI
+; Comprobar condicion
+; direccion bisiestos_validos
+	SRF	0	4
+	DRF
+	JMF	L3
+; Lista de sentencias
+; Direccion dia1anho
+	SRF	1	5
+; direccion anho
+	SRF	1	4
+	DRF
+	STC	1
+	SBT
+; direccion bisiestos
+	SRF	0	3
+	DRF
+	PLUS
+	STC	7
+	MOD
+; Asignacion a dia1anho
+	ASG
+	JMP	L4
+; SI_NO
+L3:
+; Direccion dia1anho
+	SRF	1	5
+; direccion anho
+	SRF	1	4
+	DRF
+; direccion bisiestos
+	SRF	0	3
+	DRF
+	PLUS
+	STC	7
+	MOD
+; Asignacion a dia1anho
+	ASG
+; Fin SI
+L4:
+;Fin de la acción / función
+	CSF
+
+; accion L2.
+;comienzo accion L2.
+L2:
+; Direccion anho
+	SRF	1	4
+; direccion anho
+	SRF	1	4
+	DRF
+	STC	1900
+	SBT
+; Asignacion a anho
+	ASG
+; Direccion cien
+	SRF	0	4
+; direccion anho
+	SRF	1	4
+	DRF
+	STC	4
+	MOD
+	STC	0
+	EQ
+; direccion anho
+	SRF	1	4
+	DRF
+	STC	100
+	MOD
+	STC	0
+	NEQ
+	AND
+; Asignacion a cien
+	ASG
+; Direccion cuatro
+	SRF	0	5
+; direccion anho
+	SRF	1	4
+	DRF
+	STC	400
+	MOD
+	STC	0
+	EQ
+; Asignacion a cuatro
+	ASG
+; Direccion bisiestos_validos
+	SRF	0	3
+; direccion cien
+	SRF	0	4
+	DRF
+; direccion cuatro
+	SRF	0	5
+	DRF
+	OR
+; Asignacion a bisiestos_validos
+	ASG
+; SI
+; Comprobar condicion
+; direccion bisiestos_validos
+	SRF	0	3
+	DRF
+	JMF	L5
+; Lista de sentencias
+; Direccion anhade
+	SRF	1	7
+	STC	1
+; Asignacion a anhade
+	ASG
+	JMP	L6
+; SI_NO
+L5:
+; Direccion anhade
+	SRF	1	7
+	STC	0
+; Asignacion a anhade
+	ASG
+; Fin SI
+L6:
+; SI
+; Comprobar condicion
+; direccion mes
+	SRF	1	3
+	DRF
+	STC	1
+	EQ
+	JMF	L7
+; Lista de sentencias
+; Direccion dia1mes
+	SRF	1	6
+; direccion dia1anho
+	SRF	1	5
+	DRF
+; Asignacion a dia1mes
+	ASG
+	JMP	L8
+; SI_NO
+L7:
+; SI
+; Comprobar condicion
+; direccion mes
+	SRF	1	3
+	DRF
+	STC	2
+	EQ
+	JMF	L9
+; Lista de sentencias
+; Direccion dia1mes
+	SRF	1	6
+; direccion dia1anho
+	SRF	1	5
+	DRF
+	STC	31
+	PLUS
+	STC	7
+	MOD
+; Asignacion a dia1mes
+	ASG
+	JMP	L10
+; SI_NO
+L9:
+; SI
+; Comprobar condicion
+; direccion mes
+	SRF	1	3
+	DRF
+	STC	3
+	EQ
+	JMF	L11
+; Lista de sentencias
+; Direccion dia1mes
+	SRF	1	6
+; direccion dia1anho
+	SRF	1	5
+	DRF
+	STC	59
+	PLUS
+; direccion anhade
+	SRF	1	7
+	DRF
+	PLUS
+	STC	7
+	MOD
+; Asignacion a dia1mes
+	ASG
+	JMP	L12
+; SI_NO
+L11:
+; SI
+; Comprobar condicion
+; direccion mes
+	SRF	1	3
+	DRF
+	STC	4
+	EQ
+	JMF	L13
+; Lista de sentencias
+; Direccion dia1mes
+	SRF	1	6
+; direccion dia1anho
+	SRF	1	5
+	DRF
+	STC	90
+	PLUS
+; direccion anhade
+	SRF	1	7
+	DRF
+	PLUS
+	STC	7
+	MOD
+; Asignacion a dia1mes
+	ASG
+	JMP	L14
+; SI_NO
+L13:
+; SI
+; Comprobar condicion
+; direccion mes
+	SRF	1	3
+	DRF
+	STC	5
+	EQ
+	JMF	L15
+; Lista de sentencias
+; Direccion dia1mes
+	SRF	1	6
+; direccion dia1anho
+	SRF	1	5
+	DRF
+	STC	120
+	PLUS
+; direccion anhade
+	SRF	1	7
+	DRF
+	PLUS
+	STC	7
+	MOD
+; Asignacion a dia1mes
+	ASG
+	JMP	L16
+; SI_NO
+L15:
+; SI
+; Comprobar condicion
+; direccion mes
+	SRF	1	3
+	DRF
+	STC	6
+	EQ
+	JMF	L17
+; Lista de sentencias
+; Direccion dia1mes
+	SRF	1	6
+; direccion dia1anho
+	SRF	1	5
+	DRF
+	STC	151
+	PLUS
+; direccion anhade
+	SRF	1	7
+	DRF
+	PLUS
+	STC	7
+	MOD
+; Asignacion a dia1mes
+	ASG
+	JMP	L18
+; SI_NO
+L17:
+; SI
+; Comprobar condicion
+; direccion mes
+	SRF	1	3
+	DRF
+	STC	7
+	EQ
+	JMF	L19
+; Lista de sentencias
+; Direccion dia1mes
+	SRF	1	6
+; direccion dia1anho
+	SRF	1	5
+	DRF
+	STC	181
+	PLUS
+; direccion anhade
+	SRF	1	7
+	DRF
+	PLUS
+	STC	7
+	MOD
+; Asignacion a dia1mes
+	ASG
+	JMP	L20
+; SI_NO
+L19:
+; SI
+; Comprobar condicion
+; direccion mes
+	SRF	1	3
+	DRF
+	STC	8
+	EQ
+	JMF	L21
+; Lista de sentencias
+; Direccion dia1mes
+	SRF	1	6
+; direccion dia1anho
+	SRF	1	5
+	DRF
+	STC	212
+	PLUS
+; direccion anhade
+	SRF	1	7
+	DRF
+	PLUS
+	STC	7
+	MOD
+; Asignacion a dia1mes
+	ASG
+	JMP	L22
+; SI_NO
+L21:
+; SI
+; Comprobar condicion
+; direccion mes
+	SRF	1	3
+	DRF
+	STC	9
+	EQ
+	JMF	L23
+; Lista de sentencias
+; Direccion dia1mes
+	SRF	1	6
+; direccion dia1anho
+	SRF	1	5
+	DRF
+	STC	243
+	PLUS
+; direccion anhade
+	SRF	1	7
+	DRF
+	PLUS
+	STC	7
+	MOD
+; Asignacion a dia1mes
+	ASG
+	JMP	L24
+; SI_NO
+L23:
+; SI
+; Comprobar condicion
+; direccion mes
+	SRF	1	3
+	DRF
+	STC	10
+	EQ
+	JMF	L25
+; Lista de sentencias
+; Direccion dia1mes
+	SRF	1	6
+; direccion dia1anho
+	SRF	1	5
+	DRF
+	STC	273
+	PLUS
+; direccion anhade
+	SRF	1	7
+	DRF
+	PLUS
+	STC	7
+	MOD
+; Asignacion a dia1mes
+	ASG
+	JMP	L26
+; SI_NO
+L25:
+; SI
+; Comprobar condicion
+; direccion mes
+	SRF	1	3
+	DRF
+	STC	11
+	EQ
+	JMF	L27
+; Lista de sentencias
+; Direccion dia1mes
+	SRF	1	6
+; direccion dia1anho
+	SRF	1	5
+	DRF
+	STC	304
+	PLUS
+; direccion anhade
+	SRF	1	7
+	DRF
+	PLUS
+	STC	7
+	MOD
+; Asignacion a dia1mes
+	ASG
+	JMP	L28
+; SI_NO
+L27:
+; SI
+; Comprobar condicion
+; direccion mes
+	SRF	1	3
+	DRF
+	STC	12
+	EQ
+	JMF	L29
+; Lista de sentencias
+; Direccion dia1mes
+	SRF	1	6
+; direccion dia1anho
+	SRF	1	5
+	DRF
+	STC	334
+	PLUS
+; direccion anhade
+	SRF	1	7
+	DRF
+	PLUS
+	STC	7
+	MOD
+; Asignacion a dia1mes
+	ASG
+	JMP	L30
+; SI_NO
+L29:
+; Escribir "Has introducido el mes mal"
+	STC	72
+	WRT	0
+	STC	97
+	WRT	0
+	STC	115
+	WRT	0
+	STC	32
+	WRT	0
+	STC	105
+	WRT	0
+	STC	110
+	WRT	0
+	STC	116
+	WRT	0
+	STC	114
+	WRT	0
+	STC	111
+	WRT	0
+	STC	100
+	WRT	0
+	STC	117
+	WRT	0
+	STC	99
+	WRT	0
+	STC	105
+	WRT	0
+	STC	100
+	WRT	0
+	STC	111
+	WRT	0
+	STC	32
+	WRT	0
+	STC	101
+	WRT	0
+	STC	108
+	WRT	0
+	STC	32
+	WRT	0
+	STC	109
+	WRT	0
+	STC	101
+	WRT	0
+	STC	115
+	WRT	0
+	STC	32
+	WRT	0
+	STC	109
+	WRT	0
+	STC	97
+	WRT	0
+	STC	108
+	WRT	0
+; Fin SI
+L30:
+; Fin SI
+L28:
+; Fin SI
+L26:
+; Fin SI
+L24:
+; Fin SI
+L22:
+; Fin SI
+L20:
+; Fin SI
+L18:
+; Fin SI
+L16:
+; Fin SI
+L14:
+; Fin SI
+L12:
+; Fin SI
+L10:
+; Fin SI
+L8:
+;Fin de la acción / función
+	CSF
+
+;Comienzo del programa calendario.
+
+L0:
+; Escribir "CALENDARIO"
+	STC	67
+	WRT	0
+	STC	65
+	WRT	0
+	STC	76
+	WRT	0
+	STC	69
+	WRT	0
+	STC	78
+	WRT	0
+	STC	68
+	WRT	0
+	STC	65
+	WRT	0
+	STC	82
+	WRT	0
+	STC	73
+	WRT	0
+	STC	79
+	WRT	0
+; Escribir "Introduce un mes en cifras:"
+	STC	73
+	WRT	0
+	STC	110
+	WRT	0
+	STC	116
+	WRT	0
+	STC	114
+	WRT	0
+	STC	111
+	WRT	0
+	STC	100
+	WRT	0
+	STC	117
+	WRT	0
+	STC	99
+	WRT	0
+	STC	101
+	WRT	0
+	STC	32
+	WRT	0
+	STC	117
+	WRT	0
+	STC	110
+	WRT	0
+	STC	32
+	WRT	0
+	STC	109
+	WRT	0
+	STC	101
+	WRT	0
+	STC	115
+	WRT	0
+	STC	32
+	WRT	0
+	STC	101
+	WRT	0
+	STC	110
+	WRT	0
+	STC	32
+	WRT	0
+	STC	99
+	WRT	0
+	STC	105
+	WRT	0
+	STC	102
+	WRT	0
+	STC	114
+	WRT	0
+	STC	97
+	WRT	0
+	STC	115
+	WRT	0
+	STC	58
+	WRT	0
+; Leer
+; direccion mes
+	SRF	0	3
+	RD	1
+; direccion ln
+	SRF	0	8
+	RD	0
+; Escribir "Introduce un anio en cifras:"
+	STC	73
+	WRT	0
+	STC	110
+	WRT	0
+	STC	116
+	WRT	0
+	STC	114
+	WRT	0
+	STC	111
+	WRT	0
+	STC	100
+	WRT	0
+	STC	117
+	WRT	0
+	STC	99
+	WRT	0
+	STC	101
+	WRT	0
+	STC	32
+	WRT	0
+	STC	117
+	WRT	0
+	STC	110
+	WRT	0
+	STC	32
+	WRT	0
+	STC	97
+	WRT	0
+	STC	110
+	WRT	0
+	STC	105
+	WRT	0
+	STC	111
+	WRT	0
+	STC	32
+	WRT	0
+	STC	101
+	WRT	0
+	STC	110
+	WRT	0
+	STC	32
+	WRT	0
+	STC	99
+	WRT	0
+	STC	105
+	WRT	0
+	STC	102
+	WRT	0
+	STC	114
+	WRT	0
+	STC	97
+	WRT	0
+	STC	115
+	WRT	0
+	STC	58
+	WRT	0
+; Leer
+; direccion anho
+	SRF	0	4
+	RD	1
+; direccion ln
+	SRF	0	8
+	RD	0
+
+; invocacion accion primer_dia_anho.
+	OSF 8  0 L1
+
+; invocacion accion primer_dia_mes.
+	OSF 8  0 L2
+; Escribir dia1mes
+; direccion dia1mes
+	SRF	0	6
+	DRF
+	WRT	1
+
+;Fin de programa calendario.
+
+	LVP

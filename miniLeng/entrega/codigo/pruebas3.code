@@ -1,0 +1,273 @@
+;Programa pruebas3.
+	ENP L0
+
+;Acciones
+
+; accion L1.
+;comienzo accion L1.
+L1:
+; Escribir "Estoy en a1  "
+	STC	69
+	WRT	0
+	STC	115
+	WRT	0
+	STC	116
+	WRT	0
+	STC	111
+	WRT	0
+	STC	121
+	WRT	0
+	STC	32
+	WRT	0
+	STC	101
+	WRT	0
+	STC	110
+	WRT	0
+	STC	32
+	WRT	0
+	STC	97
+	WRT	0
+	STC	49
+	WRT	0
+	STC	32
+	WRT	0
+	STC	32
+	WRT	0
+
+; invocacion accion a2.
+	OSF 9  0 L2
+;Fin de la acción / función
+	CSF
+
+; accion L2.
+;comienzo accion L2.
+L2:
+; Escribir "Estoy en a2  "
+	STC	69
+	WRT	0
+	STC	115
+	WRT	0
+	STC	116
+	WRT	0
+	STC	111
+	WRT	0
+	STC	121
+	WRT	0
+	STC	32
+	WRT	0
+	STC	101
+	WRT	0
+	STC	110
+	WRT	0
+	STC	32
+	WRT	0
+	STC	97
+	WRT	0
+	STC	50
+	WRT	0
+	STC	32
+	WRT	0
+	STC	32
+	WRT	0
+
+; invocacion accion a3.
+	OSF 9  0 L3
+;Fin de la acción / función
+	CSF
+
+; accion L3.
+;comienzo accion L3.
+L3:
+; Escribir "Estoy en a3  "
+	STC	69
+	WRT	0
+	STC	115
+	WRT	0
+	STC	116
+	WRT	0
+	STC	111
+	WRT	0
+	STC	121
+	WRT	0
+	STC	32
+	WRT	0
+	STC	101
+	WRT	0
+	STC	110
+	WRT	0
+	STC	32
+	WRT	0
+	STC	97
+	WRT	0
+	STC	51
+	WRT	0
+	STC	32
+	WRT	0
+	STC	32
+	WRT	0
+; Escribir 10
+	STC	10
+	WRT	0
+; Escribir 13
+	STC	13
+	WRT	0
+;Fin de la acción / función
+	CSF
+
+; accion L4.
+;comienzo accion L4.
+L4:
+; Escribir "Estoy en foo  "
+	STC	69
+	WRT	0
+	STC	115
+	WRT	0
+	STC	116
+	WRT	0
+	STC	111
+	WRT	0
+	STC	121
+	WRT	0
+	STC	32
+	WRT	0
+	STC	101
+	WRT	0
+	STC	110
+	WRT	0
+	STC	32
+	WRT	0
+	STC	102
+	WRT	0
+	STC	111
+	WRT	0
+	STC	111
+	WRT	0
+	STC	32
+	WRT	0
+	STC	32
+	WRT	0
+
+; invocacion accion a1.
+	OSF 9  1 L1
+;Fin de la acción / función
+	CSF
+
+; accion L5.
+;comienzo accion L5.
+L5:
+; direccion a
+	SRF	0	3
+	ASGI
+; Direccion a
+	SRF	0	3
+	DRF
+; direccion a
+	SRF	0	3
+	DRF
+	DRF
+	STC	1
+	PLUS
+; Asignacion a a
+	ASG
+;Fin de la acción / función
+	CSF
+
+; accion L6.
+;comienzo accion L6.
+L6:
+; direccion n
+	SRF	0	4
+	ASGI
+; direccion a
+	SRF	0	3
+	ASGI
+; Direccion a
+	SRF	0	3
+	DRF
+; direccion a
+	SRF	0	3
+	DRF
+	DRF
+; direccion n
+	SRF	0	4
+	DRF
+	PLUS
+; Asignacion a a
+	ASG
+;Fin de la acción / función
+	CSF
+
+;Comienzo del programa pruebas3.
+
+L0:
+
+; invocacion accion foo.
+	OSF 9  0 L4
+; Direccion i
+	SRF	0	3
+	STC	1
+; Asignacion a i
+	ASG
+; Escribir "i:"
+	STC	105
+	WRT	0
+	STC	58
+	WRT	0
+; Escribir entcar
+; direccion i
+	SRF	0	3
+	DRF
+	WRT	1
+; Escribir 10
+	STC	10
+	WRT	0
+; Escribir 13
+	STC	13
+	WRT	0
+
+; invocacion accion sumar1.
+; direccion i
+	SRF	0	3
+	OSF 9  0 L5
+; Escribir "i:"
+	STC	105
+	WRT	0
+	STC	58
+	WRT	0
+; Escribir entcar
+; direccion i
+	SRF	0	3
+	DRF
+	WRT	1
+; Escribir 10
+	STC	10
+	WRT	0
+; Escribir 13
+	STC	13
+	WRT	0
+
+; invocacion accion sumarN.
+; direccion i
+	SRF	0	3
+	STC	2
+	OSF 9  0 L6
+; Escribir "i:"
+	STC	105
+	WRT	0
+	STC	58
+	WRT	0
+; Escribir entcar
+; direccion i
+	SRF	0	3
+	DRF
+	WRT	1
+; Escribir 10
+	STC	10
+	WRT	0
+; Escribir 13
+	STC	13
+	WRT	0
+
+;Fin de programa pruebas3.
+
+	LVP

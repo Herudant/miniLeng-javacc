@@ -1,0 +1,165 @@
+;Programa pruebas1.
+	ENP L0
+
+;Acciones
+
+;Comienzo del programa pruebas1.
+
+L0:
+; Direccion i
+	SRF	0	3
+	STC	7
+; Asignacion a i
+	ASG
+; Direccion j
+	SRF	0	4
+; direccion i
+	SRF	0	3
+	DRF
+	STC	2
+	TMS
+	STC	4
+	PLUS
+	STC	2
+	SBT
+; Asignacion a j
+	ASG
+; Direccion k
+	SRF	0	5
+	STC	3
+; direccion i
+	SRF	0	3
+	DRF
+	TMS
+	STC	2
+; direccion j
+	SRF	0	4
+	DRF
+	SBT
+	PLUS
+; Asignacion a k
+	ASG
+; Escribir "i:"
+	STC	105
+	WRT	0
+	STC	58
+	WRT	0
+; Escribir entcar
+; direccion i
+	SRF	0	3
+	DRF
+	WRT	1
+; Escribir "  j:"
+	STC	32
+	WRT	0
+	STC	32
+	WRT	0
+	STC	106
+	WRT	0
+	STC	58
+	WRT	0
+; Escribir entcar
+; direccion j
+	SRF	0	4
+	DRF
+	WRT	1
+; Escribir "  k:"
+	STC	32
+	WRT	0
+	STC	32
+	WRT	0
+	STC	107
+	WRT	0
+	STC	58
+	WRT	0
+; Escribir entcar
+; direccion k
+	SRF	0	5
+	DRF
+	WRT	1
+; Escribir 10
+	STC	10
+	WRT	0
+; Escribir 13
+	STC	13
+	WRT	0
+; Direccion a
+	SRF	0	6
+	STC	"a"
+; Asignacion a a
+	ASG
+; Direccion b
+	SRF	0	7
+	STC	"b"
+; Asignacion a b
+	ASG
+; Direccion c
+	SRF	0	8
+	STC	"a"
+; Asignacion a c
+	ASG
+; Escribir "a:"
+	STC	97
+	WRT	0
+	STC	58
+	WRT	0
+; Escribir a
+; direccion a
+	SRF	0	6
+	DRF
+	WRT	0
+; Escribir "  b:"
+	STC	32
+	WRT	0
+	STC	32
+	WRT	0
+	STC	98
+	WRT	0
+	STC	58
+	WRT	0
+; Escribir b
+; direccion b
+	SRF	0	7
+	DRF
+	WRT	0
+; Escribir "  c:"
+	STC	32
+	WRT	0
+	STC	32
+	WRT	0
+	STC	99
+	WRT	0
+	STC	58
+	WRT	0
+; Escribir 10
+	STC	10
+	WRT	0
+; Escribir 13
+	STC	13
+	WRT	0
+; Direccion foo
+	SRF	0	9
+; direccion a
+	SRF	0	6
+	DRF
+; direccion b
+	SRF	0	7
+	DRF
+	EQ
+; Asignacion a foo
+	ASG
+; Direccion bar
+	SRF	0	10
+; direccion a
+	SRF	0	6
+	DRF
+; direccion c
+	SRF	0	8
+	DRF
+	EQ
+; Asignacion a bar
+	ASG
+
+;Fin de programa pruebas1.
+
+	LVP
