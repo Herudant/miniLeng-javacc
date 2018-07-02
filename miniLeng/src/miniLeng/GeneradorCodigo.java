@@ -8,7 +8,7 @@ public class GeneradorCodigo {
 
 	private int num_etiqueta;
 	private PrintWriter writer = null;
-	private static final String FILEPATH = "/Users/heru/git/miniLeng/miniLeng-javacc/miniLeng/codigo/";
+	private static final String FILEPATH = "codigo/";
 	
 	public GeneradorCodigo(String nombre) throws FileNotFoundException, UnsupportedEncodingException {
 		num_etiqueta = 0;

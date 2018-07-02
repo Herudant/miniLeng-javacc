@@ -26,20 +26,20 @@ public class miniLeng
 	  variables.t = new Tabla_simbolos();
 	  System.out.println("Ruta y nombre del fichero:");
 
-	  try
+	  /*try
 	  {
 	    file=new_buffer.readLine();
 	  }catch(IOException e) {
 	    System.out.println("Error al leer la cadena");
 	    return;
 	  }
-
+	  */
 	  //file = "/Users/heru/git/miniLeng/miniLeng-javacc/miniLeng/programas/fib.ml";
 	  //file = "/Users/heru/git/miniLeng/miniLeng-javacc/miniLeng/programas/nprimos1.ml";
 	  //file = "/Users/heru/git/miniLeng/miniLeng-javacc/miniLeng/programas/adivinar1.ml";
 	  //file = "/Users/heru/git/miniLeng/miniLeng-javacc/miniLeng/programas/nyn1.ml";
 	  //file = "/Users/heru/git/miniLeng/miniLeng-javacc/miniLeng/programas/calendar1.ml";
-	  //file = "/Users/heru/git/miniLeng/miniLeng-javacc/miniLeng/programas/mcd1.ml";
+	  file = "/Users/heru/git/miniLeng/miniLeng-javacc/miniLeng/programas/mcd1.ml";
 	  //file = "/Users/heru/git/miniLeng/miniLeng-javacc/miniLeng/programas/mcd.ml";
 	  //file = "/Users/heru/git/miniLeng/miniLeng-javacc/miniLeng/programas/pruebas1.ml";
 
@@ -315,6 +315,7 @@ ASTNode declaracion_accion(Globals g) :
 RegistroExpr cabecera_accion(Globals g) : 
 {
   Token t1;
+  boolean ok = true;
   Simbolo s = null;
   ASTNode resul = null, params = null;
   RegistroExpr reg_resul = new RegistroExpr();
@@ -325,8 +326,14 @@ RegistroExpr cabecera_accion(Globals g) :
     t1 = < tIDENTIFICADOR >
 	{
 	  //Introduce en la tabla la accion
-	  if ( g.t.buscar_simbolo(t1.image, g.nivel, Simbolo.TipoSimbolo.ACCION) != null ) {
+	  if ( g.t.buscar_simbolo(t1.image, g.nivel, Simbolo.TipoSimbolo.VAR_PARAM) != null ) {
+	    ok = false;
+	    s = g.t.introducir_accion(t1.image,g.nivel,g.dir, g.codigo.nueva_etiqueta());
+		miniLeng.error_semantico("Existe una variable/parametro con el mismo nombre", t1, g);
+	  }
+	  else if ( g.t.buscar_simbolo(t1.image, g.nivel, Simbolo.TipoSimbolo.ACCION) != null ) {
 		// Existe el simbolo en el mismo nivel
+		ok = false;
 		miniLeng.error_semantico("Identificador duplicado", t1, g);
 	  }
 	  else{
@@ -338,10 +345,10 @@ RegistroExpr cabecera_accion(Globals g) :
 	}
    (params = parametros_formales(g, s) { if(resul != null) resul.setLeft(params); })?
    {
-	 reg_resul.s = s;
-	 reg_resul.nodoAST = resul;
-     return reg_resul;
-     }
+	reg_resul.s = s;
+	reg_resul.nodoAST = resul;
+	return reg_resul;
+   }
   }
   catch (Exception e)
   {
@@ -623,6 +630,8 @@ ASTNode invocacion_accion(Globals g, Token t) :
         //TODO: Realizar mas comprobaciones, buscar por tipo (puede ser una variable)
         // Comprobar que existe el identificador
         if ( (s = g.t.buscar_simbolo(t.image, Simbolo.TipoSimbolo.ACCION)) == null ){
+            s = g.t.introducir_accion(t.image,g.nivel,g.dir, "");
+            s.setVariable(Simbolo.TipoVariable.DESCONOCIDO);
             miniLeng.error_semantico("Identificador desconocido en la llamada a la accion", t, g);
             ok = false;
         }
@@ -970,7 +979,7 @@ ASTNode lista_expresiones(Globals g, Simbolo s) :
   try { 
     r = expresion(g)
     {
-      	if (s != null) {
+      	if (s != null && !s.esDesconocido()) {
       	    parametros = s.getLista_simbolos();
 	    	num_params++;
 	    	if(num_params > parametros.size()) {
@@ -985,16 +994,23 @@ ASTNode lista_expresiones(Globals g, Simbolo s) :
 				miniLeng.error_semantico("No se puede pasar un parámetro por valor como referencia en la invocación a la accion", g);
 				ok = false;
 			}
+			else if(parametros.get(num_params-1).esReferencia() && r.expr_compuesta) {
+				miniLeng.error_semantico("No se puede pasar a un parametro por referencia una expresion compuesta",  g);
+				ok = false;
+			}
 			else {
 				r.nodoAST.setTypeParam(parametros.get(num_params-1).getParametro());
 				resul = r.nodoAST;
 				resul.setTypeParam(parametros.get(num_params-1).getParametro());
 			}
 		}
+		else {
+		  ok = false;
+		}
     }
     ( "," r = expresion(g)
     {
-        if ( ok && s != null) {
+        if ( ok && s != null && !s.esDesconocido()) {
 	    	num_params++;
 	    	if(num_params > parametros.size()) {
 				miniLeng.error_semantico("El número de parámetros de llamada a la función " + s.getNombre() + " no coindice, se esperaban " + parametros.size(), token, g);
@@ -1005,7 +1021,11 @@ ASTNode lista_expresiones(Globals g, Simbolo s) :
 				ok = false;
 			}
 			else if (r.clase == Simbolo.ClaseParametro.VAL && parametros.get(num_params-1).esValor() ) {
-				miniLeng.error_semantico("No se puede pasar un parámetro por valor como referencia en la invocación a la accion", g);
+				miniLeng.error_semantico("No se puede pasar un parámetro por valor como referencia en la invocación a la accion",token, g);
+				ok = false;
+			}
+			else if(parametros.get(num_params-1).esReferencia() && r.expr_compuesta) {
+				miniLeng.error_semantico("No se puede pasar a un parametro por referencia una expresion compuesta", g);
 				ok = false;
 			}
 			else {
@@ -1015,6 +1035,9 @@ ASTNode lista_expresiones(Globals g, Simbolo s) :
 				resul.setTypeParam(parametros.get(num_params-1).getParametro());
 				resul.setLeft(aux);
 			}
+		}
+		else {
+		  ok = false;
 		}
     }
     )*
@@ -1144,6 +1167,7 @@ RegistroExpr expresion(Globals g) :
 			resul.nodoAST.setTypeVar(Simbolo.TipoVariable.BOOLEANO);
 		}
   	  	if (ok && !optimizar) {
+  	  	  resul.expr_compuesta = true;
   	  	  if(!anidar){
   	  	  	miniLeng.createSubTreeAST(resul.nodoAST, r1.nodoAST, r2.nodoAST, ASTNode.TipoNodo.OP,op);
   	  	  	aux = resul.nodoAST;
@@ -1253,6 +1277,7 @@ RegistroExpr expresion_simple(Globals g) :
 		    }
   	  	}
   	  	if (ok && !optimizar) {
+  	  	  resul.expr_compuesta = true;
   	  	  if(!anidar){
   	  	  	miniLeng.createSubTreeAST(resul.nodoAST, r1.nodoAST, r2.nodoAST, ASTNode.TipoNodo.OP,op);
   	  	  	aux = resul.nodoAST;
@@ -1396,6 +1421,7 @@ RegistroExpr termino(Globals g) :
 		    }
   	  	}
   	  	if (ok && !optimizar) {
+  	  	  resul.expr_compuesta = true;
   	  	  if(!anidar){
   	  	  	miniLeng.createSubTreeAST(resul.nodoAST, r1.nodoAST, r2.nodoAST, ASTNode.TipoNodo.OP,op);
   	  	  	aux = resul.nodoAST;
@@ -1511,6 +1537,7 @@ RegistroExpr factor(Globals g) :
      if( (s = g.t.buscar_simbolo(t.image, Simbolo.TipoSimbolo.PARAMETRO)) == null) {
 		s = g.t.buscar_simbolo(t.image, Simbolo.TipoSimbolo.VARIABLE);
      }
+     resul.s = s;
      resul.tipoVar = s.getVariable();
      resul.clase = (s.getParametro() != null) ? s.getParametro() : Simbolo.ClaseParametro.VAR;
      //resul.clase = s.getParametro();

@@ -14,9 +14,9 @@ accion a2 (val entero b);
 	Fin
 	accion a1;
 	Principio
-		a1:=a1+1;									% a1 no es una variable
-		caca(j);									% accion no definida 1, variable no definida
-		caca(j);									% accion no definida 2, variable no definida
+		a1:=a1+1;									
+		caca(j);									% accion no definida 1
+		caca(j);									% accion no definida 2
 		fallo:="hola" = "hola";						% no se permiten cadenas 1
 		fallo:="a">="c";
 		fallo:="hola">2;							% incompatibilidad de tipos en expresion

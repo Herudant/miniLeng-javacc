@@ -238,7 +238,7 @@ public class Tabla_simbolos {
 	**********************************************************************/
 	public Simbolo introducir_accion (String nombre, int nivel, int dir, String etiqueta){
 		
-		Simbolo esta = buscar_simbolo(nombre, Simbolo.TipoSimbolo.ACCION);
+		Simbolo esta = buscar_simbolo(nombre, nivel, Simbolo.TipoSimbolo.ACCION);
 		if (esta != null) { 
 			return null;
 		}
